@@ -1,0 +1,1536 @@
+openapi: 3.0.0
+info:
+  title: PMXT Sidecar API
+  description: >-
+    A unified local sidecar API for prediction markets (Polymarket, Kalshi, Limitless). This API acts as a
+    JSON-RPC-style gateway. Each endpoint corresponds to a specific method on the generic exchange implementation.
+  version: 0.4.4
+servers:
+  - url: 'http://localhost:3847'
+    description: Local development server
+paths:
+  /health:
+    get:
+      summary: Server Health Check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Server is consistent and running.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: integer
+                    format: int64
+  '/api/{exchange}/loadMarkets':
+    post:
+      summary: Load Markets
+      operationId: loadMarkets
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: LoadMarketsRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    type: boolean
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Load Markets response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        additionalProperties:
+                          $ref: '#/components/schemas/UnifiedMarket'
+      description: >-
+        Load and cache all markets from the exchange into `this.markets` and `this.marketsBySlug`. Subsequent calls
+        return the cached result without hitting the API again. This is the correct way to paginate or iterate over
+        markets without drift. Because `fetchMarkets()` always hits the API, repeated calls with different `offset`
+        values may return inconsistent results if the exchange reorders or adds markets between requests. Use
+        `loadMarkets()` once to get a stable snapshot, then paginate over `Object.values(exchange.markets)` locally.
+  '/api/{exchange}/fetchMarkets':
+    post:
+      summary: Fetch Markets
+      operationId: fetchMarkets
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchMarketsRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    $ref: '#/components/schemas/MarketFilterParams'
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch Markets response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UnifiedMarket'
+      description: >-
+        Fetch markets with optional filtering, search, or slug lookup. Always hits the exchange API — results reflect
+        the live state at the time of the call.
+  '/api/{exchange}/fetchMarketsPaginated':
+    post:
+      summary: Fetch Markets Paginated
+      operationId: fetchMarketsPaginated
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchMarketsPaginatedRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    type: object
+                    properties:
+                      limit:
+                        type: number
+                      cursor:
+                        type: string
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch Markets Paginated response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PaginatedMarketsResult'
+      description: >-
+        Fetch markets with cursor-based pagination backed by a stable in-memory snapshot. On the first call (or when no
+        cursor is supplied), fetches all markets once and caches them. Subsequent calls with a cursor returned from a
+        previous call slice directly from the cached snapshot — no additional API calls are made. The snapshot is
+        invalidated after `snapshotTTL` ms (configured via `ExchangeOptions` in the constructor). A request using a
+        cursor from an expired snapshot throws `'Cursor has expired'`.
+  '/api/{exchange}/fetchEvents':
+    post:
+      summary: Fetch Events
+      operationId: fetchEvents
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchEventsRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    $ref: '#/components/schemas/EventFetchParams'
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch Events response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UnifiedEvent'
+      description: >-
+        Fetch events with optional keyword search. Events group related markets together (e.g., "Who will be Fed Chair?"
+        contains multiple candidate markets).
+  '/api/{exchange}/fetchMarket':
+    post:
+      summary: Fetch Market
+      operationId: fetchMarket
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchMarketRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    $ref: '#/components/schemas/MarketFilterParams'
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch Market response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UnifiedMarket'
+      description: >-
+        Fetch a single market by lookup parameters. Convenience wrapper around fetchMarkets() that returns a single
+        result or throws MarketNotFound.
+  '/api/{exchange}/fetchEvent':
+    post:
+      summary: Fetch Event
+      operationId: fetchEvent
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchEventRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    $ref: '#/components/schemas/EventFetchParams'
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch Event response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UnifiedEvent'
+      description: >-
+        Fetch a single event by lookup parameters. Convenience wrapper around fetchEvents() that returns a single result
+        or throws EventNotFound.
+  '/api/{exchange}/fetchOHLCV':
+    post:
+      summary: Fetch O H L C V
+      operationId: fetchOHLCV
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchOHLCVRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  minItems: 2
+                  maxItems: 2
+                  items:
+                    oneOf:
+                      - type: string
+                      - oneOf:
+                          - $ref: '#/components/schemas/OHLCVParams'
+                          - $ref: '#/components/schemas/HistoryFilterParams'
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Fetch O H L C V response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PriceCandle'
+      description: Fetch historical OHLCV (candlestick) price data for a specific market outcome.
+  '/api/{exchange}/fetchOrderBook':
+    post:
+      summary: Fetch Order Book
+      operationId: fetchOrderBook
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchOrderBookRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    type: string
+                  minItems: 1
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Fetch Order Book response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrderBook'
+      description: >-
+        Fetch the current order book (bids/asks) for a specific outcome. Essential for calculating spread, depth, and
+        execution prices.
+  '/api/{exchange}/fetchTrades':
+    post:
+      summary: Fetch Trades
+      operationId: fetchTrades
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchTradesRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  minItems: 2
+                  maxItems: 2
+                  items:
+                    oneOf:
+                      - type: string
+                      - oneOf:
+                          - $ref: '#/components/schemas/TradesParams'
+                          - $ref: '#/components/schemas/HistoryFilterParams'
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Fetch Trades response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Trade'
+      description: Fetch raw trade history for a specific outcome.
+  '/api/{exchange}/createOrder':
+    post:
+      summary: Create Order
+      operationId: createOrder
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: CreateOrderRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    $ref: '#/components/schemas/CreateOrderParams'
+                  minItems: 1
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Create Order response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+      description: Place a new order on the exchange.
+  '/api/{exchange}/cancelOrder':
+    post:
+      summary: Cancel Order
+      operationId: cancelOrder
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: CancelOrderRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    type: string
+                  minItems: 1
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Cancel Order response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+      description: Cancel an existing open order.
+  '/api/{exchange}/fetchOrder':
+    post:
+      summary: Fetch Order
+      operationId: fetchOrder
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchOrderRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    type: string
+                  minItems: 1
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Fetch Order response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+      description: Fetch a specific order by ID.
+  '/api/{exchange}/fetchOpenOrders':
+    post:
+      summary: Fetch Open Orders
+      operationId: fetchOpenOrders
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchOpenOrdersRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    type: string
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch Open Orders response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Order'
+      description: 'Fetch all open orders, optionally filtered by market.'
+  '/api/{exchange}/fetchMyTrades':
+    post:
+      summary: Fetch My Trades
+      operationId: fetchMyTrades
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchMyTradesRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    $ref: '#/components/schemas/MyTradesParams'
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch My Trades response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserTrade'
+  '/api/{exchange}/fetchClosedOrders':
+    post:
+      summary: Fetch Closed Orders
+      operationId: fetchClosedOrders
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchClosedOrdersRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    $ref: '#/components/schemas/OrderHistoryParams'
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch Closed Orders response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Order'
+  '/api/{exchange}/fetchAllOrders':
+    post:
+      summary: Fetch All Orders
+      operationId: fetchAllOrders
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchAllOrdersRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    $ref: '#/components/schemas/OrderHistoryParams'
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch All Orders response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Order'
+  '/api/{exchange}/fetchPositions':
+    post:
+      summary: Fetch Positions
+      operationId: fetchPositions
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchPositionsRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 0
+                  items: {}
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch Positions response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Position'
+      description: Fetch current user positions across all markets.
+  '/api/{exchange}/fetchBalance':
+    post:
+      summary: Fetch Balance
+      operationId: fetchBalance
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FetchBalanceRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 0
+                  items: {}
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Fetch Balance response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Balance'
+      description: Fetch account balances.
+  '/api/{exchange}/getExecutionPrice':
+    post:
+      summary: Get Execution Price
+      operationId: getExecutionPrice
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: GetExecutionPriceRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  minItems: 3
+                  maxItems: 3
+                  items:
+                    oneOf:
+                      - $ref: '#/components/schemas/OrderBook'
+                      - type: string
+                        enum:
+                          - buy
+                          - sell
+                      - type: number
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Get Execution Price response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: number
+      description: >-
+        Calculate the volume-weighted average execution price for a given order size. Returns 0 if the order cannot be
+        fully filled.
+  '/api/{exchange}/getExecutionPriceDetailed':
+    post:
+      summary: Get Execution Price Detailed
+      operationId: getExecutionPriceDetailed
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: GetExecutionPriceDetailedRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  minItems: 3
+                  maxItems: 3
+                  items:
+                    oneOf:
+                      - $ref: '#/components/schemas/OrderBook'
+                      - type: string
+                        enum:
+                          - buy
+                          - sell
+                      - type: number
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Get Execution Price Detailed response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ExecutionPriceResult'
+      description: Calculate detailed execution price information including partial fill data.
+  '/api/{exchange}/filterMarkets':
+    post:
+      summary: Filter Markets
+      operationId: filterMarkets
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FilterMarketsRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  minItems: 2
+                  maxItems: 2
+                  items:
+                    oneOf:
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/UnifiedMarket'
+                      - oneOf:
+                          - type: string
+                          - type: object
+                          - type: object
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Filter Markets response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UnifiedMarket'
+      description: >-
+        Filter a list of markets by criteria. Can filter by string query, structured criteria object, or custom filter
+        function.
+  '/api/{exchange}/filterEvents':
+    post:
+      summary: Filter Events
+      operationId: filterEvents
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: FilterEventsRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  minItems: 2
+                  maxItems: 2
+                  items:
+                    oneOf:
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/UnifiedEvent'
+                      - oneOf:
+                          - type: string
+                          - type: object
+                          - type: object
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Filter Events response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UnifiedEvent'
+      description: >-
+        Filter a list of events by criteria. Can filter by string query, structured criteria object, or custom filter
+        function.
+  '/api/{exchange}/watchOrderBook':
+    post:
+      summary: Watch Order Book
+      operationId: watchOrderBook
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: WatchOrderBookRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  minItems: 1
+                  maxItems: 2
+                  items:
+                    oneOf:
+                      - type: string
+                      - type: number
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Watch Order Book response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrderBook'
+      description: >-
+        Watch order book updates in real-time via WebSocket. Returns a promise that resolves with the next order book
+        update. Call repeatedly in a loop to stream updates (CCXT Pro pattern).
+  '/api/{exchange}/watchTrades':
+    post:
+      summary: Watch Trades
+      operationId: watchTrades
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: WatchTradesRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  minItems: 1
+                  maxItems: 3
+                  items:
+                    oneOf:
+                      - type: string
+                      - type: number
+                      - type: number
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+              required:
+                - args
+      responses:
+        '200':
+          description: Watch Trades response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Trade'
+      description: >-
+        Watch trade executions in real-time via WebSocket. Returns a promise that resolves with the next trade(s). Call
+        repeatedly in a loop to stream updates (CCXT Pro pattern).
+  '/api/{exchange}/testDummyMethod':
+    post:
+      summary: Test Dummy Method
+      operationId: testDummyMethod
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: TestDummyMethodRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 1
+                  items:
+                    type: string
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Test Dummy Method response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+      description: Test method for auto-generation verification.
+  '/api/{exchange}/close':
+    post:
+      summary: Close
+      operationId: close
+      parameters:
+        - $ref: '#/components/parameters/ExchangeParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: CloseRequest
+              type: object
+              properties:
+                args:
+                  type: array
+                  maxItems: 0
+                  items: {}
+                credentials:
+                  $ref: '#/components/schemas/ExchangeCredentials'
+      responses:
+        '200':
+          description: Close response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+components:
+  parameters:
+    ExchangeParam:
+      in: path
+      name: exchange
+      schema:
+        type: string
+        enum:
+          - polymarket
+          - kalshi
+          - limitless
+          - probable
+          - baozi
+          - myriad
+      required: true
+      description: The prediction market exchange to target.
+  schemas:
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      properties:
+        message:
+          type: string
+    BaseRequest:
+      type: object
+      description: Base request structure with optional credentials
+      properties:
+        credentials:
+          $ref: '#/components/schemas/ExchangeCredentials'
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    UnifiedMarket:
+      type: object
+      properties:
+        marketId:
+          type: string
+          description: The unique identifier for this market
+        title:
+          type: string
+        description:
+          type: string
+        outcomes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketOutcome'
+        eventId:
+          type: string
+          description: Link to parent event
+        resolutionDate:
+          type: string
+          format: date-time
+        volume24h:
+          type: number
+        volume:
+          type: number
+        liquidity:
+          type: number
+        openInterest:
+          type: number
+        url:
+          type: string
+        image:
+          type: string
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        'yes':
+          $ref: '#/components/schemas/MarketOutcome'
+        'no':
+          $ref: '#/components/schemas/MarketOutcome'
+        up:
+          $ref: '#/components/schemas/MarketOutcome'
+        down:
+          $ref: '#/components/schemas/MarketOutcome'
+    MarketOutcome:
+      type: object
+      properties:
+        outcomeId:
+          type: string
+          description: 'Outcome ID for trading operations (CLOB Token ID for Polymarket, Market Ticker for Kalshi)'
+        marketId:
+          type: string
+          description: The market this outcome belongs to (set automatically)
+        label:
+          type: string
+        price:
+          type: number
+        priceChange24h:
+          type: number
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 'Exchange-specific metadata (e.g., clobTokenId for Polymarket)'
+    UnifiedEvent:
+      type: object
+      description: 'A grouped collection of related markets (e.g., "Who will be Fed Chair?" contains multiple candidate markets)'
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        slug:
+          type: string
+        markets:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnifiedMarket'
+        url:
+          type: string
+        image:
+          type: string
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    PriceCandle:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+        open:
+          type: number
+        high:
+          type: number
+        low:
+          type: number
+        close:
+          type: number
+        volume:
+          type: number
+    OrderBook:
+      type: object
+      properties:
+        bids:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLevel'
+        asks:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLevel'
+        timestamp:
+          type: integer
+    OrderLevel:
+      type: object
+      properties:
+        price:
+          type: number
+        size:
+          type: number
+    Trade:
+      type: object
+      properties:
+        id:
+          type: string
+        price:
+          type: number
+        amount:
+          type: number
+        side:
+          type: string
+          enum:
+            - buy
+            - sell
+            - unknown
+        timestamp:
+          type: integer
+    UserTrade:
+      type: object
+      properties:
+        id:
+          type: string
+        price:
+          type: number
+        amount:
+          type: number
+        side:
+          type: string
+          enum:
+            - buy
+            - sell
+            - unknown
+        timestamp:
+          type: integer
+        orderId:
+          type: string
+        outcomeId:
+          type: string
+        marketId:
+          type: string
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        marketId:
+          type: string
+        outcomeId:
+          type: string
+        side:
+          type: string
+          enum:
+            - buy
+            - sell
+        type:
+          type: string
+          enum:
+            - limit
+            - market
+        price:
+          type: number
+        amount:
+          type: number
+        status:
+          type: string
+          enum:
+            - pending
+            - open
+            - filled
+            - cancelled
+            - rejected
+        filled:
+          type: number
+        remaining:
+          type: number
+        timestamp:
+          type: integer
+        fee:
+          type: number
+    Position:
+      type: object
+      properties:
+        marketId:
+          type: string
+        outcomeId:
+          type: string
+        outcomeLabel:
+          type: string
+        size:
+          type: number
+        entryPrice:
+          type: number
+        currentPrice:
+          type: number
+        unrealizedPnL:
+          type: number
+        realizedPnL:
+          type: number
+    Balance:
+      type: object
+      properties:
+        currency:
+          type: string
+        total:
+          type: number
+        available:
+          type: number
+        locked:
+          type: number
+    ExecutionPriceResult:
+      type: object
+      properties:
+        price:
+          type: number
+        filledAmount:
+          type: number
+        fullyFilled:
+          type: boolean
+    PaginatedMarketsResult:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnifiedMarket'
+        total:
+          type: integer
+        nextCursor:
+          type: string
+    MarketFilterParams:
+      type: object
+      properties:
+        limit:
+          type: integer
+          default: 10000
+        offset:
+          type: integer
+        sort:
+          type: string
+          enum:
+            - volume
+            - liquidity
+            - newest
+        status:
+          type: string
+          enum:
+            - active
+            - closed
+            - all
+          description: 'Filter by market status (default: active)'
+        searchIn:
+          type: string
+          enum:
+            - title
+            - description
+            - both
+        query:
+          type: string
+        slug:
+          type: string
+        marketId:
+          type: string
+          description: Direct lookup by market ID
+        outcomeId:
+          type: string
+          description: Reverse lookup -- find market containing this outcome
+        eventId:
+          type: string
+          description: Find markets belonging to an event
+        page:
+          type: integer
+        similarityThreshold:
+          type: number
+    EventFetchParams:
+      type: object
+      properties:
+        query:
+          type: string
+        sort:
+          type: string
+          enum:
+            - volume
+            - liquidity
+            - newest
+        limit:
+          type: integer
+          default: 10000
+        offset:
+          type: integer
+        status:
+          type: string
+          enum:
+            - active
+            - closed
+            - all
+          description: 'Filter by event status (default: active)'
+        searchIn:
+          type: string
+          enum:
+            - title
+            - description
+            - both
+        eventId:
+          type: string
+          description: Direct lookup by event ID
+        slug:
+          type: string
+          description: Lookup by event slug
+    HistoryFilterParams:
+      type: object
+      description: Deprecated - use OHLCVParams or TradesParams instead. Resolution is optional for backward compatibility.
+      properties:
+        resolution:
+          type: string
+          enum:
+            - 1m
+            - 5m
+            - 15m
+            - 1h
+            - 6h
+            - 1d
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+    OHLCVParams:
+      type: object
+      required:
+        - resolution
+      properties:
+        resolution:
+          type: string
+          enum:
+            - 1m
+            - 5m
+            - 15m
+            - 1h
+            - 6h
+            - 1d
+          description: Candle interval for aggregation
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+    TradesParams:
+      type: object
+      description: Parameters for fetching trade history. No resolution parameter - trades are discrete events.
+      properties:
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+    CreateOrderParams:
+      type: object
+      required:
+        - marketId
+        - outcomeId
+        - side
+        - type
+        - amount
+      properties:
+        marketId:
+          type: string
+        outcomeId:
+          type: string
+        side:
+          type: string
+          enum:
+            - buy
+            - sell
+        type:
+          type: string
+          enum:
+            - limit
+            - market
+        amount:
+          type: number
+        price:
+          type: number
+        fee:
+          type: number
+    MyTradesParams:
+      type: object
+      properties:
+        outcomeId:
+          type: string
+          description: Filter to specific outcome/ticker
+        marketId:
+          type: string
+          description: Filter to specific market
+        since:
+          type: string
+          format: date-time
+        until:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+        cursor:
+          type: string
+          description: For Kalshi cursor pagination
+    OrderHistoryParams:
+      type: object
+      properties:
+        marketId:
+          type: string
+          description: Required for Limitless (slug)
+        since:
+          type: string
+          format: date-time
+        until:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+        cursor:
+          type: string
+    ExchangeCredentials:
+      type: object
+      description: Optional authentication credentials for exchange operations
+      properties:
+        apiKey:
+          type: string
+          description: API key for the exchange
+        privateKey:
+          type: string
+          description: Private key for signing transactions
+        apiSecret:
+          type: string
+          description: API secret (if required by exchange)
+        passphrase:
+          type: string
+          description: Passphrase (if required by exchange)
+        funderAddress:
+          type: string
+          description: The address funding the trades (Proxy address)
+        signatureType:
+          oneOf:
+            - type: integer
+            - type: string
+          description: 'Signature type (0=EOA, 1=Poly Proxy, 2=Gnosis Safe, or names like ''gnosis_safe'')'

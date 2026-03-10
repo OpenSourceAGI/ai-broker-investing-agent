@@ -1,0 +1,172 @@
+{
+    "methods": {
+        "fetchMarkets": {
+            "python": {
+                "example": "markets = poly.fetch_markets(pmxt.MarketFilterParams(\n    limit=20,\n    sort='volume'  # 'volume' | 'liquidity' | 'newest'\n))"
+            },
+            "typescript": {
+                "example": "const markets = await polymarket.fetchMarkets({ \n  limit: 20, \n  offset: 0,\n  sort: 'volume' // 'volume' | 'liquidity' | 'newest'\n});"
+            }
+        },
+        "searchMarkets": {
+            "python": {
+                "example": "results = kalshi.search_markets('Fed rates', pmxt.MarketFilterParams(\n    limit=10,\n    search_in='title'  # 'title' (default) | 'description' | 'both'\n))"
+            },
+            "typescript": {
+                "example": "const results = await kalshi.searchMarkets('Fed rates', { \n  limit: 10,\n  searchIn: 'title' // 'title' (default) | 'description' | 'both'\n});"
+            }
+        },
+        "searchEvents": {
+            "python": {
+                "example": "events = poly.search_events('Who will Trump nominate as Fed Chair?')\n# Filter for specific market within the event\nwarsh = poly.filter_markets(events[0].markets, 'Kevin Warsh')[0]"
+            },
+            "typescript": {
+                "example": "const events = await polymarket.searchEvents('Who will Trump nominate as Fed Chair?');\n// Filter for specific market within the event\nconst warsh = polymarket.filterMarkets(events[0].markets, 'Kevin Warsh')[0];"
+            }
+        },
+        "filterMarkets": {
+            "python": {
+                "example": "# Simple text search\nfiltered = poly.filter_markets(markets, 'Trump')\n\n# Advanced criteria\nundervalued = poly.filter_markets(markets, {\n    'text': 'Election',\n    'volume_24h': {'min': 10000},\n    'price': {'outcome': 'yes', 'max': 0.4}\n})\n\n# Custom function\nvolatile = poly.filter_markets(markets, lambda m: m.yes and m.yes.price_change_24h < -0.1)"
+            },
+            "typescript": {
+                "example": "// Simple text search\nconst filtered = poly.filterMarkets(markets, 'Trump');\n\n// Advanced criteria\nconst undervalued = poly.filterMarkets(markets, {\n    text: 'Election',\n    volume24h: { min: 10000 },\n    price: { outcome: 'yes', max: 0.4 }\n});\n\n// Custom function\nconst volatile = poly.filterMarkets(markets, m => \n    m.yes?.priceChange24h < -0.1\n);"
+            },
+            "summary": "Filter a list of markets locally based on structured criteria or a custom function.",
+            "description": "Unlike search_markets which calls the exchange's search engine, filter_markets operates on a List/Array of markets that you already have in memory. This is much faster and supports complex logic like price ranges, volume thresholds, and custom lambda functions.",
+            "params": [
+                {
+                    "name": "markets",
+                    "type": "UnifiedMarket[]",
+                    "description": "List of markets to filter"
+                },
+                {
+                    "name": "criteria",
+                    "type": "any",
+                    "description": "Filter criteria (string, object, or function)"
+                }
+            ],
+            "returns": {
+                "type": "UnifiedMarket[]",
+                "description": "Filtered list of markets"
+            }
+        },
+        "filterEvents": {
+            "python": {
+                "example": "filtered = poly.filter_events(events, {\n    'category': 'Politics',\n    'market_count': {'min': 5}\n})"
+            },
+            "typescript": {
+                "example": "const filtered = poly.filterEvents(events, {\n    category: 'Politics',\n    marketCount: { min: 5 }\n});"
+            },
+            "summary": "Filter a list of events locally.",
+            "description": "Filters a list of events based on category, tags, or the number of markets they contain.",
+            "params": [
+                {
+                    "name": "events",
+                    "type": "UnifiedEvent[]",
+                    "description": "List of events to filter"
+                },
+                {
+                    "name": "criteria",
+                    "type": "any",
+                    "description": "Filter criteria (string, object, or function)"
+                }
+            ],
+            "returns": {
+                "type": "UnifiedEvent[]",
+                "description": "Filtered list of events"
+            }
+        },
+        "getMarketsBySlug": {
+            "python": {
+                "example": "# Polymarket: use URL slug\npoly_markets = poly.get_markets_by_slug('who-will-trump-nominate-as-fed-chair')\n\n# Kalshi: use market ticker (auto-uppercased)\nkalshi_markets = kalshi.get_markets_by_slug('KXFEDCHAIRNOM-29')"
+            },
+            "typescript": {
+                "example": "// Polymarket: use URL slug\nconst polyMarkets = await polymarket.getMarketsBySlug('who-will-trump-nominate-as-fed-chair');\n\n// Kalshi: use market ticker (auto-uppercased)\nconst kalshiMarkets = await kalshi.getMarketsBySlug('KXFEDCHAIRNOM-29');"
+            }
+        },
+        "fetchOHLCV": {
+            "python": {
+                "example": "markets = poly.search_markets('Trump')\noutcome_id = markets[0].outcomes[0].id  # Get the outcome ID\n\ncandles = poly.fetch_ohlcv(outcome_id, pmxt.OHLCVParams(\n    resolution='1h',  # '1m' | '5m' | '15m' | '1h' | '6h' | '1d'\n    start=datetime(2024, 1, 1),\n    end=datetime(2024, 1, 31),\n    limit=100\n))"
+            },
+            "typescript": {
+                "example": "const markets = await polymarket.searchMarkets('Trump');\nconst outcomeId = markets[0].outcomes[0].id; // Get the outcome ID\n\nconst candles = await polymarket.fetchOHLCV(outcomeId, {\n  resolution: '1h', // '1m' | '5m' | '15m' | '1h' | '6h' | '1d'\n  start: new Date('2024-01-01'),\n  end: new Date('2024-01-31'),\n  limit: 100\n});"
+            },
+            "notes": [
+                "**CRITICAL**: Use `outcome.id`, not `market.id`.",
+                "- **Polymarket**: `outcome.id` is the CLOB Token ID",
+                "- **Kalshi**: `outcome.id` is the Market Ticker"
+            ]
+        },
+        "fetchOrderBook": {
+            "python": {
+                "example": "order_book = kalshi.fetch_order_book('FED-25JAN')\nprint(f'Best bid: {order_book.bids[0].price}')\nprint(f'Best ask: {order_book.asks[0].price}')"
+            },
+            "typescript": {
+                "example": "const orderBook = await kalshi.fetchOrderBook('FED-25JAN');\nconsole.log('Best bid:', orderBook.bids[0].price);\nconsole.log('Best ask:', orderBook.asks[0].price);"
+            }
+        },
+        "fetchTrades": {
+            "python": {
+                "example": "trades = kalshi.fetch_trades('FED-25JAN', limit=100)"
+            },
+            "typescript": {
+                "example": "const trades = await kalshi.fetchTrades('FED-25JAN', {\n  limit: 100\n});"
+            },
+            "notes": [
+                "**Note**: Polymarket requires API key. Use `fetchOHLCV` for public historical data."
+            ]
+        },
+        "fetchBalance": {
+            "python": {
+                "example": "balances = poly.fetch_balance()\nprint(balances)\n# [Balance(currency='USDC', total=1000, available=950, locked=50)]"
+            },
+            "typescript": {
+                "example": "const balances = await polymarket.fetchBalance();\nconsole.log(balances);\n// [{ currency: 'USDC', total: 1000, available: 950, locked: 50 }]"
+            }
+        },
+        "fetchPositions": {
+            "python": {
+                "example": "positions = kalshi.fetch_positions()\nfor pos in positions:\n    print(f\"{pos.outcome_label}: {pos.size} @ ${pos.entry_price}\")\n    print(f\"Unrealized P&L: ${pos.unrealized_pnl}\")"
+            },
+            "typescript": {
+                "example": "const positions = await kalshi.fetchPositions();\npositions.forEach(pos => {\n  console.log(`${pos.outcomeLabel}: ${pos.size} @ $${pos.entryPrice}`);\n  console.log(`Unrealized P&L: $${pos.unrealizedPnL}`);\n});"
+            }
+        },
+        "createOrder": {
+            "python": {
+                "example": "# Limit Order Example\norder = poly.create_order(pmxt.CreateOrderParams(\n    market_id='663583',\n    outcome_id='109918492287...',\n    side='buy',\n    type='limit',\n    amount=10,        # Number of contracts\n    price=0.55        # Required for limit orders (0.0-1.0)\n))\n\nprint(f'Order {order.id}: {order.status}')\n\n# Market Order Example\norder = kalshi.create_order(pmxt.CreateOrderParams(\n    market_id='FED-25JAN',\n    outcome_id='FED-25JAN-YES',\n    side='sell',\n    type='market',\n    amount=5          # Price not needed for market orders\n))"
+            },
+            "typescript": {
+                "example": "// Limit Order Example\nconst order = await polymarket.createOrder({\n  marketId: '663583',\n  outcomeId: '10991849228756847439673778874175365458450913336396982752046655649803657501964',\n  side: 'buy',\n  type: 'limit',\n  amount: 10,        // Number of contracts\n  price: 0.55        // Required for limit orders (0.0-1.0)\n});\n\nconsole.log(`Order ${order.id}: ${order.status}`);\n\n// Market Order Example\nconst order = await kalshi.createOrder({\n  marketId: 'FED-25JAN',\n  outcomeId: 'FED-25JAN-YES',\n  side: 'sell',\n  type: 'market',\n  amount: 5          // Price not needed for market orders\n});"
+            }
+        },
+        "cancelOrder": {
+            "python": {
+                "example": "cancelled_order = poly.cancel_order('order-123')\nprint(cancelled_order.status) # 'cancelled'"
+            },
+            "typescript": {
+                "example": "const cancelledOrder = await polymarket.cancelOrder('order-123');\nconsole.log(cancelledOrder.status); // 'cancelled'"
+            }
+        },
+        "fetchOrder": {
+            "python": {
+                "example": "order = kalshi.fetch_order('order-456')\nprint(f'Filled: {order.filled}/{order.amount}')"
+            },
+            "typescript": {
+                "example": "const order = await kalshi.fetchOrder('order-456');\nconsole.log(`Filled: ${order.filled}/${order.amount}`);"
+            }
+        },
+        "fetchOpenOrders": {
+            "python": {
+                "example": "# All open orders\nall_orders = poly.fetch_open_orders()\n\n# Open orders for specific market\nmarket_orders = kalshi.fetch_open_orders('FED-25JAN')\n\nfor order in all_orders:\n    print(f'{order.side} {order.amount} @ {order.price}')"
+            },
+            "typescript": {
+                "example": "// All open orders\nconst allOrders = await polymarket.fetchOpenOrders();\n\n// Open orders for specific market\nconst marketOrders = await kalshi.fetchOpenOrders('FED-25JAN');\n\nallOrders.forEach(order => {\n  console.log(`${order.side} ${order.amount} @ ${order.price}`);\n});"
+            }
+        }
+    },
+    "workflowExample": {
+        "python": "import pmxt\nimport os\n\nexchange = pmxt.Polymarket(\n    private_key=os.getenv('POLYMARKET_PRIVATE_KEY')\n)\n\n# 1. Check balance\nbalances = exchange.fetch_balance()\nif balances:\n    balance = balances[0]\n    print(f'Available: ${balance.available}')\n\n# 2. Search for a market\nmarkets = exchange.search_markets('Trump')\nmarket = markets[0]\noutcome = market.outcomes[0]\n\n# 3. Place a limit order\norder = exchange.create_order(pmxt.CreateOrderParams(\n    market_id=market.id,\n    outcome_id=outcome.id,\n    side='buy',\n    type='limit',\n    amount=10,\n    price=0.50\n))\n\nprint(f'Order placed: {order.id}')\n\n# 4. Check order status\nupdated_order = exchange.fetch_order(order.id)\nprint(f'Status: {updated_order.status}')\nprint(f'Filled: {updated_order.filled}/{updated_order.amount}')\n\n# 5. Cancel if needed\nif updated_order.status == 'open':\n    exchange.cancel_order(order.id)\n    print('Order cancelled')\n\n# 6. Check positions\npositions = exchange.fetch_positions()\nfor pos in positions:\n    pnl_sign = '+' if pos.unrealized_pnl > 0 else ''\n    print(f'{pos.outcome_label}: {pnl_sign}${pos.unrealized_pnl:.2f}')",
+        "typescript": "import pmxt from 'pmxtjs';\n\nconst exchange = new pmxt.Polymarket({\n  privateKey: process.env.POLYMARKET_PRIVATE_KEY\n});\n\n// 1. Check balance\nconst [balance] = await exchange.fetchBalance();\nconsole.log(`Available: $${balance.available}`);\n\n// 2. Search for a market\nconst markets = await exchange.searchMarkets('Trump');\nconst market = markets[0];\nconst outcome = market.outcomes[0];\n\n// 3. Place a limit order\nconst order = await exchange.createOrder({\n  marketId: market.id,\n  outcomeId: outcome.id,\n  side: 'buy',\n  type: 'limit',\n  amount: 10,\n  price: 0.50\n});\n\nconsole.log(`Order placed: ${order.id}`);\n\n// 4. Check order status\nconst updatedOrder = await exchange.fetchOrder(order.id);\nconsole.log(`Status: ${updatedOrder.status}`);\nconsole.log(`Filled: ${updatedOrder.filled}/${updatedOrder.amount}`);\n\n// 5. Cancel if needed\nif (updatedOrder.status === 'open') {\n  await exchange.cancelOrder(order.id);\n  console.log('Order cancelled');\n}\n\n// 6. Check positions\nconst positions = await exchange.fetchPositions();\npositions.forEach(pos => {\n  console.log(`${pos.outcomeLabel}: ${pos.unrealizedPnL > 0 ? '+' : ''}$${pos.unrealizedPnL.toFixed(2)}`);\n});"
+    }
+}

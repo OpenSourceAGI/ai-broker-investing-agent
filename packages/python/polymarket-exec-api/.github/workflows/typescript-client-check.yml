@@ -1,0 +1,35 @@
+name: Verify TypeScript Client Methods
+
+on:
+  pull_request:
+    paths:
+      - 'core/src/BaseExchange.ts'
+      - 'sdks/typescript/scripts/generate-client-methods.js'
+      - '.github/workflows/typescript-client-check.yml'
+
+jobs:
+  verify:
+    name: Verify client.ts methods are up-to-date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --workspace=pmxt-core
+
+      - name: Regenerate client methods
+        run: node sdks/typescript/scripts/generate-client-methods.js
+
+      - name: Check if client.ts changed
+        run: |
+          if git diff --exit-code sdks/typescript/pmxt/client.ts; then
+            echo "client.ts methods are up-to-date"
+          else
+            echo "client.ts methods are out of sync with BaseExchange.ts"
+            echo "Run: node sdks/typescript/scripts/generate-client-methods.js"
+            exit 1
+          fi

@@ -1,0 +1,11 @@
+wwwroot/*.js
+node_modules
+typings
+dist
+
+# Compiled JS next to TS sources (build output goes to dist/)
+index.js
+pmxt/client.js
+pmxt/models.js
+pmxt/server-manager.js
+demo-market-list.js

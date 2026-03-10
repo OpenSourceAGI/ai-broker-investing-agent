@@ -1,0 +1,55 @@
+{
+  "name": "pmxtjs",
+  "version": "2.17.1",
+  "description": "Unified prediction market data API - The ccxt for prediction markets",
+  "author": "PMXT Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pmxt-dev/pmxt.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "pmxt",
+    "generated",
+    "index.ts",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "generate": "npm run generate:sdk:typescript --workspace=pmxt-core && node scripts/fix-generated.js && node scripts/generate-client-methods.js",
+    "generate:client": "node scripts/generate-client-methods.js",
+    "prebuild": "npm run clean",
+    "build": "tsc && tsc -p tsconfig.esm.json && node scripts/fix-esm.js && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
+    "prepack": "npm run build",
+    "test": "jest"
+  },
+  "keywords": [
+    "prediction-markets",
+    "polymarket",
+    "kalshi",
+    "trading",
+    "api",
+    "unified"
+  ],
+  "dependencies": {
+    "pmxt-core": "2.17.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.0.0"
+  }
+}

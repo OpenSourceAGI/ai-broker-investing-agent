@@ -1,0 +1,182 @@
+# PMXT Python SDK - API Reference
+
+A unified Python interface for interacting with multiple prediction market exchanges (Polymarket, Kalshi, Limitless) identically.
+
+## Installation
+
+```bash
+pip install pmxt
+```
+
+## Quick Start
+
+```python
+import pmxt
+
+# Initialize exchanges (server starts automatically!)
+poly = pmxt.Polymarket()
+kalshi = pmxt.Kalshi()
+limitless = pmxt.Limitless()  # Requires API key for authenticated operations
+
+# Search for markets
+markets = poly.fetch_markets(query="Trump")
+print(markets[0].title)
+```
+
+> **Note**: This SDK automatically manages the PMXT sidecar server. Just import and use!
+
+---
+
+## Server Management
+
+The SDK provides global functions to manage the background sidecar server. This is useful for clearing state, resolving "port busy" errors, or ensuring a clean slate in interactive environments like Jupyter.
+
+### `stop_server`
+
+Stop the background PMXT sidecar server and clean up lock files.
+
+```python
+import pmxt
+pmxt.stop_server()
+```
+
+### `restart_server`
+
+Restart the background PMXT sidecar server. Equivalent to calling `stop_server()` followed by a fresh start.
+
+```python
+import pmxt
+pmxt.restart_server()
+```
+
+---
+
+## Methods
+
+{{#each methods}}
+### `{{pythonName this.name}}`
+
+{{this.summary}}
+
+{{#if this.exchangeNote}}
+{{{this.exchangeNote}}}
+{{/if}}
+
+**Signature:**
+
+```python
+def {{pythonName this.name}}({{pythonParams this.params}}) -> {{pythonTypeClean this.returns.type}}:
+```
+
+**Parameters:**
+
+{{#if this.params}}
+{{#each this.params}}
+- `{{pythonName this.name}}` ({{pythonType this.type}}){{#if this.optional}} - **Optional**{{/if}}: {{this.description}}
+{{/each}}
+{{#if this.subParams}}
+{{#each this.subParams}}
+  - `{{pythonName this.name}}` - {{this.description}}
+{{/each}}
+{{/if}}
+{{else}}
+- None
+{{/if}}
+
+**Returns:** {{pythonType this.returns.type}} - {{this.returns.description}}
+
+**Example:**
+
+```python
+{{this.example}}
+```
+
+{{#if this.notes}}
+**Notes:**
+{{#each this.notes}}
+{{this}}
+{{/each}}
+{{/if}}
+
+---
+{{/each}}
+
+## Complete Trading Workflow
+
+```python
+{{workflowExample}}
+```
+
+## Data Models
+
+{{#each dataModels}}
+### `{{this.name}}`
+
+{{this.description}}
+
+```python
+@dataclass
+class {{this.name}}:
+{{#each this.fields}}
+{{pythonName this.name}}: {{pythonTypeClean this.type}} # {{this.description}}
+{{/each}}
+```
+
+---
+{{/each}}
+
+## Filter Parameters
+
+{{#each filterModels}}
+### `{{this.name}}`
+
+{{this.description}}
+
+```python
+@dataclass
+class {{this.name}}:
+{{#each this.fields}}
+{{pythonName this.name}}: {{pythonTypeClean this.type}} # {{this.description}}
+{{/each}}
+```
+
+---
+{{/each}}
+
+## Low-Level API Reference
+
+Advanced: call exchange-specific REST endpoints directly via `exchange.call_api(name, params)`.
+
+```python
+# Example
+result = exchange.call_api('operationName', {'param': 'value'})
+```
+
+{{#each exchangeGroups}}
+### {{this.displayName}}
+
+| `call_api()` name | Method | Path | Summary | Auth |
+|-----------------|--------|------|---------|------|
+{{#each this.endpoints}}
+| `{{this.name}}` | `{{this.method}}` | `{{this.path}}` | {{this.summary}} | {{#if this.isPrivate}}Required{{else}}Public{{/if}} |
+{{/each}}
+
+#### Endpoint Details
+
+{{#each this.endpoints}}
+##### `{{this.name}}`
+
+**{{this.method}}** `{{this.path}}`
+
+{{this.summary}}{{#if this.isPrivate}} *(Auth required)*{{/if}}
+
+{{#if this.params}}
+**Parameters:**
+{{#each this.params}}
+- `{{this.name}}` ({{this.in}}, {{this.type}}){{#if this.required}} **required**{{/if}}{{#if this.description}} — {{this.description}}{{/if}}{{#if this.enum}} — enum: `{{this.enum}}`{{/if}}
+{{/each}}
+{{/if}}
+
+---
+{{/each}}
+{{/each}}

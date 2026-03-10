@@ -1,0 +1,34 @@
+name: Verify OpenAPI Spec
+
+on:
+  pull_request:
+    paths:
+      - 'core/src/BaseExchange.ts'
+      - '.github/workflows/openapi-check.yml'
+
+jobs:
+  verify-spec:
+    name: Verify OpenAPI spec is up-to-date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --workspace=pmxt-core
+
+      - name: Regenerate OpenAPI spec
+        run: npm run generate:openapi --workspace=pmxt-core
+
+      - name: Check if spec changed
+        run: |
+          if git diff --exit-code core/src/server/openapi.yaml; then
+            echo "✓ OpenAPI spec is up-to-date"
+          else
+            echo "✗ OpenAPI spec is out of sync with BaseExchange.ts"
+            echo "Run: npm run generate:openapi --workspace=pmxt-core"
+            exit 1
+          fi

@@ -1,0 +1,4 @@
+*.test.js
+*.spec.js
+__tests__
+.DS_Store

@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pmxt"
+version = "2.17.1"
+description = "Unified prediction market data API - The ccxt for prediction markets"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "PMXT Contributors"}
+]
+keywords = ["prediction markets", "polymarket", "kalshi", "trading", "api"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "urllib3>=1.26.0",
+    "python-dateutil>=2.8.0",
+    "pydantic>=2.0.0",
+    "typing-extensions>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/pmxt-dev/pmxt"
+Documentation = "https://github.com/pmxt-dev/pmxt#readme"
+Repository = "https://github.com/pmxt-dev/pmxt"
+Issues = "https://github.com/pmxt-dev/pmxt/issues"
+
+[tool.setuptools.packages.find]
+where = [".", "generated"]
+include = ["pmxt*", "pmxt_internal*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+pmxt = [
+    "_server/bin/*",
+    "_server/server/**/*",
+]
+
+
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

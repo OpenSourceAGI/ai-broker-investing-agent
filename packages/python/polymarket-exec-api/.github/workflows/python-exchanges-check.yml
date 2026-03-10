@@ -1,0 +1,32 @@
+name: Verify Python Exchange Classes
+
+on:
+  pull_request:
+    paths:
+      - 'core/src/server/app.ts'
+      - 'core/scripts/generate-python-exchanges.js'
+      - '.github/workflows/python-exchanges-check.yml'
+
+jobs:
+  verify:
+    name: Verify _exchanges.py is up-to-date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Regenerate exchange classes
+        run: node core/scripts/generate-python-exchanges.js
+
+      - name: Check if Python SDK files changed
+        run: |
+          if git diff --exit-code sdks/python/pmxt/_exchanges.py sdks/python/pmxt/__init__.py; then
+            echo "Python SDK exchange files are up-to-date"
+          else
+            echo "Python SDK is out of sync with app.ts"
+            echo "Run: npm run generate:python-exchanges --workspace=pmxt-core"
+            exit 1
+          fi

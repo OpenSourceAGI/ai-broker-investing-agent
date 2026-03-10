@@ -1,0 +1,20 @@
+{
+    "name": "pmxt-monorepo",
+    "private": true,
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "workspaces": [
+        "core",
+        "sdks/*"
+    ],
+    "scripts": {
+        "dev": "concurrently \"npm --workspace=pmxt-core run build -- --watch\" \"npm run server --workspace=pmxt-core\"",
+        "server": "npm run server --workspace=pmxt-core",
+        "generate": "npm run generate:sdk:all --workspace=pmxt-core",
+        "test": "./scripts/verify-all.sh"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1"
+    }
+}

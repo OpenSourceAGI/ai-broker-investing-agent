@@ -1,0 +1,955 @@
+openapi: 3.0.3
+info:
+  title: Polymarket Data API
+  version: 1.0.0
+  description: >
+    HTTP API for Polymarket data. This specification documents all public
+    routes.
+servers:
+  - url: https://data-api.polymarket.com
+    description: Relative server (same host)
+security: []
+tags:
+  - name: Data API Status
+    description: Data API health check
+  - name: Core
+  - name: Builders
+  - name: Misc
+paths:
+  /:
+    get:
+      tags:
+        - Data API Status
+      summary: Data API Health check
+      operationId: getDataApiHealth
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /positions:
+    get:
+      tags:
+        - Core
+      summary: Get current positions for a user
+      description: Returns positions filtered by user and optional filters.
+      parameters:
+        - in: query
+          name: user
+          required: true
+          schema:
+            $ref: '#/components/schemas/Address'
+          description: User address (required)
+        - in: query
+          name: market
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Hash64'
+          description: >-
+            Comma-separated list of condition IDs. Mutually exclusive with
+            eventId.
+        - in: query
+          name: eventId
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+          description: Comma-separated list of event IDs. Mutually exclusive with market.
+        - in: query
+          name: sizeThreshold
+          schema:
+            type: number
+            default: 1
+            minimum: 0
+        - in: query
+          name: redeemable
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: mergeable
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+            minimum: 0
+            maximum: 500
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            maximum: 10000
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum:
+              - CURRENT
+              - INITIAL
+              - TOKENS
+              - CASHPNL
+              - PERCENTPNL
+              - TITLE
+              - RESOLVING
+              - PRICE
+              - AVGPRICE
+            default: TOKENS
+        - in: query
+          name: sortDirection
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: DESC
+        - in: query
+          name: title
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Position'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/accounting/snapshot:
+    get:
+      tags:
+        - Misc
+      summary: Download an accounting snapshot (ZIP of CSVs)
+      description: >
+        Public endpoint (no auth) that returns an `application/zip` containing
+        two CSV files generated from the same snapshot time.
+
+
+        **ZIP contents**
+
+
+        1) `positions.csv` (0+ rows)
+
+        - Columns (in order):
+          - `conditionId` (string): market condition id
+          - `asset` (string): outcome token id (uniquely identifies the position within a market)
+          - `size` (number): tokens, 6 decimals
+          - `curPrice` (number): per-token price/value in USDC, 6 decimals
+          - `valuationTime` (string): RFC3339 UTC timestamp
+
+        2) `equity.csv` (0 or 1 row)
+
+        - Columns (in order):
+          - `cashBalance` (number): onchain USDC `balanceOf(user)` using Polygon USDC `0x2791bca1f2de4661ed88a30c99a7a9449aa84174`, 6 decimals
+          - `positionsValue` (number): \(\sum(\text{size} \times \text{curPrice})\) across `positions.csv`, 6 decimals
+          - `equity` (number): `cashBalance + positionsValue`, 6 decimals
+          - `valuationTime` (string): RFC3339 UTC timestamp (same snapshot time as `positions.csv`)
+      parameters:
+        - in: query
+          name: user
+          required: true
+          schema:
+            $ref: '#/components/schemas/Address'
+          description: User address (0x-prefixed)
+      responses:
+        '200':
+          description: ZIP file containing `positions.csv` and `equity.csv`.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /traded:
+    get:
+      tags:
+        - Misc
+      summary: Get total markets a user has traded
+      parameters:
+        - in: query
+          name: user
+          required: true
+          schema:
+            $ref: '#/components/schemas/Address'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Traded'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /oi:
+    get:
+      tags:
+        - Misc
+      summary: Get open interest
+      parameters:
+        - in: query
+          name: market
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Hash64'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpenInterest'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /live-volume:
+    get:
+      tags:
+        - Misc
+      summary: Get live volume for an event
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LiveVolume'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /trades:
+    get:
+      tags:
+        - Core
+      summary: Get trades for a user or markets
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+            minimum: 0
+            maximum: 10000
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            maximum: 10000
+        - in: query
+          name: takerOnly
+          schema:
+            type: boolean
+            default: true
+        - in: query
+          name: filterType
+          schema:
+            type: string
+            enum:
+              - CASH
+              - TOKENS
+          description: Must be provided together with filterAmount.
+        - in: query
+          name: filterAmount
+          schema:
+            type: number
+            minimum: 0
+          description: Must be provided together with filterType.
+        - in: query
+          name: market
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Hash64'
+          description: >-
+            Comma-separated list of condition IDs. Mutually exclusive with
+            eventId.
+        - in: query
+          name: eventId
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+          description: Comma-separated list of event IDs. Mutually exclusive with market.
+        - in: query
+          name: user
+          schema:
+            $ref: '#/components/schemas/Address'
+        - in: query
+          name: side
+          schema:
+            type: string
+            enum:
+              - BUY
+              - SELL
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trade'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /activity:
+    get:
+      tags:
+        - Core
+      summary: Get user activity
+      description: Returns on-chain activity for a user.
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+            minimum: 0
+            maximum: 500
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            maximum: 10000
+        - in: query
+          name: user
+          required: true
+          schema:
+            $ref: '#/components/schemas/Address'
+        - in: query
+          name: market
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Hash64'
+          description: >-
+            Comma-separated list of condition IDs. Mutually exclusive with
+            eventId.
+        - in: query
+          name: eventId
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+          description: Comma-separated list of event IDs. Mutually exclusive with market.
+        - in: query
+          name: type
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - TRADE
+                - SPLIT
+                - MERGE
+                - REDEEM
+                - REWARD
+                - CONVERSION
+                - MAKER_REBATE
+        - in: query
+          name: start
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: end
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum:
+              - TIMESTAMP
+              - TOKENS
+              - CASH
+            default: TIMESTAMP
+        - in: query
+          name: sortDirection
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: DESC
+        - in: query
+          name: side
+          schema:
+            type: string
+            enum:
+              - BUY
+              - SELL
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /holders:
+    get:
+      tags:
+        - Core
+      summary: Get top holders for markets
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            minimum: 0
+            maximum: 20
+          description: Maximum number of holders to return per token. Capped at 20.
+        - in: query
+          name: market
+          required: true
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Hash64'
+          description: Comma-separated list of condition IDs.
+        - in: query
+          name: minBalance
+          schema:
+            type: integer
+            default: 1
+            minimum: 0
+            maximum: 999999
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetaHolder'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /value:
+    get:
+      tags:
+        - Core
+      summary: Get total value of a user's positions
+      parameters:
+        - in: query
+          name: user
+          required: true
+          schema:
+            $ref: '#/components/schemas/Address'
+        - in: query
+          name: market
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Hash64'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /closed-positions:
+    get:
+      tags:
+        - Core
+      summary: Get closed positions for a user
+      description: Fetches closed positions for a user(address)
+      parameters:
+        - in: query
+          name: user
+          required: true
+          schema:
+            $ref: '#/components/schemas/Address'
+          description: The address of the user in question
+        - in: query
+          name: market
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Hash64'
+          description: >-
+            The conditionId of the market in question. Supports multiple csv
+            separated values. Cannot be used with the eventId param.
+        - in: query
+          name: title
+          schema:
+            type: string
+            maxLength: 100
+          description: Filter by market title
+        - in: query
+          name: eventId
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+          description: >-
+            The event id of the event in question. Supports multiple csv
+            separated values. Returns positions for all markets for those event
+            ids. Cannot be used with the market param.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+            minimum: 0
+            maximum: 50
+          description: The max number of positions to return
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            maximum: 100000
+          description: The starting index for pagination
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum:
+              - REALIZEDPNL
+              - TITLE
+              - PRICE
+              - AVGPRICE
+              - TIMESTAMP
+            default: REALIZEDPNL
+          description: The sort criteria
+        - in: query
+          name: sortDirection
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: DESC
+          description: The sort direction
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClosedPosition'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/market-positions:
+    get:
+      tags:
+        - Core
+      summary: Get positions for a market
+      description: >
+        Returns positions for a given market (condition_id), grouped by outcome
+        token, with profile data, PnL breakdown, and current pricing.
+      parameters:
+        - in: query
+          name: market
+          required: true
+          schema:
+            $ref: '#/components/schemas/Hash64'
+          description: The condition ID of the market to query positions for
+        - in: query
+          name: user
+          schema:
+            $ref: '#/components/schemas/Address'
+          description: Filter to a single user by proxy wallet address
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum:
+              - OPEN
+              - CLOSED
+              - ALL
+            default: ALL
+          description: |
+            Filter positions by status.
+            - `OPEN` — Only positions with size > 0.01
+            - `CLOSED` — Only positions with size <= 0.01
+            - `ALL` — All positions regardless of size
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum:
+              - TOKENS
+              - CASH_PNL
+              - REALIZED_PNL
+              - TOTAL_PNL
+            default: TOTAL_PNL
+          description: |
+            Sort positions by:
+            - `TOKENS` — Position size (number of tokens)
+            - `CASH_PNL` — Unrealized cash PnL
+            - `REALIZED_PNL` — Realized PnL
+            - `TOTAL_PNL` — Total PnL (cash_pnl + realized_pnl)
+        - in: query
+          name: sortDirection
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: DESC
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+            minimum: 0
+            maximum: 500
+          description: Max number of positions to return per outcome token
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            maximum: 10000
+          description: Pagination offset per outcome token
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetaMarketPositionV1'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/leaderboard:
+    get:
+      tags:
+        - Core
+      summary: Get trader leaderboard rankings
+      description: >-
+        Returns trader leaderboard rankings filtered by category, time period,
+        and ordering.
+      parameters:
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum:
+              - OVERALL
+              - POLITICS
+              - SPORTS
+              - CRYPTO
+              - CULTURE
+              - MENTIONS
+              - WEATHER
+              - ECONOMICS
+              - TECH
+              - FINANCE
+            default: OVERALL
+          description: Market category for the leaderboard
+        - in: query
+          name: timePeriod
+          schema:
+            type: string
+            enum:
+              - DAY
+              - WEEK
+              - MONTH
+              - ALL
+            default: DAY
+          description: Time period for leaderboard results
+        - in: query
+          name: orderBy
+          schema:
+            type: string
+            enum:
+              - PNL
+              - VOL
+            default: PNL
+          description: Leaderboard ordering criteria
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+            minimum: 1
+            maximum: 50
+          description: Max number of leaderboard traders to return
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            maximum: 1000
+          description: Starting index for pagination
+        - in: query
+          name: user
+          schema:
+            $ref: '#/components/schemas/Address'
+          description: Limit leaderboard to a single user by address
+        - in: query
+          name: userName
+          schema:
+            type: string
+          description: Limit leaderboard to a single username
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TraderLeaderboardEntry'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/builders/leaderboard:
+    get:
+      tags:
+        - Builders
+      summary: Get aggregated builder leaderboard
+      description: >-
+        Returns aggregated builder rankings with one entry per builder showing
+        total for the specified time period. Supports pagination.
+      parameters:
+        - in: query
+          name: timePeriod
+          schema:
+            type: string
+            enum:
+              - DAY
+              - WEEK
+              - MONTH
+              - ALL
+            default: DAY
+          description: |
+            The time period to aggregate results over.
+        - in: query
+          name: limit
+          schema:

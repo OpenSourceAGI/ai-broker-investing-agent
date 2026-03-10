@@ -1,0 +1,98 @@
+name: Test Publish (Dry Run)
+
+on:
+  push:
+    branches:
+      - multi-language-support
+  pull_request:
+    branches:
+      - multi-language-support
+
+jobs:
+  test-js-packages:
+    name: Test JS Packages (Core & SDK)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          
+      - name: Install dependencies (Root)
+        run: npm install
+
+      - name: Simulate Version Update (Dry Run)
+        run: node scripts/update-versions.js 0.5.0
+
+      - name: Generate SDKs
+        run: npm run generate:sdk:all --workspace=pmxt-core
+
+      - name: Build All Workspaces
+        run: npm run build --workspaces
+
+      - name: Bundle Sidecar Server
+        run: npm run bundle:server --workspace=pmxt-core
+        
+      - name: Start PMXT Server
+        run: |
+          npm run server --workspace=pmxt-core &
+          # Wait for server to be ready
+          echo "Waiting for server to start..."
+          timeout 30 bash -c 'until curl -s http://localhost:3847/health > /dev/null; do sleep 1; done'
+          echo "Server is ready!"
+
+      - name: Test All Workspaces
+        run: npm test --workspaces
+
+      - name: Dry Run Publish pmxt-core
+        run: npm publish --workspace=pmxt-core --dry-run
+
+      - name: Dry Run Publish pmxtjs
+        run: npm publish --workspace=pmxtjs --dry-run
+
+  test-python-package:
+    name: Test Python Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          
+      - name: Install build tools & dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine pytest
+          pip install .
+        working-directory: sdks/python
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node dependencies & Start Server & Simulate Version
+        run: |
+          npm install
+          node scripts/update-versions.js 0.5.0
+          npm run generate:sdk:all --workspace=pmxt-core
+          npm run build --workspace=pmxt-core
+          npm run bundle:server --workspace=pmxt-core
+          python sdks/python/bundle_server.py
+          npm run server --workspace=pmxt-core &
+          # Wait for server
+          timeout 30 bash -c 'until curl -s http://localhost:3847/health > /dev/null; do sleep 1; done'
+        
+      - name: Run Tests
+        run: pytest
+        working-directory: sdks/python
+
+      - name: Build Package
+        run: python -m build
+        working-directory: sdks/python
+        
+      - name: Verify Package Metadata
+        run: twine check dist/*
+        working-directory: sdks/python

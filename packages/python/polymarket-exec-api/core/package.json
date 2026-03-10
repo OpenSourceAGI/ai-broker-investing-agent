@@ -1,0 +1,85 @@
+{
+  "name": "pmxt-core",
+  "version": "2.17.1",
+  "description": "pmxt is a unified prediction market data API. The ccxt for prediction markets.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pmxt-dev/pmxt.git"
+  },
+  "bin": {
+    "pmxt-server": "./dist/server/index.js",
+    "pmxt-ensure-server": "./bin/pmxt-ensure-server"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "API_REFERENCE.md"
+  ],
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "bundle:server": "npm run build && esbuild dist/server/index.js --bundle --platform=node --target=node18 --outfile=dist/server/bundled.js --external:fsevents",
+    "test": "jest -c jest.config.js",
+    "server": "tsx watch src/server/index.ts",
+    "server:prod": "node dist/server/index.js",
+    "generate:sdk:python": "npx @openapitools/openapi-generator-cli generate -i src/server/openapi.yaml -g python -o ../sdks/python/generated --package-name pmxt_internal --additional-properties=projectName=pmxt-internal,packageVersion=2.17.1,library=urllib3",
+    "generate:sdk:typescript": "npx @openapitools/openapi-generator-cli generate -i src/server/openapi.yaml -g typescript-fetch -o ../sdks/typescript/generated --additional-properties=npmName=pmxtjs,npmVersion=2.17.1,supportsES6=true,typescriptThreePlus=true && node ../sdks/typescript/scripts/fix-generated.js",
+    "fetch:openapi": "node scripts/fetch-openapi-specs.js",
+    "extract:jsdoc": "node ../scripts/extract-jsdoc.js",
+    "generate:docs": "npm run extract:jsdoc && node ../scripts/generate-api-docs.js",
+    "generate:openapi": "node scripts/generate-openapi.js",
+    "generate:python-exchanges": "node scripts/generate-python-exchanges.js",
+    "generate:compliance": "node scripts/generate-compliance.js",
+    "generate:sdk:all": "npm run generate:openapi && npm run generate:sdk:python && npm run generate:python-exchanges && npm run generate:sdk:typescript && npm run generate:docs && npm run generate:compliance"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@limitless-exchange/sdk": "^1.0.2",
+    "@polymarket/clob-client": "^5.2.0",
+    "@prob/clob": "0.5.0",
+    "@solana/web3.js": "^1.98.4",
+    "@types/express": "^5.0.6",
+    "axios": "^1.13.2",
+    "bs58": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "ethers": "^5.8.0",
+    "express": "^5.2.1",
+    "isows": "^1.0.6",
+    "jest": "^30.2.0",
+    "tsx": "^4.21.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@nevuamarkets/poly-websockets": "^1.0.0",
+    "@openapitools/openapi-generator-cli": "^2.27.0",
+    "@types/cors": "^2.8.19",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.3",
+    "@types/ws": "^8.5.10",
+    "esbuild": "^0.24.2",
+    "handlebars": "^4.7.8",
+    "identity-obj-proxy": "^3.0.0",
+    "js-yaml": "^3.14.2",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@nevuamarkets/poly-websockets": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nevuamarkets/poly-websockets": {
+      "optional": true
+    }
+  }
+}

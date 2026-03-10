@@ -1,0 +1,32 @@
+name: Verify COMPLIANCE.md
+
+on:
+  pull_request:
+    paths:
+      - 'core/src/exchanges/**'
+      - 'core/scripts/generate-compliance.js'
+      - '.github/workflows/compliance-check.yml'
+
+jobs:
+  verify:
+    name: Verify COMPLIANCE.md is up-to-date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Regenerate COMPLIANCE.md
+        run: node core/scripts/generate-compliance.js
+
+      - name: Check if COMPLIANCE.md changed
+        run: |
+          if git diff --exit-code core/COMPLIANCE.md; then
+            echo "COMPLIANCE.md is up-to-date"
+          else
+            echo "COMPLIANCE.md is out of sync with exchange implementations"
+            echo "Run: npm run generate:compliance --workspace=pmxt-core"
+            exit 1
+          fi

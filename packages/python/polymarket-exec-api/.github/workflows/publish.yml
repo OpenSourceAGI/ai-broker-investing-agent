@@ -1,0 +1,233 @@
+name: Publish Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish-npm:
+    name: Publish NPM Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version: $VERSION"
+          
+          # Detect force release (skip tests)
+          # We strip the 'f' suffix for the actual version
+          if [[ "$VERSION" == *f ]]; then
+            echo "skip_tests=true" >> $GITHUB_OUTPUT
+            echo "Force release detected (tag ends in 'f') - skipping tests"
+            VERSION=${VERSION%f}
+          else
+            echo "skip_tests=false" >> $GITHUB_OUTPUT
+            echo "Normal release - running tests"
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Final publish version: $VERSION"
+
+          # Detect if this is a pre-release (beta, alpha, rc)
+          if [[ "$VERSION" =~ (alpha|beta|rc|a|b) ]]; then
+            echo "npm_tag=beta" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "Pre-release detected - will publish with 'beta' tag"
+          else
+            echo "npm_tag=latest" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "Stable release - will publish with 'latest' tag"
+          fi
+      
+      - name: Update package versions
+        run: node scripts/update-versions.js ${{ steps.get_version.outputs.version }}
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Fetch OpenAPI Specs
+        run: npm run fetch:openapi --workspace=pmxt-core
+
+      - name: Generate SDKs
+        run: npm run generate:sdk:all --workspace=pmxt-core
+
+      - name: Build Core
+        run: npm run build --workspace=pmxt-core
+
+      - name: Bundle Sidecar Server
+        run: npm run bundle:server --workspace=pmxt-core
+
+      - name: Start PMXT Server
+        run: |
+          npm run server --workspace=pmxt-core &
+          timeout 30 bash -c 'until curl -s http://localhost:3847/health > /dev/null; do sleep 1; done'
+
+      - name: Run Tests (All Workspaces)
+        if: steps.get_version.outputs.skip_tests != 'true'
+        run: npm test --workspaces
+        
+      - name: Build (All Workspaces)
+        run: npm run build --workspaces
+        
+      - name: Publish pmxt-core
+        run: npm publish --workspace=pmxt-core --provenance --access public --tag ${{ steps.get_version.outputs.npm_tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Publish pmxtjs
+        run: npm publish --workspace=pmxtjs --provenance --access public --tag ${{ steps.get_version.outputs.npm_tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-python:
+    name: Publish pmxt (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          
+          # Detect force release (skip tests)
+          # We strip the 'f' suffix for the actual version
+          if [[ "$VERSION" == *f ]]; then
+            echo "skip_tests=true" >> $GITHUB_OUTPUT
+            echo "Force release detected (tag ends in 'f') - skipping tests"
+            VERSION=${VERSION%f}
+          else
+            echo "skip_tests=false" >> $GITHUB_OUTPUT
+            echo "Normal release - running tests"
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version: $VERSION"
+      
+      - name: Update package versions
+        run: node scripts/update-versions.js ${{ steps.get_version.outputs.version }}
+          
+      - name: Install and Fetch OpenAPI Specs
+        run: |
+          npm install
+          npm run fetch:openapi --workspace=pmxt-core
+
+      - name: Generate SDKs
+        run: npm run generate:sdk:all --workspace=pmxt-core
+          
+      - name: Install build tools & dependencies
+        run: pip install build twine pytest .
+        working-directory: sdks/python
+
+      - name: Run tests
+        if: steps.get_version.outputs.skip_tests != 'true'
+        run: |
+          npm run build --workspace=pmxt-core
+          npm run server --workspace=pmxt-core &
+          timeout 30 bash -c 'until curl -s http://localhost:3847/health > /dev/null; do sleep 1; done'
+          pytest
+        working-directory: sdks/python
+
+      - name: Bundle Server for Python
+        run: |
+          npm run bundle:server --workspace=pmxt-core
+          python sdks/python/bundle_server.py
+
+      - name: Build package
+        run: python -m build
+        working-directory: sdks/python
+        
+      - name: Publish to PyPI
+        run: twine upload dist/*
+        working-directory: sdks/python
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [publish-npm, publish-python]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+
+          # Strip 'f' suffix if present (force release)
+          if [[ "$VERSION" == *f ]]; then
+            VERSION=${VERSION%f}
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+
+          # Detect if this is a pre-release (beta, alpha, rc)
+          if [[ "$VERSION" =~ (alpha|beta|rc|a|b) ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "Pre-release detected"
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "Stable release"
+          fi
+
+      - name: Extract Release Notes from Changelog
+        id: extract_notes
+        uses: ffurrer2/extract-release-notes@v2
+        with:
+          changelog_file: changelog.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: "v${{ steps.get_version.outputs.version }}"
+          body: |
+            ${{ steps.extract_notes.outputs.release_notes }}
+
+            ---
+
+            ## Installation
+
+            **npm:**
+            ```bash
+            npm install pmxtjs@${{ steps.get_version.outputs.version }}
+            ```
+
+            **PyPI:**
+            ```bash
+            pip install pmxt==${{ steps.get_version.outputs.version }}
+            ```
+
+            ## Links
+            - [npm: pmxtjs](https://www.npmjs.com/package/pmxtjs/v/${{ steps.get_version.outputs.version }})
+            - [npm: pmxt-core](https://www.npmjs.com/package/pmxt-core/v/${{ steps.get_version.outputs.version }})
+            - [PyPI: pmxt](https://pypi.org/project/pmxt/${{ steps.get_version.outputs.version }}/)
+          prerelease: ${{ steps.get_version.outputs.is_prerelease }}
+          generate_release_notes: true
+          make_latest: ${{ steps.get_version.outputs.is_prerelease == 'false' }}

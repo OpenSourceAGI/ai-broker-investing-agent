@@ -1,0 +1,968 @@
+openapi: 3.0.3
+info:
+  title: Polymarket CLOB API
+  description: |
+    The Polymarket Order Book API (CLOB) enables market makers and traders to programmatically manage market orders. 
+    It is a hybrid-decentralized system where matching is off-chain and settlement is on-chain.
+    
+    **Documentation Source**: Generated from Polymarket CLOB Client Documentation.
+  version: 1.0.0
+  contact:
+    name: Polymarket Support
+    url: https://polymarket.com
+servers:
+  - url: https://clob.polymarket.com
+    description: Production CLOB Server
+  - url: https://polymarket.com/api
+    description: Main Website API (for Geoblocking)
+
+components:
+  securitySchemes:
+    L1Auth:
+      type: apiKey
+      in: header
+      name: POLY_SIGNATURE
+      description: |
+        Level 1 Authentication using EIP-712 signature. 
+        Requires headers: POLY_ADDRESS, POLY_SIGNATURE, POLY_TIMESTAMP, POLY_NONCE.
+    L2Auth:
+      type: apiKey
+      in: header
+      name: POLY_API_KEY
+      description: |
+        Level 2 Authentication using API Credentials.
+        Requires headers: POLY_ADDRESS, POLY_SIGNATURE, POLY_TIMESTAMP, POLY_API_KEY, POLY_PASSPHRASE.
+  
+  parameters:
+    L1Headers:
+      - in: header
+        name: POLY_ADDRESS
+        schema: 
+          type: string
+        required: true
+        description: Polygon signer address
+      - in: header
+        name: POLY_SIGNATURE
+        schema: 
+          type: string
+        required: true
+        description: CLOB EIP 712 signature
+      - in: header
+        name: POLY_TIMESTAMP
+        schema: 
+          type: string
+        required: true
+        description: Current UNIX timestamp
+      - in: header
+        name: POLY_NONCE
+        schema: 
+          type: string
+        required: true
+        description: Nonce (Default 0)
+
+    L2Headers:
+      - in: header
+        name: POLY_ADDRESS
+        schema: 
+          type: string
+        required: true
+      - in: header
+        name: POLY_SIGNATURE
+        schema: 
+          type: string
+        required: true
+        description: HMAC signature for request
+      - in: header
+        name: POLY_TIMESTAMP
+        schema: 
+          type: string
+        required: true
+      - in: header
+        name: POLY_API_KEY
+        schema: 
+          type: string
+        required: true
+      - in: header
+        name: POLY_PASSPHRASE
+        schema: 
+          type: string
+        required: true
+
+  schemas:
+    # --- Shared Schemas ---
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: Invalid token id
+
+    # --- Order Book Schemas (From subset YAML) ---
+    OrderBookSummary:
+      type: object
+      required:
+        - market
+        - asset_id
+        - timestamp
+        - hash
+        - bids
+        - asks
+      properties:
+        market:
+          type: string
+          description: Market identifier
+        asset_id:
+          type: string
+          description: Asset identifier
+        timestamp:
+          type: string
+          format: date-time
+        hash:
+          type: string
+        bids:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLevel'
+        asks:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLevel'
+        min_order_size:
+          type: string
+        tick_size:
+          type: string
+        neg_risk:
+          type: boolean
+
+    OrderLevel:
+      type: object
+      required:
+        - price
+        - size
+      properties:
+        price:
+          type: string
+        size:
+          type: string
+
+    BookRequest:
+      type: object
+      required:
+        - token_id
+      properties:
+        token_id:
+          type: string
+        side:
+          type: string
+          enum: [BUY, SELL]
+
+    # --- Pricing Schemas (From subset YAML) ---
+    PriceResponse:
+      type: object
+      required:
+        - price
+      properties:
+        price:
+          type: string
+
+    PriceRequest:
+      type: object
+      required:
+        - token_id
+        - side
+      properties:
+        token_id:
+          type: string
+        side:
+          type: string
+          enum: [BUY, SELL]
+
+    PricesResponse:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: string
+      description: Map of token_id to side to price
+
+    MidpointResponse:
+      type: object
+      required:
+        - mid
+      properties:
+        mid:
+          type: string
+
+    PriceHistoryResponse:
+      type: object
+      required:
+        - history
+      properties:
+        history:
+          type: array
+          items:
+            type: object
+            required: [t, p]
+            properties:
+              t:
+                type: number
+                description: UTC timestamp
+              p:
+                type: number
+                description: Price
+
+    SpreadsResponse:
+      type: object
+      additionalProperties:
+        type: string
+      description: Map of token_id to spread value
+
+    # --- Auth Schemas ---
+    ApiKeyCreds:
+      type: object
+      properties:
+        apiKey:
+          type: string
+        secret:
+          type: string
+        passphrase:
+          type: string
+
+    # --- Order Management Schemas ---
+    SignedOrder:
+      type: object
+      required:
+        - salt
+        - maker
+        - signer
+        - taker
+        - tokenId
+        - makerAmount
+        - takerAmount
+        - expiration
+        - nonce
+        - feeRateBps
+        - side
+        - signatureType
+        - signature
+      properties:
+        salt:
+          type: integer
+        maker:
+          type: string
+          description: Maker address (funder)
+        signer:
+          type: string
+          description: Signing address
+        taker:
+          type: string
+          description: Taker address (operator)
+        tokenId:
+          type: string
+          description: ERC1155 token ID
+        makerAmount:
+          type: string
+        takerAmount:
+          type: string
+        expiration:
+          type: string
+          description: Unix expiration timestamp
+        nonce:
+          type: string
+        feeRateBps:
+          type: string
+        side:
+          type: string
+          description: "0 = BUY, 1 = SELL"
+        signatureType:
+          type: integer
+        signature:
+          type: string
+          description: Hex encoded signature
+
+    PostOrderPayload:
+      type: object
+      required:
+        - order
+        - owner
+        - orderType
+      properties:
+        order:
+          $ref: '#/components/schemas/SignedOrder'
+        owner:
+          type: string
+          description: API key of order owner
+        orderType:
+          type: string
+          enum: [FOK, GTC, GTD, FAK]
+        postOnly:
+          type: boolean
+          default: false
+
+    PostOrdersPayload:
+      type: array
+      items:
+        $ref: '#/components/schemas/PostOrderPayload'
+      description: List of signed order objects. Max 15.
+
+    OrderResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        errorMsg:
+          type: string
+        orderId:
+          type: string
+        orderHashes:
+          type: array
+          items:
+            type: string
+
+    CancelResponse:
+      type: object
+      properties:
+        canceled:
+          type: array
+          items:
+            type: string
+        not_canceled:
+          type: object
+          additionalProperties:
+            type: string
+
+    OpenOrder:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        owner:
+          type: string
+        maker_address:
+          type: string
+        market:
+          type: string
+        asset_id:
+          type: string
+        side:
+          type: string
+        original_size:
+          type: string
+        size_matched:
+          type: string
+        price:
+          type: string
+        expiration:
+          type: string
+        order_type:
+          type: string
+        created_at:
+          type: string
+        associate_trades:
+          type: array
+          items:
+            type: string
+        outcome:
+          type: string
+
+    Trade:
+      type: object
+      properties:
+        id:
+          type: string
+        taker_order_id:
+          type: string
+        market:
+          type: string
+        asset_id:
+          type: string
+        side:
+          type: string
+        size:
+          type: string
+        price:
+          type: string
+        fee_rate_bps:
+          type: string
+        status:
+          type: string
+        match_time:
+          type: string
+        transaction_hash:
+          type: string
+        type:
+          type: string
+        maker_orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/MakerOrder'
+    
+    MakerOrder:
+      type: object
+      properties:
+        order_id:
+          type: string
+        maker_address:
+          type: string
+        matched_amount:
+          type: string
+        price:
+          type: string
+        outcome:
+          type: string
+
+    OrdersScoring:
+      type: object
+      description: Dictionary indicating if orders are scoring
+      additionalProperties:
+        type: boolean
+
+    # --- Geo Schema ---
+    GeoblockResponse:
+      type: object
+      properties:
+        blocked:
+          type: boolean
+        ip:
+          type: string
+        country:
+          type: string
+        region:
+          type: string
+
+paths:
+  # ----------------------------------------------------------------------------
+  # Orderbook & Pricing (From provided YAML subset)
+  # ----------------------------------------------------------------------------
+  /book:
+    get:
+      tags: [Orderbook]
+      summary: Get order book summary
+      description: Retrieves the order book summary for a specific token
+      parameters:
+        - name: token_id
+          in: query
+          required: true
+          schema:
+            type: string
+          example: '1234567890'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderBookSummary'
+        '404':
+          description: Order book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /books:
+    post:
+      tags: [Orderbook]
+      summary: Get multiple order books summaries
+      description: Retrieves order book summaries for specified tokens via POST request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BookRequest'
+              maxItems: 500
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderBookSummary'
+
+  /price:
+    get:
+      tags: [Pricing]
+      summary: Get market price
+      description: Retrieves the market price for a specific token and side
+      parameters:
+        - name: token_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: side
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [BUY, SELL]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceResponse'
+
+  /prices:
+    get:
+      tags: [Pricing]
+      summary: Get multiple market prices
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricesResponse'
+    post:
+      tags: [Pricing]
+      summary: Get multiple market prices by request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PriceRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricesResponse'
+
+  /midpoint:
+    get:
+      tags: [Pricing]
+      summary: Get midpoint price
+      parameters:
+        - name: token_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MidpointResponse'
+
+  /spreads:
+    post:
+      tags: [Spreads]
+      summary: Get bid-ask spreads
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BookRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpreadsResponse'
+
+  /prices-history:
+    get:
+      tags: [Pricing]
+      summary: Get price history for a traded token
+      parameters:
+        - name: market
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: startTs
+          in: query
+          schema:
+            type: number
+        - name: endTs
+          in: query
+          schema:
+            type: number
+        - name: interval
+          in: query
+          schema:
+            type: string
+            enum: [1m, 1w, 1d, 6h, 1h, max]
+        - name: fidelity
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: A list of timestamp/price pairs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceHistoryResponse'
+
+  # ----------------------------------------------------------------------------
+  # L1 Auth Methods (From "L1 Authentication" text)
+  # ----------------------------------------------------------------------------
+  /auth/api-key:
+    post:
+      summary: Create API Key
+      tags: [Authentication]
+      description: Create new API credentials for user. Requires L1 Authentication.
+      security:
+        - L1Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L1Headers'
+      responses:
+        '200':
+          description: API Credentials created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyCreds'
+
+  /auth/derive-api-key:
+    get:
+      summary: Derive API Key
+      tags: [Authentication]
+      description: Derive existing API credentials for user. Requires L1 Authentication.
+      security:
+        - L1Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L1Headers'
+      responses:
+        '200':
+          description: API Credentials derived
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyCreds'
+
+  # ----------------------------------------------------------------------------
+  # L2 Order Methods (From "Orders Overview" text)
+  # ----------------------------------------------------------------------------
+  /order:
+    post:
+      summary: Place Single Order
+      tags: [Orders]
+      description: Create and place a single order.
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostOrderPayload'
+      responses:
+        '200':
+          description: Order placement result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+    delete:
+      summary: Cancel Single Order
+      tags: [Orders]
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderID]
+              properties:
+                orderID:
+                  type: string
+                  description: ID of order to cancel
+      responses:
+        '200':
+          description: Cancel result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelResponse'
+
+  /orders:
+    post:
+      summary: Place Multiple Orders (Batch)
+      tags: [Orders]
+      description: Place up to 15 orders in a single request.
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostOrdersPayload'
+      responses:
+        '200':
+          description: Batch order placement result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderResponse'
+    delete:
+      summary: Cancel Multiple Orders
+      tags: [Orders]
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: 
+                type: string
+              description: IDs of the orders to cancel
+      responses:
+        '200':
+          description: Cancel result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelResponse'
+
+  /cancel-all:
+    delete:
+      summary: Cancel All Orders
+      tags: [Orders]
+      description: Cancel all open orders posted by a user.
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+      responses:
+        '200':
+          description: Cancel result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelResponse'
+
+  /cancel-market-orders:
+    delete:
+      summary: Cancel Market Orders
+      tags: [Orders]
+      description: Cancel orders from market.
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                market:
+                  type: string
+                  description: condition id of the market
+                asset_id:
+                  type: string
+                  description: id of the asset/token
+      responses:
+        '200':
+          description: Cancel result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelResponse'
+
+  /data/order/{id}:
+    get:
+      summary: Get Order
+      tags: [Orders]
+      description: Get single order by id.
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenOrder'
+
+  /data/orders:
+    get:
+      summary: Get Active Orders
+      tags: [Orders]
+      description: Get active order(s) for a specific market.
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+        - name: id
+          in: query
+          schema:
+            type: string
+        - name: market
+          in: query
+          schema:
+            type: string
+        - name: asset_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of active orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpenOrder'
+
+  /data/trades:
+    get:
+      summary: Get Trades
+      tags: [Trades]
+      description: Get trades for the authenticated user based on the provided filters.
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+        - name: id
+          in: query
+          schema:
+            type: string
+        - name: market
+          in: query
+          schema:
+            type: string
+        - name: maker
+          in: query
+          schema:
+            type: string
+        - name: taker
+          in: query
+          schema:
+            type: string
+        - name: before
+          in: query
+          schema:
+            type: string
+        - name: after
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of trades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trade'
+
+  # ----------------------------------------------------------------------------
+  # Rewards / Scoring Methods (From "Check Order Reward Scoring" text)
+  # ----------------------------------------------------------------------------
+  /order-scoring:
+    get:
+      summary: Check Order Reward Scoring
+      tags: [Rewards]
+      description: Check if an order is eligble or scoring for Rewards purposes.
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+        - name: orderId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Scoring status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoring:
+                    type: boolean
+
+  /orders-scoring:
+    post:
+      summary: Check Multiple Orders Scoring
+      tags: [Rewards]
+      security:
+        - L2Auth: []
+      parameters:
+        - $ref: '#/components/parameters/L2Headers'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderIds]
+              properties:
+                orderIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Scoring statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdersScoring'
+
+  # ----------------------------------------------------------------------------
+  # Geoblock Method (From "Geographic Restrictions" text)
+  # ----------------------------------------------------------------------------
+  /geoblock:
+    get:
+      summary: Check Geoblock Status
+      description: Check the geographic eligibility of the requesting IP address.
+      tags: [System]
+      servers:
+        - url: https://polymarket.com/api
+      responses:
+        '200':
+          description: Geoblock status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeoblockResponse'

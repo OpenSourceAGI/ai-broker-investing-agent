@@ -1,0 +1,548 @@
+asyncapi: '3.0.0'
+info:
+  title: Polymarket WebSocket API
+  version: 1.0.0
+  description: |
+    Specification for the Polymarket CLOB (Central Limit Order Book) and Sports Data WebSockets.
+    
+    This API consists of two distinct systems:
+    1. **CLOB API:** For trading, order management, and market data.
+    2. **Sports API:** For real-time sports scoring updates.
+
+servers:
+  clob:
+    host: ws-subscriptions-clob.polymarket.com
+    protocol: wss
+    description: Polymarket CLOB Server
+    pathname: /ws
+  sports:
+    host: sports-api.polymarket.com
+    protocol: wss
+    description: Polymarket Sports Data Server
+    pathname: /ws
+
+channels:
+  # ----------------------------------------------------------------------
+  # CLOB Market Channel (Public)
+  # ----------------------------------------------------------------------
+  market:
+    address: /market
+    servers: [clob]
+    messages:
+      subscribe:
+        $ref: '#/components/messages/MarketSubscription'
+      updateSubscription:
+        $ref: '#/components/messages/MarketSubscriptionUpdate'
+      book:
+        $ref: '#/components/messages/BookMessage'
+      priceChange:
+        $ref: '#/components/messages/PriceChangeMessage'
+      tickSizeChange:
+        $ref: '#/components/messages/TickSizeChangeMessage'
+      lastTradePrice:
+        $ref: '#/components/messages/LastTradePriceMessage'
+      bestBidAsk:
+        $ref: '#/components/messages/BestBidAskMessage'
+      newMarket:
+        $ref: '#/components/messages/NewMarketMessage'
+      marketResolved:
+        $ref: '#/components/messages/MarketResolvedMessage'
+
+  # ----------------------------------------------------------------------
+  # CLOB User Channel (Authenticated)
+  # ----------------------------------------------------------------------
+  user:
+    address: /user
+    servers: [clob]
+    messages:
+      subscribe:
+        $ref: '#/components/messages/UserSubscription'
+      trade:
+        $ref: '#/components/messages/TradeMessage'
+      order:
+        $ref: '#/components/messages/OrderMessage'
+
+  # ----------------------------------------------------------------------
+  # Sports Channel (Public / Auto-Push)
+  # ----------------------------------------------------------------------
+  sports:
+    address: /
+    servers: [sports]
+    description: |
+      Public broadcast channel. No subscription message required. 
+      Requires strict PING/PONG heartbeat handling.
+    messages:
+      ping:
+        $ref: '#/components/messages/SportsPing'
+      pong:
+        $ref: '#/components/messages/SportsPong'
+      sportResult:
+        $ref: '#/components/messages/SportResultMessage'
+
+operations:
+  # Client Operations (Sending to Server)
+  subscribeToMarket:
+    action: send
+    channel: 
+      $ref: '#/channels/market'
+    messages:
+      - $ref: '#/components/messages/MarketSubscription'
+      - $ref: '#/components/messages/MarketSubscriptionUpdate'
+
+  subscribeToUser:
+    action: send
+    channel: 
+      $ref: '#/channels/user'
+    messages:
+      - $ref: '#/components/messages/UserSubscription'
+
+  sendSportsPong:
+    action: send
+    channel: 
+      $ref: '#/channels/sports'
+    messages:
+      - $ref: '#/components/messages/SportsPong'
+
+  # Server Operations (Receiving from Server)
+  receiveMarketEvents:
+    action: receive
+    channel: 
+      $ref: '#/channels/market'
+    messages:
+      - $ref: '#/components/messages/BookMessage'
+      - $ref: '#/components/messages/PriceChangeMessage'
+      - $ref: '#/components/messages/TickSizeChangeMessage'
+      - $ref: '#/components/messages/LastTradePriceMessage'
+      - $ref: '#/components/messages/BestBidAskMessage'
+      - $ref: '#/components/messages/NewMarketMessage'
+      - $ref: '#/components/messages/MarketResolvedMessage'
+
+  receiveUserEvents:
+    action: receive
+    channel: 
+      $ref: '#/channels/user'
+    messages:
+      - $ref: '#/components/messages/TradeMessage'
+      - $ref: '#/components/messages/OrderMessage'
+
+  receiveSportsEvents:
+    action: receive
+    channel: 
+      $ref: '#/channels/sports'
+    messages:
+      - $ref: '#/components/messages/SportsPing'
+      - $ref: '#/components/messages/SportResultMessage'
+
+components:
+  securitySchemes:
+    apiKey:
+      type: userPassword
+      description: API Key, Secret, and Passphrase sent in the User Subscription JSON.
+
+  messages:
+    # --- Input Messages ---
+    MarketSubscription:
+      name: MarketSubscription
+      title: Subscribe to Market Channel
+      payload:
+        type: object
+        properties:
+          assets_ids:
+            type: array
+            items:
+              type: string
+            description: Array of asset ids (token IDs) to receive events for.
+          type:
+            type: string
+            const: market
+          custom_feature_enabled:
+            type: boolean
+            description: Enable/disable custom features (best_bid_ask, new_market, market_resolved).
+
+    MarketSubscriptionUpdate:
+      name: MarketSubscriptionUpdate
+      title: Update Market Subscription
+      payload:
+        type: object
+        properties:
+          assets_ids:
+            type: array
+            items:
+              type: string
+          operation:
+            type: string
+            enum: [subscribe, unsubscribe]
+          custom_feature_enabled:
+            type: boolean
+
+    UserSubscription:
+      name: UserSubscription
+      title: Subscribe to User Channel
+      payload:
+        type: object
+        required: [markets, type, auth]
+        properties:
+          markets:
+            type: array
+            items:
+              type: string
+            description: Array of markets (condition IDs).
+          type:
+            type: string
+            const: user
+          auth:
+            type: object
+            required: [apikey, secret, passphrase]
+            properties:
+              apikey:
+                type: string
+              secret:
+                type: string
+              passphrase:
+                type: string
+
+    SportsPing:
+      name: Ping
+      payload:
+        type: string
+        const: ping
+      description: Server sends 'ping' string every 5 seconds.
+
+    SportsPong:
+      name: Pong
+      payload:
+        type: string
+        const: pong
+      description: Client MUST respond with 'pong' string within 10 seconds.
+
+    # --- Output Messages (Market Channel) ---
+    BookMessage:
+      name: book
+      payload:
+        type: object
+        properties:
+          event_type:
+            type: string
+            const: book
+          asset_id:
+            type: string
+          market:
+            type: string
+          timestamp:
+            type: string
+          hash:
+            type: string
+          bids:
+            type: array
+            items: 
+              $ref: '#/components/schemas/OrderSummary'
+          asks:
+            type: array
+            items: 
+              $ref: '#/components/schemas/OrderSummary'
+
+    PriceChangeMessage:
+      name: price_change
+      payload:
+        type: object
+        properties:
+          event_type:
+            type: string
+            const: price_change
+          market:
+            type: string
+          timestamp:
+            type: string
+          price_changes:
+            type: array
+            items:
+              type: object
+              properties:
+                asset_id:
+                  type: string
+                price:
+                  type: string
+                size:
+                  type: string
+                side:
+                  type: string
+                  enum: [BUY, SELL]
+                hash:
+                  type: string
+                best_bid:
+                  type: string
+                best_ask:
+                  type: string
+
+    TickSizeChangeMessage:
+      name: tick_size_change
+      payload:
+        type: object
+        properties:
+          event_type:
+            type: string
+            const: tick_size_change
+          asset_id:
+            type: string
+          market:
+            type: string
+          old_tick_size:
+            type: string
+          new_tick_size:
+            type: string
+          side:
+            type: string
+          timestamp:
+            type: string
+
+    LastTradePriceMessage:
+      name: last_trade_price
+      payload:
+        type: object
+        properties:
+          event_type:
+            type: string
+            const: last_trade_price
+          asset_id:
+            type: string
+          market:
+            type: string
+          price:
+            type: string
+          side:
+            type: string
+          size:
+            type: string
+          timestamp:
+            type: string
+          fee_rate_bps:
+            type: string
+
+    BestBidAskMessage:
+      name: best_bid_ask
+      payload:
+        type: object
+        properties:
+          event_type:
+            type: string
+            const: best_bid_ask
+          market:
+            type: string
+          asset_id:
+            type: string
+          best_bid:
+            type: string
+          best_ask:
+            type: string
+          spread:
+            type: string
+          timestamp:
+            type: string
+
+    NewMarketMessage:
+      name: new_market
+      payload:
+        type: object
+        properties:
+          event_type:
+            type: string
+            const: new_market
+          id:
+            type: string
+          question:
+            type: string
+          market:
+            type: string
+          slug:
+            type: string
+          description:
+            type: string
+          assets_ids:
+            type: array
+            items:
+              type: string
+          outcomes:
+            type: array
+            items:
+              type: string
+          event_message:
+            $ref: '#/components/schemas/EventMessage'
+          timestamp:
+            type: string
+
+    MarketResolvedMessage:
+      name: market_resolved
+      payload:
+        type: object
+        properties:
+          event_type:
+            type: string
+            const: market_resolved
+          id:
+            type: string
+          question:
+            type: string
+          market:
+            type: string
+          slug:
+            type: string
+          description:
+            type: string
+          assets_ids:
+            type: array
+            items:
+              type: string
+          outcomes:
+            type: array
+            items:
+              type: string
+          winning_asset_id:
+            type: string
+          winning_outcome:
+            type: string
+          event_message:
+            $ref: '#/components/schemas/EventMessage'
+          timestamp:
+            type: string
+
+    # --- Output Messages (User Channel) ---
+    TradeMessage:
+      name: trade
+      payload:
+        type: object
+        properties:
+          event_type:
+            type: string
+            const: trade
+          asset_id:
+            type: string
+          id:
+            type: string
+          market:
+            type: string
+          outcome:
+            type: string
+          price:
+            type: string
+          side:
+            type: string
+            enum: [BUY, SELL]
+          size:
+            type: string
+          status:
+            type: string
+            enum: [MATCHED, MINED, CONFIRMED, RETRYING, FAILED]
+          timestamp:
+            type: string
+          type:
+            type: string
+            const: TRADE
+          maker_orders:
+            type: array
+            items:
+              type: object
+              properties:
+                asset_id:
+                  type: string
+                matched_amount:
+                  type: string
+                order_id:
+                  type: string
+                outcome:
+                  type: string
+                owner:
+                  type: string
+                price:
+                  type: string
+
+    OrderMessage:
+      name: order
+      payload:
+        type: object
+        properties:
+          event_type:
+            type: string
+            const: order
+          type:
+            type: string
+            enum: [PLACEMENT, UPDATE, CANCELLATION]
+          id:
+            type: string
+          asset_id:
+            type: string
+          market:
+            type: string
+          order_owner:
+            type: string
+          original_size:
+            type: string
+          outcome:
+            type: string
+          price:
+            type: string
+          side:
+            type: string
+            enum: [BUY, SELL]
+          size_matched:
+            type: string
+          timestamp:
+            type: string
+          associate_trades:
+            type: array
+            items:
+              type: string
+
+    # --- Output Messages (Sports Channel) ---
+    SportResultMessage:
+      name: sport_result
+      payload:
+        type: object
+        properties:
+          gameId:
+            type: number
+          leagueAbbreviation:
+            type: string
+          homeTeam:
+            type: string
+          awayTeam:
+            type: string
+          status:
+            type: string
+          live:
+            type: boolean
+          ended:
+            type: boolean
+          score:
+            type: string
+          period:
+            type: string
+          elapsed:
+            type: string
+          finishedTimestamp:
+            type: string
+          turn:
+            type: string
+            description: Team abbreviation with possession (NFL/CFB only)
+
+  schemas:
+    OrderSummary:
+      type: object
+      properties:
+        price:
+          type: string
+        size:
+          type: string
+    
+    EventMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        ticker:
+          type: string
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string

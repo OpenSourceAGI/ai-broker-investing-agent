@@ -7,22 +7,9 @@
     "name": "Alcoa Corporation",
     "wikiTitle": "Alcoa"
   },
-  "AACBU": {
-    "name": "Artius II Acquisition Inc.",
-    "wikiTitle": null
-  },
-  "AACG": {
-    "name": "ATA Creativity Global",
-    "wikiTitle": "Yuval Noah Harari",
-    "error": "potential miss"
-  },
   "AAL": {
     "name": "American Airlines Group Inc.",
     "wikiTitle": "American Airlines Group"
-  },
-  "AAME": {
-    "name": "Atlantic American Corporation",
-    "wikiTitle": "Richfield Oil Corporation"
   },
   "AAMI": {
     "name": "Acadian Asset Management Inc.",
@@ -44,16 +31,12 @@
     "name": "Apple Inc.",
     "wikiTitle": "Apple Inc."
   },
-  "AARD": {
-    "name": "Aardvark Therapeutics Inc.",
-    "wikiTitle": "Calico (company)"
-  },
   "AAUC": {
     "name": "Allied Gold Corporation",
     "wikiTitle": "Allied Gold (Canada)"
   },
   "AB": {
-    "name": "AllianceBernstein Holding L.P. ",
+    "name": "AllianceBernstein Holding L.P.",
     "wikiTitle": "AllianceBernstein"
   },
   "ABAT": {
@@ -72,11 +55,6 @@
     "name": "AbCellera Biologics Inc.",
     "wikiTitle": "AbCellera"
   },
-  "ABEO": {
-    "name": "Abeona Therapeutics Inc.",
-    "wikiTitle": "Regenerative medicine advanced therapy",
-    "error": "potential miss"
-  },
   "ABEV": {
     "name": "Ambev S.A.",
     "wikiTitle": "Ambev"
@@ -89,43 +67,17 @@
     "name": "ABM Industries Incorporated",
     "wikiTitle": "ABM Industries"
   },
-  "ABOS": {
-    "name": "Acumen Pharmaceuticals Inc.",
-    "wikiTitle": "Raymond Sackler",
-    "error": "potential miss"
-  },
-  "ABSI": {
-    "name": "Absci Corporation",
-    "wikiTitle": null
-  },
   "ABT": {
     "name": "Abbott Laboratories",
     "wikiTitle": "Abbott Laboratories"
-  },
-  "ABTS": {
-    "name": "Abits Group Inc",
-    "wikiTitle": "AMD"
   },
   "ABUS": {
     "name": "Arbutus Biopharma Corporation",
     "wikiTitle": "Arbutus Biopharma"
   },
-  "ABVC": {
-    "name": "ABVC BioPharma Inc.",
-    "wikiTitle": null
-  },
-  "ABVE": {
-    "name": "Above Food Ingredients Inc.",
-    "wikiTitle": "Whole Foods Market"
-  },
   "ABVX": {
     "name": "Abivax SA",
     "wikiTitle": "Abivax"
-  },
-  "ACA": {
-    "name": "Arcosa Inc.",
-    "wikiTitle": "List of S&P 500 companies",
-    "error": "potential miss"
   },
   "ACAD": {
     "name": "ACADIA Pharmaceuticals Inc.",
@@ -135,25 +87,9 @@
     "name": "Aurora Cannabis Inc.",
     "wikiTitle": "Aurora Cannabis"
   },
-  "ACCL": {
-    "name": "Acco Group Holdings Limited",
-    "wikiTitle": "Sears Holdings"
-  },
   "ACCO": {
     "name": "Acco Brands Corporation",
     "wikiTitle": "ACCO Brands"
-  },
-  "ACCS": {
-    "name": "ACCESS Newswire Inc.",
-    "wikiTitle": "PR Newswire"
-  },
-  "ACEL": {
-    "name": "Accel Entertainment Inc.",
-    "wikiTitle": "Level-5 (company)"
-  },
-  "ACET": {
-    "name": "Adicet Bio Inc.",
-    "wikiTitle": null
   },
   "ACFN": {
     "name": "Acorn Energy Inc.",
@@ -179,15 +115,6 @@
     "name": "Achieve Life Sciences Inc.",
     "wikiTitle": "Liminal BioSciences"
   },
-  "ACIC": {
-    "name": "American Coastal Insurance Corporation",
-    "wikiTitle": "Truist"
-  },
-  "ACIU": {
-    "name": "AC Immune SA",
-    "wikiTitle": "Immune system",
-    "error": "potential miss"
-  },
   "ACIW": {
     "name": "ACI Worldwide Inc.",
     "wikiTitle": "ACI Worldwide"
@@ -204,81 +131,17 @@
     "name": "AECOM",
     "wikiTitle": "AECOM"
   },
-  "ACNB": {
-    "name": "ACNB Corporation",
-    "wikiTitle": "Torrens University Australia",
-    "error": "potential miss"
-  },
-  "ACNT": {
-    "name": "Ascent Industries Co.",
-    "wikiTitle": "HD Hyundai Heavy Industries"
-  },
-  "ACOG": {
-    "name": "Alpha Cognition Inc.",
-    "wikiTitle": "List of artificial intelligence companies",
-    "error": "potential miss"
-  },
-  "ACON": {
-    "name": "Aclarion Inc.",
-    "wikiTitle": null
-  },
-  "ACR": {
-    "name": "ACRES Commercial Realty Corp.",
-    "wikiTitle": "RXR Realty"
-  },
   "ACRE": {
     "name": "Ares Commercial Real Estate Corporation",
     "wikiTitle": "Ares Management"
-  },
-  "ACRS": {
-    "name": "Aclaris Therapeutics Inc.",
-    "wikiTitle": null
-  },
-  "ACRV": {
-    "name": "Acrivon Therapeutics Inc.",
-    "wikiTitle": null
-  },
-  "ACTG": {
-    "name": "Acacia Research Corporation (Acacia Tech)",
-    "wikiTitle": "Andy Bechtolsheim",
-    "error": "potential miss"
-  },
-  "ACTU": {
-    "name": "Actuate Therapeutics Inc.",
-    "wikiTitle": "List of California companies",
-    "error": "potential miss"
   },
   "ACU": {
     "name": "Acme United Corporation.",
     "wikiTitle": "Acme United Corporation"
   },
-  "ACXP": {
-    "name": "Acurx Pharmaceuticals Inc.",
-    "wikiTitle": null
-  },
-  "AD": {
-    "name": "Array Digital Infrastructure Inc.",
-    "wikiTitle": "Telephone and Data Systems"
-  },
-  "ADACU": {
-    "name": "American Drive Acquisition Company",
-    "wikiTitle": "Ouster (company)"
-  },
-  "ADAG": {
-    "name": "Adagene Inc.",
-    "wikiTitle": null
-  },
   "ADBE": {
     "name": "Adobe Inc.",
     "wikiTitle": "Adobe Inc."
-  },
-  "ADC": {
-    "name": "Agree Realty Corporation",
-    "wikiTitle": "Tishman (company)"
-  },
-  "ADCT": {
-    "name": "ADC Therapeutics SA",
-    "wikiTitle": "List of Israeli companies listed on the Nasdaq"
   },
   "ADEA": {
     "name": "Adeia Inc.",
@@ -288,19 +151,9 @@
     "name": "Analog Devices Inc.",
     "wikiTitle": "Analog Devices"
   },
-  "ADIL": {
-    "name": "Adial Pharmaceuticals Inc",
-    "wikiTitle": "List of investigational substance-related disorder drugs",
-    "error": "potential miss"
-  },
   "ADM": {
     "name": "Archer-Daniels-Midland Company",
     "wikiTitle": "Archer Daniels Midland"
-  },
-  "ADMA": {
-    "name": "ADMA Biologics Inc",
-    "wikiTitle": "List of biotech and pharmaceutical companies in the New York metropolitan area",
-    "error": "potential miss"
   },
   "ADNT": {
     "name": "Adient plc",
@@ -310,10 +163,6 @@
     "name": "Automatic Data Processing Inc.",
     "wikiTitle": "ADP (company)"
   },
-  "ADPT": {
-    "name": "Adaptive Biotechnologies Corporation",
-    "wikiTitle": "Monsanto"
-  },
   "ADSK": {
     "name": "Autodesk Inc.",
     "wikiTitle": "Autodesk"
@@ -322,48 +171,13 @@
     "name": "ADT Inc.",
     "wikiTitle": "ADT Inc."
   },
-  "ADTX": {
-    "name": "Aditxt Inc.",
-    "wikiTitle": "Drew Pinsky",
-    "error": "potential miss"
-  },
-  "ADUR": {
-    "name": "Aduro Clean Technologies Inc.",
-    "wikiTitle": null
-  },
-  "ADUS": {
-    "name": "Addus HomeCare Corporation",
-    "wikiTitle": "Gentiva Health Services"
-  },
-  "ADVB": {
-    "name": "Advanced Biomed Inc.",
-    "wikiTitle": "Labcorp"
-  },
-  "ADXN": {
-    "name": "Addex Therapeutics Ltd",
-    "wikiTitle": "List of investigational antidepressants",
-    "error": "potential miss"
-  },
   "AEBI": {
     "name": "Aebi Schmidt Holding AG",
     "wikiTitle": "AEBI"
   },
-  "AEC": {
-    "name": "Anfield Energy Inc.",
-    "wikiTitle": "Uranium One"
-  },
   "AEE": {
     "name": "Ameren Corporation",
     "wikiTitle": "Ameren"
-  },
-  "AEHR": {
-    "name": "Aehr Test Systems",
-    "wikiTitle": "Froth flotation",
-    "error": "potential miss"
-  },
-  "AEI": {
-    "name": "Alset Inc.",
-    "wikiTitle": null
   },
   "AEIS": {
     "name": "Advanced Energy Industries Inc.",
@@ -372,11 +186,6 @@
   "AEM": {
     "name": "Agnico Eagle Mines Limited",
     "wikiTitle": "Agnico Eagle"
-  },
-  "AEMD": {
-    "name": "Aethlon Medical Inc.",
-    "wikiTitle": "Research in management of Ebola",
-    "error": "potential miss"
   },
   "AEO": {
     "name": "American Eagle Outfitters Inc.",
@@ -398,51 +207,21 @@
     "name": "The AES Corporation",
     "wikiTitle": "AES Corporation"
   },
-  "AESI": {
-    "name": "Atlas Energy Solutions Inc.",
-    "wikiTitle": "Baker Hughes"
-  },
   "AEVA": {
     "name": "Aeva Technologies Inc.",
     "wikiTitle": "Aeva"
-  },
-  "AEYE": {
-    "name": "AudioEye Inc.",
-    "wikiTitle": "National Audio Company"
-  },
-  "AFBI": {
-    "name": "Affinity Bancshares Inc.",
-    "wikiTitle": "CBI Bank & Trust"
-  },
-  "AFCG": {
-    "name": "Advanced Flower Capital Inc.",
-    "wikiTitle": "List of companies headquartered in San Diego",
-    "error": "potential miss"
   },
   "AFG": {
     "name": "American Financial Group Inc.",
     "wikiTitle": "American Financial Group"
   },
-  "AFJK": {
-    "name": "Aimei Health Technology Co. Ltd",
-    "wikiTitle": null
-  },
   "AFL": {
     "name": "AFLAC Incorporated",
     "wikiTitle": "Aflac"
   },
-  "AFRI": {
-    "name": "Forafric Global PLC",
-    "wikiTitle": null
-  },
   "AG": {
     "name": "First Majestic Silver Corp.",
     "wikiTitle": "First Majestic Silver"
-  },
-  "AGAE": {
-    "name": "Allied Gaming & Entertainment Inc.",
-    "wikiTitle": "Medal of Honor: Allied Assault",
-    "error": "potential miss"
   },
   "AGCO": {
     "name": "AGCO Corporation",
@@ -452,18 +231,9 @@
     "name": "Agenus Inc.",
     "wikiTitle": "Agenus"
   },
-  "AGIG": {
-    "name": "Abundia Global Impact Group Inc.",
-    "wikiTitle": null
-  },
   "AGIO": {
     "name": "Agios Pharmaceuticals Inc.",
     "wikiTitle": "Agios Pharmaceuticals"
-  },
-  "AGL": {
-    "name": "agilon health inc.",
-    "wikiTitle": "Ron Williams",
-    "error": "potential miss"
   },
   "AGM": {
     "name": "Federal Agricultural Mortgage Corporation",
@@ -497,70 +267,17 @@
     "name": "AGNC Investment Corp.",
     "wikiTitle": "American Capital"
   },
-  "AGO": {
-    "name": "Assured Guaranty Ltd.",
-    "wikiTitle": "Assured Investment Management"
-  },
-  "AGPU": {
-    "name": "Axe Compute Inc.",
-    "wikiTitle": "Golden Axe (video game)",
-    "error": "potential miss"
-  },
-  "AGRO": {
-    "name": "Adecoagro S.A.",
-    "wikiTitle": "SanCor"
-  },
-  "AGRZ": {
-    "name": "Agroz Inc.",
-    "wikiTitle": null
-  },
-  "AGX": {
-    "name": "Argan Inc.",
-    "wikiTitle": "Companies listed on the New York Stock Exchange (A)",
-    "error": "potential miss"
-  },
   "AGYS": {
     "name": "Agilysys Inc.",
     "wikiTitle": "Agilysys"
-  },
-  "AHCO": {
-    "name": "AdaptHealth Corp.",
-    "wikiTitle": "News Corp"
-  },
-  "AHH": {
-    "name": "Armada Hoffler Properties Inc.",
-    "wikiTitle": "Companies listed on the New York Stock Exchange (A)",
-    "error": "potential miss"
-  },
-  "AHR": {
-    "name": "American Healthcare REIT Inc.",
-    "wikiTitle": "Welltower"
-  },
-  "AIFF": {
-    "name": "Firefly Neuroscience Inc.",
-    "wikiTitle": "Heated tobacco product",
-    "error": "potential miss"
   },
   "AIG": {
     "name": "American International Group Inc. New",
     "wikiTitle": "American International Group"
   },
-  "AIHS": {
-    "name": "Senmiao Technology Limited",
-    "wikiTitle": null
-  },
-  "AII": {
-    "name": "American Integrity Insurance Group Inc.",
-    "wikiTitle": "American International Group"
-  },
   "AIM": {
     "name": "AIM ImmunoTech Inc.",
     "wikiTitle": "AIM ImmunoTech"
-  },
-  "AIMD": {
-    "name": "Ainos Inc.",
-    "wikiTitle": "Aino Bergö",
-    "error": "potential miss"
   },
   "AIN": {
     "name": "Albany International Corporation",
@@ -577,26 +294,6 @@
   "AIR": {
     "name": "AAR Corp.",
     "wikiTitle": "AAR Corp."
-  },
-  "AIRE": {
-    "name": "reAlpha Tech Corp.",
-    "wikiTitle": "Perfect Corp"
-  },
-  "AIRG": {
-    "name": "Airgain Inc.",
-    "wikiTitle": "Digi International"
-  },
-  "AIRI": {
-    "name": "Air Industries Group",
-    "wikiTitle": "Alaska Air Group"
-  },
-  "AIRS": {
-    "name": "AirSculpt Technologies Inc.",
-    "wikiTitle": "Nu Skin Enterprises"
-  },
-  "AIRT": {
-    "name": "Air T Inc.",
-    "wikiTitle": "AT&T"
   },
   "AIT": {
     "name": "Applied Industrial Technologies Inc.",
@@ -618,39 +315,17 @@
     "name": "Arthur J. Gallagher & Co.",
     "wikiTitle": "Arthur J. Gallagher & Co."
   },
-  "AKA": {
-    "name": "a.k.a. Brands Holding Corp.",
-    "wikiTitle": "Sears Holdings"
-  },
   "AKAM": {
     "name": "Akamai Technologies Inc.",
     "wikiTitle": "Akamai Technologies"
-  },
-  "AKAN": {
-    "name": "Akanda Corp.",
-    "wikiTitle": "Tyler Technologies"
-  },
-  "AKBA": {
-    "name": "Akebia Therapeutics Inc.",
-    "wikiTitle": "Kyntra Bio"
   },
   "ALAB": {
     "name": "Astera Labs Inc.",
     "wikiTitle": "Astera Labs"
   },
-  "ALAR": {
-    "name": "Alarum Technologies Ltd. American",
-    "wikiTitle": "List of Chinese inventions",
-    "error": "potential miss"
-  },
   "ALB": {
     "name": "Albemarle Corporation",
     "wikiTitle": "Albemarle Corporation"
-  },
-  "ALBT": {
-    "name": "Avalon GloboCare Corp.",
-    "wikiTitle": "List of airline codes",
-    "error": "potential miss"
   },
   "ALC": {
     "name": "Alcon Inc.",
@@ -660,47 +335,17 @@
     "name": "Alico Inc.",
     "wikiTitle": "Alico, Inc."
   },
-  "ALDFU": {
-    "name": "Aldel Financial II Inc.",
-    "wikiTitle": "Tata Steel Netherlands"
-  },
-  "ALDX": {
-    "name": "Aldeyra Therapeutics Inc.",
-    "wikiTitle": null
-  },
-  "ALEC": {
-    "name": "Alector Inc.",
-    "wikiTitle": "Nordberg Manufacturing Company",
-    "error": "potential miss"
-  },
   "ALEX": {
     "name": "Alexander & Baldwin Inc.",
     "wikiTitle": "Alexander & Baldwin"
-  },
-  "ALG": {
-    "name": "Alamo Group Inc.",
-    "wikiTitle": "Battle of the Alamo",
-    "error": "potential miss"
-  },
-  "ALGM": {
-    "name": "Allegro MicroSystems Inc.",
-    "wikiTitle": "Gateway, Inc."
   },
   "ALGN": {
     "name": "Align Technology Inc.",
     "wikiTitle": "Align Technology"
   },
-  "ALGS": {
-    "name": "Aligos Therapeutics Inc.",
-    "wikiTitle": null
-  },
   "ALGT": {
     "name": "Allegiant Travel Company",
     "wikiTitle": "Allegiant Travel Company"
-  },
-  "ALHC": {
-    "name": "Alignment Healthcare Inc.",
-    "wikiTitle": "RadNet"
   },
   "ALK": {
     "name": "Alaska Air Group Inc.",
@@ -710,10 +355,6 @@
     "name": "Alkermes plc",
     "wikiTitle": "Alkermes plc"
   },
-  "ALKT": {
-    "name": "Alkami Technology Inc.",
-    "wikiTitle": "McKinsey & Company"
-  },
   "ALL": {
     "name": "Allstate Corporation (The)",
     "wikiTitle": "Allstate"
@@ -721,15 +362,6 @@
   "ALLE": {
     "name": "Allegion plc",
     "wikiTitle": "Allegion"
-  },
-  "ALLO": {
-    "name": "Allogene Therapeutics Inc.",
-    "wikiTitle": "Kite Pharma"
-  },
-  "ALLR": {
-    "name": "Allarity Therapeutics Inc.",
-    "wikiTitle": "Irofulven",
-    "error": "potential miss"
   },
   "ALLT": {
     "name": "Allot Ltd.",
@@ -743,14 +375,6 @@
     "name": "Almonty Industries Inc.",
     "wikiTitle": "Almonty Industries"
   },
-  "ALMS": {
-    "name": "Alumis Inc.",
-    "wikiTitle": "Acelyrin"
-  },
-  "ALMU": {
-    "name": "Aeluma Inc.",
-    "wikiTitle": null
-  },
   "ALNT": {
     "name": "Allient Inc.",
     "wikiTitle": "Allied Motion Technologies"
@@ -759,52 +383,17 @@
     "name": "Alnylam Pharmaceuticals Inc.",
     "wikiTitle": "Alnylam Pharmaceuticals"
   },
-  "ALOT": {
-    "name": "AstroNova Inc.",
-    "wikiTitle": "List of film production companies",
-    "error": "potential miss"
-  },
-  "ALPS": {
-    "name": "ALPS Group Inc",
-    "wikiTitle": "Alps Alpine"
-  },
   "ALRS": {
     "name": "Alerus Financial Corporation",
     "wikiTitle": "Alerus Financial"
-  },
-  "ALT": {
-    "name": "Altimmune Inc.",
-    "wikiTitle": "Biomedical Advanced Research and Development Authority",
-    "error": "potential miss"
-  },
-  "ALTO": {
-    "name": "Alto Ingredients Inc.",
-    "wikiTitle": "Genencor"
-  },
-  "ALTS": {
-    "name": "ALT5 Sigma Corporation",
-    "wikiTitle": null
-  },
-  "ALUR": {
-    "name": "Allurion Technologies Inc.",
-    "wikiTitle": "Coty"
   },
   "ALV": {
     "name": "Autoliv Inc.",
     "wikiTitle": "Autoliv"
   },
-  "ALVO": {
-    "name": "Alvotech",
-    "wikiTitle": "Alvogen"
-  },
   "ALX": {
     "name": "Alexander's Inc.",
     "wikiTitle": "Alexander's"
-  },
-  "ALZN": {
-    "name": "Alzamend Neuro Inc.",
-    "wikiTitle": "List of investigational antidepressants",
-    "error": "potential miss"
   },
   "AM": {
     "name": "Antero Midstream Corporation",
@@ -830,14 +419,6 @@
     "name": "Ambiq Micro Inc.",
     "wikiTitle": "Ambiq Micro"
   },
-  "AMBR": {
-    "name": "Amber International Holding Limited",
-    "wikiTitle": "Temasek Holdings"
-  },
-  "AMCI": {
-    "name": "AMC Robotics Corporation",
-    "wikiTitle": "Independent Film Company"
-  },
   "AMCR": {
     "name": "Amcor plc",
     "wikiTitle": "Amcor"
@@ -862,10 +443,6 @@
     "name": "American Homes 4 Rent",
     "wikiTitle": "American Homes 4 Rent"
   },
-  "AMIX": {
-    "name": "Autonomix Medical Inc.",
-    "wikiTitle": null
-  },
   "AMKR": {
     "name": "Amkor Technology Inc.",
     "wikiTitle": "Amkor Technology"
@@ -874,27 +451,13 @@
     "name": "Amylyx Pharmaceuticals Inc.",
     "wikiTitle": "Amylyx Pharmaceuticals"
   },
-  "AMN": {
-    "name": "AMN Healthcare Services Inc",
-    "wikiTitle": "Companies listed on the New York Stock Exchange (A)",
-    "error": "potential miss"
-  },
   "AMP": {
     "name": "Ameriprise Financial Inc.",
     "wikiTitle": "Ameriprise Financial"
   },
-  "AMPG": {
-    "name": "Amplitech Group Inc.",
-    "wikiTitle": null
-  },
   "AMPH": {
     "name": "Amphastar Pharmaceuticals Inc.",
     "wikiTitle": "Amphastar Pharmaceuticals"
-  },
-  "AMPX": {
-    "name": "Amprius Technologies Inc.",
-    "wikiTitle": "Yi Cui (scientist)",
-    "error": "potential miss"
   },
   "AMPY": {
     "name": "Amplify Energy Corp.",
@@ -912,24 +475,9 @@
     "name": "Amrize Ltd",
     "wikiTitle": "Holcim"
   },
-  "AMS": {
-    "name": "American Shared Hospital Services",
-    "wikiTitle": "Shared services",
-    "error": "potential miss"
-  },
   "AMSC": {
     "name": "American Superconductor Corporation",
     "wikiTitle": "American Superconductor"
-  },
-  "AMSF": {
-    "name": "AMERISAFE Inc.",
-    "wikiTitle": "List of S&P 600 companies",
-    "error": "potential miss"
-  },
-  "AMST": {
-    "name": "Amesite Inc.",
-    "wikiTitle": "Gil Omenn",
-    "error": "potential miss"
   },
   "AMT": {
     "name": "American Tower Corporation (REIT)",
@@ -938,10 +486,6 @@
   "AMTD": {
     "name": "AMTD IDEA Group",
     "wikiTitle": "AMTD Digital"
-  },
-  "AMTX": {
-    "name": "Aemetis Inc. (DE)",
-    "wikiTitle": null
   },
   "AMWD": {
     "name": "American Woodmark Corporation",
@@ -959,18 +503,9 @@
     "name": "AutoNation Inc.",
     "wikiTitle": "AutoNation"
   },
-  "ANAB": {
-    "name": "AnaptysBio Inc.",
-    "wikiTitle": "Orthopediatrics"
-  },
   "ANDE": {
     "name": "Andersons Inc. (The)",
     "wikiTitle": "The Andersons"
-  },
-  "ANEB": {
-    "name": "Anebulo Pharmaceuticals Inc.",
-    "wikiTitle": "List of investigational substance-related disorder drugs",
-    "error": "potential miss"
   },
   "ANET": {
     "name": "Arista Networks Inc.",
@@ -988,52 +523,9 @@
     "name": "AngioDynamics Inc.",
     "wikiTitle": "Navilyst Medical"
   },
-  "ANIK": {
-    "name": "Anika Therapeutics Inc.",
-    "wikiTitle": "List of members of the National Academy of Engineering (Bioengineering)",
-    "error": "potential miss"
-  },
-  "ANIP": {
-    "name": "ANI Pharmaceuticals Inc.",
-    "wikiTitle": "Alimera Sciences"
-  },
-  "ANIX": {
-    "name": "Anixa Biosciences Inc.",
-    "wikiTitle": null
-  },
-  "ANL": {
-    "name": "Adlai Nortye Ltd.",
-    "wikiTitle": null
-  },
-  "ANNX": {
-    "name": "Annexon Inc.",
-    "wikiTitle": "Ben Barres",
-    "error": "potential miss"
-  },
-  "ANPA": {
-    "name": "Rich Sparkle Holdings Limited",
-    "wikiTitle": "The Substance",
-    "error": "potential miss"
-  },
-  "ANRO": {
-    "name": "Alto Neuroscience Inc.",
-    "wikiTitle": "Amdiglurax"
-  },
-  "ANTX": {
-    "name": "AN2 Therapeutics Inc.",
-    "wikiTitle": null
-  },
-  "ANVS": {
-    "name": "Annovis Bio Inc.",
-    "wikiTitle": null
-  },
   "ANY": {
     "name": "Sphere 3D Corp.",
     "wikiTitle": "Overland Storage"
-  },
-  "AOMR": {
-    "name": "Angel Oak Mortgage REIT Inc.",
-    "wikiTitle": null
   },
   "AORT": {
     "name": "Artivion Inc.",
@@ -1042,11 +534,6 @@
   "AOS": {
     "name": "A.O. Smith Corporation",
     "wikiTitle": "A. O. Smith"
-  },
-  "AOSL": {
-    "name": "Alpha and Omega Semiconductor Limited",
-    "wikiTitle": "Power semiconductor device",
-    "error": "potential miss"
   },
   "AOUT": {
     "name": "American Outdoor Brands Inc.",
@@ -1060,26 +547,9 @@
     "name": "APA Corporation",
     "wikiTitle": "APA Corporation"
   },
-  "APACU": {
-    "name": "StoneBridge Acquisition II Corporation",
-    "wikiTitle": "Chicago Bridge & Iron Company"
-  },
   "APD": {
     "name": "Air Products and Chemicals Inc.",
     "wikiTitle": "Air Products"
-  },
-  "APEI": {
-    "name": "American Public Education Inc.",
-    "wikiTitle": "Stride, Inc."
-  },
-  "APG": {
-    "name": "APi Group Corporation",
-    "wikiTitle": "Kereta Api Indonesia"
-  },
-  "APGE": {
-    "name": "Apogee Therapeutics Inc.",
-    "wikiTitle": "List of S&P 600 companies",
-    "error": "potential miss"
   },
   "APH": {
     "name": "Amphenol Corporation",
@@ -1089,63 +559,17 @@
     "name": "Agora Inc.",
     "wikiTitle": "Agora, Inc."
   },
-  "APLD": {
-    "name": "Applied Digital Corporation",
-    "wikiTitle": "Applied Digital Data Systems",
-    "error": "potential miss"
-  },
-  "APLE": {
-    "name": "Apple Hospitality REIT Inc.",
-    "wikiTitle": "Ryman Hospitality Properties"
-  },
-  "APLS": {
-    "name": "Apellis Pharmaceuticals Inc.",
-    "wikiTitle": "Russell 1000 Index"
-  },
-  "APLT": {
-    "name": "Applied Therapeutics Inc.",
-    "wikiTitle": "Amgen"
-  },
   "APO": {
     "name": "Apollo Global Management Inc. (New)",
     "wikiTitle": "Apollo Global Management"
-  },
-  "APOG": {
-    "name": "Apogee Enterprises Inc.",
-    "wikiTitle": "Apogee Electronics"
-  },
-  "APPS": {
-    "name": "Digital Turbine Inc.",
-    "wikiTitle": "Woodward, Inc."
-  },
-  "APRE": {
-    "name": "Aprea Therapeutics Inc.",
-    "wikiTitle": null
-  },
-  "APT": {
-    "name": "Alpha Pro Tech Ltd.",
-    "wikiTitle": "Nayax"
   },
   "APTV": {
     "name": "Aptiv PLC",
     "wikiTitle": "Aptiv"
   },
-  "APUS": {
-    "name": "Apimeds Pharmaceuticals US Inc.",
-    "wikiTitle": null
-  },
   "APVO": {
     "name": "Aptevo Therapeutics Inc.",
     "wikiTitle": "Emergent BioSolutions"
-  },
-  "APWC": {
-    "name": "Asia Pacific Wire & Cable Corporation Ltd.",
-    "wikiTitle": "Disney Networks Group Asia Pacific"
-  },
-  "APXTU": {
-    "name": "Apex Treasury Corporation",
-    "wikiTitle": "Ministry of Finance (India)",
-    "error": "potential miss"
   },
   "APYX": {
     "name": "Apyx Medical Corporation",
@@ -1155,43 +579,21 @@
     "name": "AquaBounty Technologies Inc.",
     "wikiTitle": "AquaBounty Technologies"
   },
-  "AQMS": {
-    "name": "Aqua Metals Inc.",
-    "wikiTitle": "Aqua Net",
-    "error": "potential miss"
-  },
   "AQN": {
     "name": "Algonquin Power & Utilities Corp.",
     "wikiTitle": "Algonquin Power & Utilities"
-  },
-  "AQST": {
-    "name": "Aquestive Therapeutics Inc.",
-    "wikiTitle": "List of biotech and pharmaceutical companies in the New York metropolitan area",
-    "error": "potential miss"
   },
   "AR": {
     "name": "Antero Resources Corporation",
     "wikiTitle": "Antero Resources"
   },
-  "ARAI": {
-    "name": "Arrive AI Inc.",
-    "wikiTitle": "OpenAI"
-  },
   "ARAY": {
     "name": "Accuray Incorporated",
     "wikiTitle": "Accuray"
   },
-  "ARBB": {
-    "name": "ARB IOT Group Limited",
-    "wikiTitle": "Spark New Zealand"
-  },
   "ARBE": {
     "name": "Arbe Robotics Ltd.",
     "wikiTitle": "Arbe Robotics"
-  },
-  "ARBK": {
-    "name": "Argo Blockchain plc",
-    "wikiTitle": null
   },
   "ARCB": {
     "name": "ArcBest Corporation",
@@ -1204,11 +606,6 @@
   "ARDT": {
     "name": "Ardent Health Inc.",
     "wikiTitle": "Ardent Health Services"
-  },
-  "ARDX": {
-    "name": "Ardelyx Inc.",
-    "wikiTitle": "List of pharmaceutical compound number prefixes",
-    "error": "potential miss"
   },
   "ARE": {
     "name": "Alexandria Real Estate Equities Inc.",
@@ -1226,23 +623,9 @@
     "name": "ARKO Corp.",
     "wikiTitle": "GPM Investments"
   },
-  "ARKR": {
-    "name": "Ark Restaurants Corp.",
-    "wikiTitle": "Durgin-Park",
-    "error": "potential miss"
-  },
-  "ARL": {
-    "name": "American Realty Investors Inc.",
-    "wikiTitle": "Digital Realty"
-  },
   "ARLO": {
     "name": "Arlo Technologies Inc.",
     "wikiTitle": "Arlo Technologies"
-  },
-  "ARLP": {
-    "name": "Alliance Resource Partners L.P. Common",
-    "wikiTitle": "Partnership",
-    "error": "potential miss"
   },
   "ARM": {
     "name": "Arm Holdings plc",
@@ -1252,63 +635,9 @@
     "name": "Aramark",
     "wikiTitle": "Aramark"
   },
-  "ARMN": {
-    "name": "Aris Mining Corporation",
-    "wikiTitle": "Navoi Mining and Metallurgical Company"
-  },
-  "ARMP": {
-    "name": "Armata Pharmaceuticals Inc.",
-    "wikiTitle": "List of Latin phrases (full)",
-    "error": "potential miss"
-  },
-  "AROC": {
-    "name": "Archrock Inc.",
-    "wikiTitle": "Companies listed on the New York Stock Exchange (A)",
-    "error": "potential miss"
-  },
-  "AROW": {
-    "name": "Arrow Financial Corporation",
-    "wikiTitle": "Arrow Research Corporation",
-    "error": "potential miss"
-  },
-  "ARQ": {
-    "name": "Arq Inc.",
-    "wikiTitle": "Merck & Co."
-  },
-  "ARQQ": {
-    "name": "Arqit Quantum Inc.",
-    "wikiTitle": "Manfredi Lefebvre d'Ovidio",
-    "error": "potential miss"
-  },
-  "ARQT": {
-    "name": "Arcutis Biotherapeutics Inc.",
-    "wikiTitle": null
-  },
-  "ARR": {
-    "name": "ARMOUR Residential REIT Inc.",
-    "wikiTitle": "List of S&P 500 companies",
-    "error": "potential miss"
-  },
-  "ARRY": {
-    "name": "Array Technologies Inc.",
-    "wikiTitle": "ATI Technologies"
-  },
-  "ARTL": {
-    "name": "Artelo Biosciences Inc.",
-    "wikiTitle": null
-  },
-  "ARTV": {
-    "name": "Artiva Biotherapeutics Inc.",
-    "wikiTitle": null
-  },
   "ARTW": {
     "name": "Art's-Way Manufacturing Co. Inc.",
     "wikiTitle": "Art's Way"
-  },
-  "ARVN": {
-    "name": "Arvinas Inc.",
-    "wikiTitle": "List of biotech and pharmaceutical companies in the New York metropolitan area",
-    "error": "potential miss"
   },
   "ARW": {
     "name": "Arrow Electronics Inc.",
@@ -1322,31 +651,13 @@
     "name": "Amer Sports Inc.",
     "wikiTitle": "Amer Sports"
   },
-  "ASA": {
-    "name": "ASA  Gold and Precious Metals Limited",
-    "wikiTitle": "Rand Refinery"
-  },
   "ASB": {
     "name": "Associated Banc-Corp",
     "wikiTitle": "Associated Banc-Corp"
   },
-  "ASC": {
-    "name": "Ardmore Shipping Corporation",
-    "wikiTitle": "Companies listed on the New York Stock Exchange (A)",
-    "error": "potential miss"
-  },
-  "ASGN": {
-    "name": "ASGN Incorporated",
-    "wikiTitle": "List of S&P 400 companies",
-    "error": "potential miss"
-  },
   "ASH": {
     "name": "Ashland Inc.",
     "wikiTitle": "Ashland Global"
-  },
-  "ASIC": {
-    "name": "Ategrity Specialty Insurance Company Holdings",
-    "wikiTitle": null
   },
   "ASIX": {
     "name": "AdvanSix Inc.",
@@ -1356,40 +667,9 @@
     "name": "AerSale Corporation",
     "wikiTitle": "AerSale"
   },
-  "ASM": {
-    "name": "Avino Silver & Gold Mines Ltd.",
-    "wikiTitle": "Companies listed on the Toronto Stock Exchange (A)",
-    "error": "potential miss"
-  },
-  "ASMB": {
-    "name": "Assembly Biosciences Inc.",
-    "wikiTitle": "Pacific Biosciences"
-  },
-  "ASND": {
-    "name": "Ascendis Pharma A/S",
-    "wikiTitle": "Growth hormone therapy",
-    "error": "potential miss"
-  },
-  "ASNS": {
-    "name": "Actelis Networks Inc.",
-    "wikiTitle": "Kinder Morgan"
-  },
   "ASO": {
     "name": "Academy Sports and Outdoors Inc.",
     "wikiTitle": "Academy Sports + Outdoors"
-  },
-  "ASPI": {
-    "name": "ASP Isotopes Inc.",
-    "wikiTitle": "Earth"
-  },
-  "ASPN": {
-    "name": "Aspen Aerogels Inc.",
-    "wikiTitle": "Companies listed on the New York Stock Exchange (A)",
-    "error": "potential miss"
-  },
-  "ASPS": {
-    "name": "Altisource Portfolio Solutions S.A.",
-    "wikiTitle": "Onity Group"
   },
   "ASR": {
     "name": "Grupo Aeroportuario del Sureste S.A. de C.V.",
@@ -1398,20 +678,6 @@
   "ASRV": {
     "name": "AmeriServ Financial Inc.",
     "wikiTitle": "AmeriServ Financial"
-  },
-  "ASTC": {
-    "name": "Astrotech Corporation (DE)",
-    "wikiTitle": "Intelsat 708",
-    "error": "potential miss"
-  },
-  "ASTE": {
-    "name": "Astec Industries Inc.",
-    "wikiTitle": "Emerson Electric"
-  },
-  "ASTH": {
-    "name": "Astrana Health Inc.",
-    "wikiTitle": "List of S&P 600 companies",
-    "error": "potential miss"
   },
   "ASTI": {
     "name": "Ascent Solar Technologies Inc.",
@@ -1429,31 +695,9 @@
     "name": "ASE Technology Holding Co. Ltd.",
     "wikiTitle": "ASE Group"
   },
-  "ASYS": {
-    "name": "Amtech Systems Inc.",
-    "wikiTitle": "Intermec"
-  },
-  "ATAI": {
-    "name": "Atai Beckley N.V",
-    "wikiTitle": "Amanda Feilding",
-    "error": "potential miss"
-  },
-  "ATAT": {
-    "name": "Atour Lifestyle Holdings Limited",
-    "wikiTitle": null
-  },
   "ATEN": {
     "name": "A10 Networks Inc.",
     "wikiTitle": "A10 Networks"
-  },
-  "ATER": {
-    "name": "Aterian Inc.",
-    "wikiTitle": "Empire Kosher"
-  },
-  "ATEX": {
-    "name": "Anterix Inc.",
-    "wikiTitle": "Paul Saleh",
-    "error": "potential miss"
   },
   "ATGE": {
     "name": "Adtalem Global Education Inc.",
@@ -1463,54 +707,6 @@
     "name": "Athira Pharma Inc.",
     "wikiTitle": "Athira Pharma"
   },
-  "ATHE": {
-    "name": "Alterity Therapeutics Limited",
-    "wikiTitle": "Google DeepMind"
-  },
-  "ATHM": {
-    "name": "Autohome Inc.",
-    "wikiTitle": "BYD Company"
-  },
-  "ATI": {
-    "name": "ATI Inc.",
-    "wikiTitle": "ATI Technologies"
-  },
-  "ATKR": {
-    "name": "Atkore Inc.",
-    "wikiTitle": "Companies listed on the New York Stock Exchange (A)",
-    "error": "potential miss"
-  },
-  "ATLC": {
-    "name": "Atlanticus Holdings Corporation",
-    "wikiTitle": "Orange roughy",
-    "error": "potential miss"
-  },
-  "ATLN": {
-    "name": "Atlantic International Corp.",
-    "wikiTitle": "AT&T Corporation"
-  },
-  "ATLO": {
-    "name": "Ames National Corporation",
-    "wikiTitle": "Ames Building",
-    "error": "potential miss"
-  },
-  "ATLX": {
-    "name": "Atlas Lithium Corporation",
-    "wikiTitle": "Lithium Corporation of America"
-  },
-  "ATMU": {
-    "name": "Atmus Filtration Technologies Inc.",
-    "wikiTitle": null
-  },
-  "ATNI": {
-    "name": "ATN International Inc.",
-    "wikiTitle": "ATN International"
-  },
-  "ATNM": {
-    "name": "Actinium Pharmaceuticals Inc. (Delaware)",
-    "wikiTitle": "List of biotech and pharmaceutical companies in the New York metropolitan area",
-    "error": "potential miss"
-  },
   "ATO": {
     "name": "Atmos Energy Corporation",
     "wikiTitle": "Atmos Energy"
@@ -1519,31 +715,9 @@
     "name": "Atomera Incorporated",
     "wikiTitle": "Atomera"
   },
-  "ATON": {
-    "name": "AlphaTON Capital Corp.",
-    "wikiTitle": "FMC Corporation"
-  },
-  "ATOS": {
-    "name": "Atossa Therapeutics Inc.",
-    "wikiTitle": null
-  },
-  "ATPC": {
-    "name": "Agape ATP Corporation",
-    "wikiTitle": "Novak Djokovic",
-    "error": "potential miss"
-  },
   "ATR": {
     "name": "AptarGroup Inc.",
     "wikiTitle": "AptarGroup"
-  },
-  "ATRA": {
-    "name": "Atara Biotherapeutics Inc.",
-    "wikiTitle": null
-  },
-  "ATRC": {
-    "name": "AtriCure Inc.",
-    "wikiTitle": "Nāga",
-    "error": "potential miss"
   },
   "ATRO": {
     "name": "Astronics Corporation",
@@ -1552,14 +726,6 @@
   "ATS": {
     "name": "ATS Corporation",
     "wikiTitle": "ATS Corporation"
-  },
-  "ATXG": {
-    "name": "Addentax Group Corp.",
-    "wikiTitle": null
-  },
-  "ATXS": {
-    "name": "Astria Therapeutics Inc.",
-    "wikiTitle": null
   },
   "ATYR": {
     "name": "aTyr Pharma Inc.",
@@ -1585,34 +751,6 @@
     "name": "Aura Minerals Inc.",
     "wikiTitle": "Aura Minerals"
   },
-  "AUID": {
-    "name": "authID Inc.",
-    "wikiTitle": "OpenID",
-    "error": "potential miss"
-  },
-  "AUPH": {
-    "name": "Aurinia Pharmaceuticals Inc",
-    "wikiTitle": "Companies listed on the Toronto Stock Exchange (A)",
-    "error": "potential miss"
-  },
-  "AURA": {
-    "name": "Aura Biosciences Inc.",
-    "wikiTitle": "Companies listed on the Toronto Stock Exchange (A)",
-    "error": "potential miss"
-  },
-  "AUST": {
-    "name": "Austin Gold Corp.",
-    "wikiTitle": "Penske Media Corporation"
-  },
-  "AUTL": {
-    "name": "Autolus Therapeutics plc American",
-    "wikiTitle": null
-  },
-  "AUUD": {
-    "name": "Auddia Inc.",
-    "wikiTitle": "Birch ratings",
-    "error": "potential miss"
-  },
   "AVA": {
     "name": "Avista Corporation",
     "wikiTitle": "Avista"
@@ -1629,10 +767,6 @@
     "name": "Avidia Bancorp Inc.",
     "wikiTitle": "Avidia Bank"
   },
-  "AVBP": {
-    "name": "ArriVent BioPharma Inc.",
-    "wikiTitle": null
-  },
   "AVDL": {
     "name": "Avadel Pharmaceuticals plc",
     "wikiTitle": "Avadel Pharmaceuticals"
@@ -1640,11 +774,6 @@
   "AVGO": {
     "name": "Broadcom Inc.",
     "wikiTitle": "Broadcom"
-  },
-  "AVIR": {
-    "name": "Atea Pharmaceuticals Inc.",
-    "wikiTitle": "List of companies listed on the Oslo Stock Exchange",
-    "error": "potential miss"
   },
   "AVNS": {
     "name": "Avanos Medical Inc.",
@@ -1658,14 +787,6 @@
     "name": "Aviat Networks Inc.",
     "wikiTitle": "Aviat Networks"
   },
-  "AVO": {
-    "name": "Mission Produce Inc.",
-    "wikiTitle": "Meta Platforms"
-  },
-  "AVR": {
-    "name": "Anteris Technologies Global Corp.",
-    "wikiTitle": null
-  },
   "AVT": {
     "name": "Avnet Inc.",
     "wikiTitle": "Avnet"
@@ -1673,20 +794,6 @@
   "AVTR": {
     "name": "Avantor Inc.",
     "wikiTitle": "Avantor"
-  },
-  "AVTX": {
-    "name": "Avalo Therapeutics Inc.",
-    "wikiTitle": "Fasoracetam",
-    "error": "potential miss"
-  },
-  "AVX": {
-    "name": "Avax One Technology Ltd.",
-    "wikiTitle": "List of pharmaceutical companies",
-    "error": "potential miss"
-  },
-  "AVXL": {
-    "name": "Anavex Life Sciences Corp.",
-    "wikiTitle": null
   },
   "AVY": {
     "name": "Avery Dennison Corporation",
@@ -1700,18 +807,9 @@
     "name": "American Water Works Company Inc.",
     "wikiTitle": "American Water Works"
   },
-  "AWR": {
-    "name": "American States Water Company",
-    "wikiTitle": "List of United States water companies",
-    "error": "potential miss"
-  },
   "AWRE": {
     "name": "Aware Inc.",
     "wikiTitle": "Aware, Inc."
-  },
-  "AWX": {
-    "name": "Avalon Holdings Corporation",
-    "wikiTitle": "Crow Holdings"
   },
   "AX": {
     "name": "Axos Financial Inc.",
@@ -1720,15 +818,6 @@
   "AXGN": {
     "name": "Axogen Inc.",
     "wikiTitle": "Axogen"
-  },
-  "AXIA": {
-    "name": "AXIA Energia",
-    "wikiTitle": null
-  },
-  "AXIL": {
-    "name": "AXIL Brands Inc.",
-    "wikiTitle": "List of Intel Xeon chipsets",
-    "error": "potential miss"
   },
   "AXON": {
     "name": "Axon Enterprise Inc.",
@@ -1746,30 +835,13 @@
     "name": "Axis Capital Holdings Limited",
     "wikiTitle": "AXIS Capital"
   },
-  "AXSM": {
-    "name": "Axsome Therapeutics Inc.",
-    "wikiTitle": "Jazz Pharmaceuticals"
-  },
   "AXTA": {
     "name": "Axalta Coating Systems Ltd.",
     "wikiTitle": "Axalta"
   },
-  "AXTI": {
-    "name": "AXT Inc",
-    "wikiTitle": "Elaine Lee",
-    "error": "potential miss"
-  },
   "AYI": {
     "name": "Acuity Inc.",
     "wikiTitle": "Acuity Brands"
-  },
-  "AYTU": {
-    "name": "Aytu BioPharma Inc. ",
-    "wikiTitle": null
-  },
-  "AZ": {
-    "name": "A2Z Cust2Mate Solutions Corp.",
-    "wikiTitle": null
   },
   "AZN": {
     "name": "AstraZeneca PLC",
@@ -1782,15 +854,6 @@
   "AZTA": {
     "name": "Azenta Inc.",
     "wikiTitle": "Azenta"
-  },
-  "AZTR": {
-    "name": "Azitra Inc",
-    "wikiTitle": null
-  },
-  "AZZ": {
-    "name": "AZZ Inc.",
-    "wikiTitle": "Companies listed on the New York Stock Exchange (A)",
-    "error": "potential miss"
   },
   "B": {
     "name": "Barrick Mining Corporation",
@@ -1807,10 +870,6 @@
   "BAC": {
     "name": "Bank of America Corporation",
     "wikiTitle": "Bank of America"
-  },
-  "BAFN": {
-    "name": "BayFirst Financial Corp.",
-    "wikiTitle": "PNC Financial Services"
   },
   "BAH": {
     "name": "Booz Allen Hamilton Holding Corporation",
@@ -1832,30 +891,13 @@
     "name": "BancFirst Corporation",
     "wikiTitle": "BancFirst"
   },
-  "BANL": {
-    "name": "CBL International Limited",
-    "wikiTitle": "Ceylon Biscuits Limited"
-  },
   "BANR": {
     "name": "Banner Corporation",
     "wikiTitle": "Banner Bank"
   },
-  "BANX": {
-    "name": "ArrowMark Financial Corp.",
-    "wikiTitle": "Ally Financial"
-  },
-  "BAOS": {
-    "name": "Baosheng Media Group Holdings Limited",
-    "wikiTitle": "Xiamen",
-    "error": "potential miss"
-  },
   "BAP": {
     "name": "Credicorp Ltd.",
     "wikiTitle": "Credicorp"
-  },
-  "BATL": {
-    "name": "Battalion Oil Corporation",
-    "wikiTitle": "Lukoil"
   },
   "BAX": {
     "name": "Baxter International Inc.",
@@ -1864,11 +906,6 @@
   "BB": {
     "name": "BlackBerry Limited",
     "wikiTitle": "BlackBerry Limited"
-  },
-  "BBAI": {
-    "name": "BigBear.ai Inc.",
-    "wikiTitle": "AI slop",
-    "error": "potential miss"
   },
   "BBBY": {
     "name": "Bed Bath & Beyond Inc.",
@@ -1885,33 +922,6 @@
   "BBDO": {
     "name": "Banco Bradesco Sa",
     "wikiTitle": "Banco Bradesco"
-  },
-  "BBIO": {
-    "name": "BridgeBio Pharma Inc.",
-    "wikiTitle": "Brent Saunders",
-    "error": "potential miss"
-  },
-  "BBLG": {
-    "name": "Bone Biologics Corp",
-    "wikiTitle": "Kevin R. Stone",
-    "error": "potential miss"
-  },
-  "BBNX": {
-    "name": "Beta Bionics Inc.",
-    "wikiTitle": "Google"
-  },
-  "BBOT": {
-    "name": "BridgeBio Oncology Therapeutics Inc.",
-    "wikiTitle": "Illumina, Inc."
-  },
-  "BBSI": {
-    "name": "Barrett Business Services Inc.",
-    "wikiTitle": "Xplore Inc."
-  },
-  "BBT": {
-    "name": "Beacon Financial Corporation",
-    "wikiTitle": "List of companies based in Washington, D.C.",
-    "error": "potential miss"
   },
   "BBU": {
     "name": "Brookfield Business Partners L.P. Limited Partnership",
@@ -1933,52 +943,17 @@
     "name": "Brunswick Corporation",
     "wikiTitle": "Brunswick Corporation"
   },
-  "BCAB": {
-    "name": "BioAtla Inc.",
-    "wikiTitle": "Jay Short",
-    "error": "potential miss"
-  },
-  "BCAL": {
-    "name": "California BanCorp",
-    "wikiTitle": "U.S. Bancorp"
-  },
-  "BCARU": {
-    "name": "D. Boral ARC Acquisition I Corp.",
-    "wikiTitle": "SpaceX"
-  },
-  "BCAX": {
-    "name": "Bicara Therapeutics Inc.",
-    "wikiTitle": null
-  },
-  "BCBP": {
-    "name": "BCB Bancorp Inc. (NJ)",
-    "wikiTitle": null
-  },
   "BCC": {
     "name": "Boise Cascade L.L.C.",
     "wikiTitle": "Boise Cascade"
-  },
-  "BCDA": {
-    "name": "BioCardia Inc.",
-    "wikiTitle": "Deaths in 2026",
-    "error": "potential miss"
   },
   "BCE": {
     "name": "BCE Inc.",
     "wikiTitle": "BCE Inc."
   },
-  "BCG": {
-    "name": "Binah Capital Group Inc.",
-    "wikiTitle": "Hatzalah",
-    "error": "potential miss"
-  },
   "BCIC": {
     "name": "BCP Investment Corporation",
     "wikiTitle": "Credicorp"
-  },
-  "BCML": {
-    "name": "BayCom Corp",
-    "wikiTitle": "Associated Banc-Corp"
   },
   "BCO": {
     "name": "Brinks Company (The)",
@@ -2000,20 +975,6 @@
     "name": "Bain Capital Specialty Finance Inc.",
     "wikiTitle": "Bain Capital"
   },
-  "BCTX": {
-    "name": "BriaCell Therapeutics Corp.",
-    "wikiTitle": "Companies listed on the Toronto Stock Exchange (B)",
-    "error": "potential miss"
-  },
-  "BCX": {
-    "name": "BlackRock Resources",
-    "wikiTitle": "Koch, Inc."
-  },
-  "BCYC": {
-    "name": "Bicycle Therapeutics plc",
-    "wikiTitle": "Kate Bingham",
-    "error": "potential miss"
-  },
   "BDC": {
     "name": "Belden Inc",
     "wikiTitle": "Belden Incorporated"
@@ -2022,19 +983,6 @@
     "name": "Flanigan's Enterprises Inc.",
     "wikiTitle": "Flanigan's"
   },
-  "BDRX": {
-    "name": "Biodexa Pharmaceuticals plc American Depositary Shs",
-    "wikiTitle": null
-  },
-  "BDSX": {
-    "name": "Biodesix Inc.",
-    "wikiTitle": "Datavant"
-  },
-  "BDTX": {
-    "name": "Black Diamond Therapeutics Inc.",
-    "wikiTitle": "List of companies of the United States by state",
-    "error": "potential miss"
-  },
   "BDX": {
     "name": "Becton Dickinson and Company",
     "wikiTitle": "BD (company)"
@@ -2042,18 +990,6 @@
   "BEAM": {
     "name": "Beam Therapeutics Inc.",
     "wikiTitle": "Beam Therapeutics"
-  },
-  "BEAT": {
-    "name": "Heartbeam Inc.",
-    "wikiTitle": null
-  },
-  "BEEM": {
-    "name": "Beam Global",
-    "wikiTitle": "Suntory Global Spirits"
-  },
-  "BEEP": {
-    "name": "Mobile Infrastructure Corporation",
-    "wikiTitle": "Boost Mobile"
   },
   "BEN": {
     "name": "Franklin Resources Inc.",
@@ -2067,25 +1003,9 @@
     "name": "Bright Horizons Family Solutions Inc.",
     "wikiTitle": "Bright Horizons"
   },
-  "BFC": {
-    "name": "Bank First Corporation",
-    "wikiTitle": "First Horizon Bank"
-  },
-  "BFIN": {
-    "name": "BankFinancial Corporation",
-    "wikiTitle": "PNC Financial Services"
-  },
-  "BFRI": {
-    "name": "Biofrontera Inc.",
-    "wikiTitle": null
-  },
   "BFS": {
     "name": "Saul Centers Inc.",
     "wikiTitle": "B. F. Saul Company"
-  },
-  "BFST": {
-    "name": "Business First Bancshares Inc.",
-    "wikiTitle": "First Citizens BancShares"
   },
   "BG": {
     "name": "Bunge Limited",
@@ -2095,40 +1015,9 @@
     "name": "Birks Group Inc.",
     "wikiTitle": "Birks Group"
   },
-  "BGLC": {
-    "name": "BioNexus Gene Lab Corp",
-    "wikiTitle": "Calico (company)"
-  },
-  "BGMS": {
-    "name": "Bio Green Med Solution Inc.",
-    "wikiTitle": "Henry Schein"
-  },
-  "BGMSP": {
-    "name": "Bio Green Med Solution Inc. 6% Convertible",
-    "wikiTitle": "Smithfield Foods"
-  },
   "BGS": {
     "name": "B&G Foods Inc.",
     "wikiTitle": "B&G Foods"
-  },
-  "BGSF": {
-    "name": "BGSF Inc.",
-    "wikiTitle": "Air Greenland",
-    "error": "potential miss"
-  },
-  "BGSI": {
-    "name": "Boyd Group Services Inc.",
-    "wikiTitle": "Jefferies Group"
-  },
-  "BHAT": {
-    "name": "Blue Hat Interactive Entertainment Technology",
-    "wikiTitle": "List of Ubisoft subsidiaries",
-    "error": "potential miss"
-  },
-  "BHB": {
-    "name": "Bar Harbor Bankshares Inc.",
-    "wikiTitle": "Governorship of Wes Moore",
-    "error": "potential miss"
   },
   "BHC": {
     "name": "Bausch Health Companies Inc.",
@@ -2162,29 +1051,6 @@
     "name": "BHP Group Limited",
     "wikiTitle": "BHP"
   },
-  "BHR": {
-    "name": "Braemar Hotels & Resorts Inc.",
-    "wikiTitle": "Monty Bennett",
-    "error": "potential miss"
-  },
-  "BHRB": {
-    "name": "Burke & Herbert Financial Services Corp.",
-    "wikiTitle": "Jason Kitzmiller",
-    "error": "potential miss"
-  },
-  "BHST": {
-    "name": "BioHarvest Sciences Inc.",
-    "wikiTitle": "Thermo Fisher Scientific"
-  },
-  "BHVN": {
-    "name": "Biohaven Ltd.",
-    "wikiTitle": "Rimegepant",
-    "error": "potential miss"
-  },
-  "BIAF": {
-    "name": "bioAffinity Technologies Inc.",
-    "wikiTitle": "Electronic Arts"
-  },
   "BIIB": {
     "name": "Biogen Inc.",
     "wikiTitle": "Biogen"
@@ -2193,40 +1059,17 @@
     "name": "Bilibili Inc.",
     "wikiTitle": "Bilibili"
   },
-  "BIOA": {
-    "name": "BioAge Labs Inc.",
-    "wikiTitle": "Altos Labs"
-  },
-  "BIOX": {
-    "name": "Bioceres Crop Solutions Corp.",
-    "wikiTitle": "Juan Sartori",
-    "error": "potential miss"
-  },
   "BIP": {
     "name": "Brookfield Infrastructure Partners LP Limited Partnership",
     "wikiTitle": "Brookfield Infrastructure Partners"
   },
   "BIPC": {
-    "name": "Brookfield Infrastructure Corporation Brookfield Infrastructure Corporation",
+    "name": "Brookfield Infrastructure Corporation",
     "wikiTitle": "Brookfield Corporation"
   },
   "BIRK": {
     "name": "Birkenstock Holding plc",
     "wikiTitle": "Birkenstock"
-  },
-  "BITF": {
-    "name": "Bitfarms Ltd.",
-    "wikiTitle": "Roy Sebag",
-    "error": "potential miss"
-  },
-  "BIYA": {
-    "name": "Baiya International Group Inc.",
-    "wikiTitle": "Intangible Cultural Heritage of the Philippines",
-    "error": "potential miss"
-  },
-  "BJDX": {
-    "name": "Bluejay Diagnostics Inc.",
-    "wikiTitle": null
   },
   "BJRI": {
     "name": "BJ's Restaurants Inc.",
@@ -2248,22 +1091,9 @@
     "name": "Black Hills Corporation",
     "wikiTitle": "Black Hills Corporation"
   },
-  "BKTI": {
-    "name": "BK Technologies Corporation",
-    "wikiTitle": "Burger King"
-  },
   "BKU": {
     "name": "BankUnited Inc.",
     "wikiTitle": "BankUnited"
-  },
-  "BKV": {
-    "name": "BKV Corporation",
-    "wikiTitle": "BKV",
-    "error": "potential miss"
-  },
-  "BKYI": {
-    "name": "BIO-key International Inc.",
-    "wikiTitle": "American Megatrends"
   },
   "BL": {
     "name": "BlackLine Inc.",
@@ -2273,17 +1103,9 @@
     "name": "Blue Bird Corporation",
     "wikiTitle": "Blue Bird Corporation"
   },
-  "BLBX": {
-    "name": "Blackboxstocks Inc.",
-    "wikiTitle": null
-  },
   "BLCO": {
     "name": "Bausch + Lomb Corporation",
     "wikiTitle": "Bausch & Lomb"
-  },
-  "BLD": {
-    "name": "TopBuild Corp.",
-    "wikiTitle": "XAI (company)"
   },
   "BLDP": {
     "name": "Ballard Power Systems Inc.",
@@ -2292,23 +1114,6 @@
   "BLDR": {
     "name": "Builders FirstSource Inc.",
     "wikiTitle": "Builders FirstSource"
-  },
-  "BLFS": {
-    "name": "BioLife Solutions Inc.",
-    "wikiTitle": "Emergent BioSolutions"
-  },
-  "BLFY": {
-    "name": "Blue Foundry Bancorp",
-    "wikiTitle": "Fulton Financial Corporation"
-  },
-  "BLIN": {
-    "name": "Bridgeline Digital Inc.",
-    "wikiTitle": null
-  },
-  "BLIV": {
-    "name": "BeLive Holdings",
-    "wikiTitle": "Big Brother and the Holding Company",
-    "error": "potential miss"
   },
   "BLK": {
     "name": "BlackRock Inc.",
@@ -2334,115 +1139,29 @@
     "name": "Bullish",
     "wikiTitle": "Bullish"
   },
-  "BLTE": {
-    "name": "Belite Bio Inc",
-    "wikiTitle": "Volkswagen air-cooled engine",
-    "error": "potential miss"
-  },
   "BLX": {
     "name": "Banco Latinoamericano de Comercio Exterior S.A.",
     "wikiTitle": "Banco Latinoamericano de Comercio Exterior"
-  },
-  "BMEA": {
-    "name": "Biomea Fusion Inc.",
-    "wikiTitle": "Garry Nolan",
-    "error": "potential miss"
-  },
-  "BMGL": {
-    "name": "Basel Medical Group Ltd",
-    "wikiTitle": "RWS Group"
-  },
-  "BMI": {
-    "name": "Badger Meter Inc.",
-    "wikiTitle": "Warner & Swasey Company"
-  },
-  "BMNR": {
-    "name": "BitMine Immersion Technologies Inc.",
-    "wikiTitle": "Thomas Lee (analyst)",
-    "error": "potential miss"
-  },
-  "BMO": {
-    "name": "Bank Of Montreal",
-    "wikiTitle": "Bank of Montreal"
-  },
-  "BMR": {
-    "name": "Beamr Imaging Ltd.",
-    "wikiTitle": "JPEGmini"
-  },
-  "BMRA": {
-    "name": "Biomerica Inc.",
-    "wikiTitle": null
-  },
-  "BMRC": {
-    "name": "Bank of Marin Bancorp",
-    "wikiTitle": "MUFG Union Bank"
   },
   "BMRN": {
     "name": "BioMarin Pharmaceutical Inc.",
     "wikiTitle": "BioMarin Pharmaceutical"
   },
+  "BMO": {
+    "name": "Bank Of Montreal",
+    "wikiTitle": "Bank of Montreal"
+  },
   "BMY": {
     "name": "Bristol-Myers Squibb Company",
     "wikiTitle": "Bristol Myers Squibb"
-  },
-  "BNAI": {
-    "name": "Brand Engagement Network Inc.",
-    "wikiTitle": "Meta Platforms"
-  },
-  "BNBX": {
-    "name": "BNB Plus Corp.",
-    "wikiTitle": "Sonder (company)"
-  },
-  "BNC": {
-    "name": "CEA Industries Inc.",
-    "wikiTitle": "Legrand (company)"
   },
   "BNED": {
     "name": "Barnes & Noble Education Inc",
     "wikiTitle": "BNED"
   },
-  "BNGO": {
-    "name": "Bionano Genomics Inc.",
-    "wikiTitle": "Jeanne Loring",
-    "error": "potential miss"
-  },
-  "BNKK": {
-    "name": "Bonk Inc.",
-    "wikiTitle": "Bonk Business",
-    "error": "potential miss"
-  },
-  "BNL": {
-    "name": "Broadstone Net Lease Inc.",
-    "wikiTitle": "Rochester Top 100",
-    "error": "potential miss"
-  },
-  "BNR": {
-    "name": "Burning Rock Biotech Limited",
-    "wikiTitle": "Single-use bioreactor",
-    "error": "potential miss"
-  },
-  "BNRG": {
-    "name": "Brenmiller Energy Ltd",
-    "wikiTitle": "Solar power in Israel",
-    "error": "potential miss"
-  },
-  "BNS": {
-    "name": "Bank Nova Scotia Halifax Pfd 3",
-    "wikiTitle": "Portland, Maine",
-    "error": "potential miss"
-  },
-  "BNTC": {
-    "name": "Benitec Biopharma Inc.",
-    "wikiTitle": "List of pharmaceutical companies",
-    "error": "potential miss"
-  },
   "BNTX": {
     "name": "BioNTech SE American",
     "wikiTitle": "BioNTech"
-  },
-  "BOF": {
-    "name": "BranchOut Food Inc.",
-    "wikiTitle": "Mars Inc."
   },
   "BOH": {
     "name": "Bank of Hawaii Corporation",
@@ -2452,94 +1171,33 @@
     "name": "BOK Financial Corporation",
     "wikiTitle": "BOK Financial Corporation"
   },
-  "BOLD": {
-    "name": "Boundless Bio Inc.",
-    "wikiTitle": "List of comics publishing companies",
-    "error": "potential miss"
-  },
-  "BOLT": {
-    "name": "Bolt Biotherapeutics Inc.",
-    "wikiTitle": null
-  },
-  "BOOM": {
-    "name": "DMC Global Inc.",
-    "wikiTitle": "DeLorean Motor Company"
-  },
-  "BORR": {
-    "name": "Borr Drilling Limited",
-    "wikiTitle": "Noble Corporation"
-  },
   "BOSC": {
     "name": "B.O.S. Better Online Solutions",
     "wikiTitle": "Better Online Solutions"
-  },
-  "BOTJ": {
-    "name": "Bank of the James Financial Group Inc.",
-    "wikiTitle": "Raymond James Financial"
   },
   "BP": {
     "name": "BP p.l.c.",
     "wikiTitle": "BP"
   },
-  "BPACU": {
-    "name": "Blueport Acquisition Ltd",
-    "wikiTitle": null
-  },
   "BPOP": {
     "name": "Popular Inc.",
     "wikiTitle": "Banco Popular de Puerto Rico"
-  },
-  "BPRN": {
-    "name": "Princeton Bancorp Inc.",
-    "wikiTitle": "List of S&P 600 companies",
-    "error": "potential miss"
   },
   "BR": {
     "name": "Broadridge Financial Solutions Inc.",
     "wikiTitle": "Broadridge Financial Solutions"
   },
-  "BRAG": {
-    "name": "Bragg Gaming Group Inc.",
-    "wikiTitle": "John Bragg (businessman)",
-    "error": "potential miss"
-  },
-  "BRBI": {
-    "name": "BRBI BR Partners S.A. ADSs",
-    "wikiTitle": null
-  },
   "BRBR": {
     "name": "BellRing Brands Inc.",
     "wikiTitle": "Post Holdings"
-  },
-  "BRBS": {
-    "name": "Blue Ridge Bankshares Inc.",
-    "wikiTitle": "First Community Bancshares"
   },
   "BRC": {
     "name": "Brady Corporation",
     "wikiTitle": "Brady Corporation"
   },
-  "BRFH": {
-    "name": "Barfresh Food Group Inc.",
-    "wikiTitle": null
-  },
-  "BRID": {
-    "name": "Bridgford Foods Corporation",
-    "wikiTitle": "Eaton Fire",
-    "error": "potential miss"
-  },
   "BRKR": {
     "name": "Bruker Corporation",
     "wikiTitle": "Bruker"
-  },
-  "BRKRP": {
-    "name": "Bruker Corporation 6.375% Mandatory Convertible",
-    "wikiTitle": null
-  },
-  "BRN": {
-    "name": "Barnwell Industries Inc.",
-    "wikiTitle": "Industry (TV series)",
-    "error": "potential miss"
   },
   "BRNS": {
     "name": "Barinthus Biotherapeutics plc",
@@ -2549,31 +1207,9 @@
     "name": "Brown & Brown Inc.",
     "wikiTitle": "Brown & Brown"
   },
-  "BRR": {
-    "name": "ProCap Financial Inc.",
-    "wikiTitle": "Alphabet Inc."
-  },
-  "BRSL": {
-    "name": "Brightstar Lottery PLC Trading under the Legal Name to begin at the market open on July 21 2025.",
-    "wikiTitle": null
-  },
-  "BRT": {
-    "name": "BRT Apartments Corp. (MD)",
-    "wikiTitle": "Petaling Jaya",
-    "error": "potential miss"
-  },
-  "BRTX": {
-    "name": "BioRestorative Therapies Inc.",
-    "wikiTitle": "Medtronic"
-  },
   "BRX": {
     "name": "Brixmor Property Group Inc.",
     "wikiTitle": "Brixmor Property Group"
-  },
-  "BSBK": {
-    "name": "Bogota Financial Corp.",
-    "wikiTitle": "Alberto Musalem",
-    "error": "potential miss"
   },
   "BSBR": {
     "name": "Banco Santander Brasil SA",
@@ -2583,43 +1219,13 @@
     "name": "Bassett Furniture Industries Incorporated",
     "wikiTitle": "Bassett Furniture"
   },
-  "BSM": {
-    "name": "Black Stone Minerals L.P. Common",
-    "wikiTitle": "Cryolite",
-    "error": "potential miss"
-  },
-  "BSRR": {
-    "name": "Sierra Bancorp",
-    "wikiTitle": "Wells Fargo"
-  },
-  "BSVN": {
-    "name": "Bank7 Corp.",
-    "wikiTitle": null
-  },
   "BSX": {
     "name": "Boston Scientific Corporation",
     "wikiTitle": "Boston Scientific"
   },
-  "BTAI": {
-    "name": "BioXcel Therapeutics Inc.",
-    "wikiTitle": "List of S&P 500 companies",
-    "error": "potential miss"
-  },
-  "BTBD": {
-    "name": "BT Brands Inc.",
-    "wikiTitle": "TNT Sports (United Kingdom)"
-  },
-  "BTBT": {
-    "name": "Bit Digital Inc.",
-    "wikiTitle": "Digital Research"
-  },
   "BTCS": {
     "name": "BTCS Inc.",
     "wikiTitle": "BTCS Inc."
-  },
-  "BTCT": {
-    "name": "BTC Digital Ltd.",
-    "wikiTitle": "Cable & Wireless Communications"
   },
   "BTE": {
     "name": "Baytex Energy Corp",
@@ -2630,26 +1236,8 @@
     "wikiTitle": "B2Gold"
   },
   "BTI": {
-    "name": "British American Tobacco  Industries p.l.c.",
+    "name": "British American Tobacco Industries p.l.c.",
     "wikiTitle": "British American Tobacco"
-  },
-  "BTOC": {
-    "name": "Armlogi Holding Corp.",
-    "wikiTitle": null
-  },
-  "BTQ": {
-    "name": "BTQ Technologies Corp.",
-    "wikiTitle": "Seven Network",
-    "error": "potential miss"
-  },
-  "BTSG": {
-    "name": "BrightSpring Health Services Inc.",
-    "wikiTitle": "Cardinal Health"
-  },
-  "BTTC": {
-    "name": "Black Titan Corporation",
-    "wikiTitle": "Titan Ultra Giant Risers",
-    "error": "potential miss"
   },
   "BTU": {
     "name": "Peabody Energy Corporation",
@@ -2663,21 +1251,9 @@
     "name": "Burlington Stores Inc.",
     "wikiTitle": "Burlington (department store)"
   },
-  "BURU": {
-    "name": "Nuburu Inc.",
-    "wikiTitle": null
-  },
   "BUSEP": {
     "name": "First Busey Corporation",
     "wikiTitle": "Busey Bank"
-  },
-  "BVFL": {
-    "name": "BV Financial Inc.",
-    "wikiTitle": "Virtu Financial"
-  },
-  "BVN": {
-    "name": "Buenaventura Mining Company Inc.",
-    "wikiTitle": "DMCI Homes"
   },
   "BW": {
     "name": "Babcock & Wilcox Enterprises Inc.",
@@ -2691,36 +1267,9 @@
     "name": "BrainsWay Ltd.",
     "wikiTitle": "Brainsway"
   },
-  "BWB": {
-    "name": "Bridgewater Bancshares Inc.",
-    "wikiTitle": "List of companies of the United States by state",
-    "error": "potential miss"
-  },
-  "BWBBP": {
-    "name": "Bridgewater Bancshares Inc.",
-    "wikiTitle": "List of companies of the United States by state",
-    "error": "potential miss"
-  },
-  "BWEN": {
-    "name": "Broadwind Inc.",
-    "wikiTitle": "List of wind turbine manufacturers",
-    "error": "potential miss"
-  },
-  "BWFG": {
-    "name": "Bankwell Financial Group Inc.",
-    "wikiTitle": null
-  },
   "BWLP": {
     "name": "BW LPG Limited",
     "wikiTitle": "BW Group"
-  },
-  "BWMN": {
-    "name": "Bowman Consulting Group Ltd.",
-    "wikiTitle": "SLR Consulting"
-  },
-  "BWMX": {
-    "name": "Betterware de Mexico S.A.P.I. de C.V.",
-    "wikiTitle": null
   },
   "BWXT": {
     "name": "BWX Technologies Inc.",
@@ -2738,10 +1287,6 @@
     "name": "Byline Bancorp Inc.",
     "wikiTitle": "Byline Bank"
   },
-  "BYAH": {
-    "name": "Park Ha Biological Technology Co. Ltd.",
-    "wikiTitle": "Samsung Biologics"
-  },
   "BYD": {
     "name": "Boyd Gaming Corporation",
     "wikiTitle": "Boyd Gaming"
@@ -2750,47 +1295,21 @@
     "name": "Beyond Meat Inc.",
     "wikiTitle": "Beyond Meat"
   },
-  "BYRN": {
-    "name": "Byrna Technologies Inc.",
-    "wikiTitle": "Deaths in May 2023",
-    "error": "potential miss"
-  },
-  "BYSI": {
-    "name": "BeyondSpring Inc.",
-    "wikiTitle": "TJX"
-  },
   "BZH": {
     "name": "Beazer Homes USA Inc.",
     "wikiTitle": "Beazer Homes USA"
-  },
-  "BZUN": {
-    "name": "Baozun Inc.",
-    "wikiTitle": "Gap Inc."
   },
   "C": {
     "name": "Citigroup Inc.",
     "wikiTitle": "Citigroup"
   },
-  "CAAP": {
-    "name": "Corporacion America Airports SA",
-    "wikiTitle": "List of government-owned companies",
-    "error": "potential miss"
-  },
   "CAAS": {
     "name": "China Automotive Systems Inc.",
     "wikiTitle": "China Automotive Systems"
   },
-  "CABA": {
-    "name": "Cabaletta Bio Inc.",
-    "wikiTitle": null
-  },
   "CABO": {
     "name": "Cable One Inc.",
     "wikiTitle": "Cable One"
-  },
-  "CABR": {
-    "name": "Caring Brands Inc.",
-    "wikiTitle": "The Estée Lauder Companies"
   },
   "CAC": {
     "name": "Camden National Corporation",
@@ -2804,10 +1323,6 @@
     "name": "Cadence Bank",
     "wikiTitle": "Cadence Bank"
   },
-  "CADL": {
-    "name": "Candel Therapeutics Inc.",
-    "wikiTitle": null
-  },
   "CAE": {
     "name": "CAE Inc.",
     "wikiTitle": "CAE Inc."
@@ -2820,10 +1335,6 @@
     "name": "Cardinal Health Inc.",
     "wikiTitle": "Cardinal Health"
   },
-  "CAI": {
-    "name": "Caris Life Sciences Inc.",
-    "wikiTitle": "The Walt Disney Company"
-  },
   "CAKE": {
     "name": "Cheesecake Factory Incorporated (The)",
     "wikiTitle": "The Cheesecake Factory"
@@ -2831,11 +1342,6 @@
   "CAL": {
     "name": "Caleres Inc.",
     "wikiTitle": "Caleres"
-  },
-  "CALC": {
-    "name": "CalciMedica Inc.",
-    "wikiTitle": "Patrick Hogan (biologist)",
-    "error": "potential miss"
   },
   "CALM": {
     "name": "Cal-Maine Foods Inc.",
@@ -2845,14 +1351,6 @@
     "name": "Calix Inc",
     "wikiTitle": "Calix, Inc."
   },
-  "CAMP": {
-    "name": "CAMP4 Therapeutics Corporation",
-    "wikiTitle": null
-  },
-  "CAMT": {
-    "name": "Camtek Ltd.",
-    "wikiTitle": "Rafael Advanced Defense Systems"
-  },
   "CAN": {
     "name": "Canaan Inc.",
     "wikiTitle": "Canaan Creative"
@@ -2861,31 +1359,9 @@
     "name": "CrossAmerica Partners LP Common",
     "wikiTitle": "Sunoco"
   },
-  "CAPR": {
-    "name": "Capricor Therapeutics Inc.",
-    "wikiTitle": "Regenerative medicine advanced therapy",
-    "error": "potential miss"
-  },
-  "CAPS": {
-    "name": "Capstone Holding Corp.",
-    "wikiTitle": "Capstone Green Energy"
-  },
-  "CAPT": {
-    "name": "Captivision Inc.",
-    "wikiTitle": null
-  },
   "CAR": {
     "name": "Avis Budget Group Inc.",
     "wikiTitle": "Avis Budget Group"
-  },
-  "CARE": {
-    "name": "Carter Bankshares Inc.",
-    "wikiTitle": "Lynda Carter",
-    "error": "potential miss"
-  },
-  "CARL": {
-    "name": "Carlsmed Inc.",
-    "wikiTitle": null
   },
   "CARR": {
     "name": "Carrier Global Corporation",
@@ -2903,14 +1379,6 @@
     "name": "Pathward Financial Inc.",
     "wikiTitle": "Pathward"
   },
-  "CASI": {
-    "name": "CASI Pharmaceuticals Inc.",
-    "wikiTitle": "Computer Associates"
-  },
-  "CASS": {
-    "name": "Cass Information Systems Inc",
-    "wikiTitle": "Meta Platforms"
-  },
   "CASY": {
     "name": "Casey's General Stores Inc.",
     "wikiTitle": "Casey's"
@@ -2918,10 +1386,6 @@
   "CAT": {
     "name": "Caterpillar Inc.",
     "wikiTitle": "Caterpillar Inc."
-  },
-  "CATX": {
-    "name": "Perspective Therapeutics Inc.",
-    "wikiTitle": "Regulus Therapeutics"
   },
   "CATY": {
     "name": "Cathay General Bancorp",
@@ -2932,41 +1396,12 @@
     "wikiTitle": "Cava Group"
   },
   "CB": {
-    "name": "Chubb Limited ",
+    "name": "Chubb Limited",
     "wikiTitle": "Chubb Limited"
-  },
-  "CBAN": {
-    "name": "Colony Bankcorp Inc.",
-    "wikiTitle": "Bank of Montreal"
-  },
-  "CBAT": {
-    "name": "CBAK Energy Technology Inc.",
-    "wikiTitle": "N-Shares"
-  },
-  "CBFV": {
-    "name": "CB Financial Services Inc.",
-    "wikiTitle": "CBRE Group"
-  },
-  "CBIO": {
-    "name": "Crescent Biopharma Inc.",
-    "wikiTitle": "Kainos"
-  },
-  "CBK": {
-    "name": "Commercial Bancgroup Inc.",
-    "wikiTitle": "Colonial Bancgroup"
   },
   "CBL": {
     "name": "CBL & Associates Properties Inc.",
     "wikiTitle": "CBL Properties"
-  },
-  "CBLL": {
-    "name": "CeriBell Inc.",
-    "wikiTitle": "Toronto",
-    "error": "potential miss"
-  },
-  "CBNK": {
-    "name": "Capital Bancorp Inc.",
-    "wikiTitle": "Glacier Bancorp"
   },
   "CBRE": {
     "name": "CBRE Group Inc",
@@ -2996,26 +1431,6 @@
     "name": "Chemours Company (The)",
     "wikiTitle": "Chemours"
   },
-  "CCAP": {
-    "name": "Crescent Capital BDC Inc.",
-    "wikiTitle": null
-  },
-  "CCB": {
-    "name": "Coastal Financial Corporation",
-    "wikiTitle": "Truist"
-  },
-  "CCBG": {
-    "name": "Capital City Bank Group",
-    "wikiTitle": "Capital Group Companies"
-  },
-  "CCCC": {
-    "name": "C4 Therapeutics Inc.",
-    "wikiTitle": "Acadia Pharmaceuticals"
-  },
-  "CCEC": {
-    "name": "Capital Clean Energy Carriers Corp.",
-    "wikiTitle": "Tesla, Inc."
-  },
   "CCEL": {
     "name": "Cryo-Cell International Inc.",
     "wikiTitle": "Cryo-Cell International"
@@ -3027,10 +1442,6 @@
   "CCI": {
     "name": "Crown Castle Inc.",
     "wikiTitle": "Crown Castle"
-  },
-  "CCIX": {
-    "name": "Churchill Capital Corp IX",
-    "wikiTitle": "Barclays"
   },
   "CCJ": {
     "name": "Cameco Corporation",
@@ -3044,27 +1455,6 @@
     "name": "CareCloud Inc.",
     "wikiTitle": "CareCloud"
   },
-  "CCM": {
-    "name": "Concord Medical Services Holdings Limited",
-    "wikiTitle": "Concord Township, Lake County, Ohio",
-    "error": "potential miss"
-  },
-  "CCNE": {
-    "name": "CNB Financial Corporation",
-    "wikiTitle": "Cherokee Nation Businesses"
-  },
-  "CCNEP": {
-    "name": "CNB Financial Corporation",
-    "wikiTitle": "Cherokee Nation Businesses"
-  },
-  "CCRN": {
-    "name": "Cross Country Healthcare Inc.",
-    "wikiTitle": "GE HealthCare"
-  },
-  "CCS": {
-    "name": "Century Communities Inc.",
-    "wikiTitle": "Lumen Technologies"
-  },
   "CCSI": {
     "name": "Consensus Cloud Solutions Inc.",
     "wikiTitle": "J2 Global"
@@ -3073,31 +1463,9 @@
     "name": "Compania Cervecerias Unidas S.A.",
     "wikiTitle": "Compañía de las Cervecerías Unidas"
   },
-  "CCXIU": {
-    "name": "Churchill Capital Corp XI",
-    "wikiTitle": "Mohun Bagan Super Giant",
-    "error": "potential miss"
-  },
-  "CCZ": {
-    "name": "Comcast Holdings ZONES",
-    "wikiTitle": "Comcast Spectacor"
-  },
   "CDE": {
     "name": "Coeur Mining Inc.",
     "wikiTitle": "Coeur Mining"
-  },
-  "CDLR": {
-    "name": "Cadeler A/S American Depositary Share (each representing four (4)",
-    "wikiTitle": null
-  },
-  "CDLX": {
-    "name": "Cardlytics Inc.",
-    "wikiTitle": "David Perdue",
-    "error": "potential miss"
-  },
-  "CDNA": {
-    "name": "CareDx Inc.",
-    "wikiTitle": "Genesys (company)"
   },
   "CDNS": {
     "name": "Cadence Design Systems Inc.",
@@ -3107,24 +1475,6 @@
     "name": "COPT Defense Properties",
     "wikiTitle": "COPT Defense Properties"
   },
-  "CDRO": {
-    "name": "Codere Online Luxembourg S.A.",
-    "wikiTitle": "Valencia CF",
-    "error": "potential miss"
-  },
-  "CDT": {
-    "name": "CDT Equity Inc.",
-    "wikiTitle": "Belden Incorporated"
-  },
-  "CDTG": {
-    "name": "CDT Environmental Technology Investment Holdings Limited",
-    "wikiTitle": "DiscoverIE Group"
-  },
-  "CDTX": {
-    "name": "Cidara Therapeutics Inc.",
-    "wikiTitle": "David Gollaher",
-    "error": "potential miss"
-  },
   "CDW": {
     "name": "CDW Corporation",
     "wikiTitle": "CDW"
@@ -3132,16 +1482,6 @@
   "CDXS": {
     "name": "Codexis Inc.",
     "wikiTitle": "Codexis"
-  },
-  "CDZI": {
-    "name": "CADIZ Inc.",
-    "wikiTitle": "Cadiz, California",
-    "error": "potential miss"
-  },
-  "CDZIP": {
-    "name": "Cadiz Inc.",
-    "wikiTitle": "Cadiz, California",
-    "error": "potential miss"
   },
   "CE": {
     "name": "Celanese Corporation",
@@ -3155,58 +1495,21 @@
     "name": "Constellation Energy Corporation",
     "wikiTitle": "Constellation Energy"
   },
-  "CELC": {
-    "name": "Celcuity Inc.",
-    "wikiTitle": null
-  },
-  "CENN": {
-    "name": "Cenntro Inc.",
-    "wikiTitle": "Nio Inc."
-  },
-  "CENT": {
-    "name": "Central Garden & Pet Company",
-    "wikiTitle": "Tractor Supply Company"
-  },
   "CENX": {
     "name": "Century Aluminum Company",
     "wikiTitle": "Century Aluminum"
   },
   "CEPU": {
     "name": "Central Puerto S.A.",
-    "wikiTitle": "Central Puerto",
-    "error": "potential miss"
+    "wikiTitle": "Central Puerto"
   },
   "CERS": {
     "name": "Cerus Corporation",
     "wikiTitle": "Cerus Corporation"
   },
-  "CERT": {
-    "name": "Certara Inc.",
-    "wikiTitle": "Chemaxon"
-  },
-  "CET": {
-    "name": "Central Securities Corporation",
-    "wikiTitle": "Depository Trust & Clearing Corporation"
-  },
-  "CETX": {
-    "name": "Cemtrex Inc.",
-    "wikiTitle": null
-  },
-  "CETY": {
-    "name": "Clean Energy Technologies Inc.",
-    "wikiTitle": "Energy Exploration Technologies"
-  },
   "CEVA": {
     "name": "CEVA Inc.",
     "wikiTitle": "Ceva (semiconductor company)"
-  },
-  "CFBK": {
-    "name": "CF Bankshares Inc.",
-    "wikiTitle": null
-  },
-  "CFFI": {
-    "name": "C&F Financial Corporation",
-    "wikiTitle": "First American Financial Corporation"
   },
   "CFFN": {
     "name": "Capitol Federal Financial Inc.",
@@ -3236,11 +1539,6 @@
     "name": "Canopy Growth Corporation",
     "wikiTitle": "Canopy Growth"
   },
-  "CGEM": {
-    "name": "Cullinan Therapeutics Inc.",
-    "wikiTitle": "Patrick A. Baeuerle",
-    "error": "potential miss"
-  },
   "CGEN": {
     "name": "Compugen Ltd.",
     "wikiTitle": "Compugen Ltd."
@@ -3253,23 +1551,6 @@
     "name": "Cognex Corporation",
     "wikiTitle": "Cognex Corporation"
   },
-  "CGON": {
-    "name": "CG Oncology Inc.",
-    "wikiTitle": "Kissei"
-  },
-  "CGTX": {
-    "name": "Cognition Therapeutics Inc.",
-    "wikiTitle": "Biogen"
-  },
-  "CHA": {
-    "name": "Chagee Holdings Limited",
-    "wikiTitle": "List of the largest fast food restaurant chains",
-    "error": "potential miss"
-  },
-  "CHCO": {
-    "name": "City Holding Company",
-    "wikiTitle": "JAB Holding Company"
-  },
   "CHD": {
     "name": "Church & Dwight Company Inc.",
     "wikiTitle": "Church & Dwight"
@@ -3277,14 +1558,6 @@
   "CHDN": {
     "name": "Churchill Downs Incorporated",
     "wikiTitle": "Churchill Downs Incorporated"
-  },
-  "CHE": {
-    "name": "Chemed Corp",
-    "wikiTitle": "LG Chem"
-  },
-  "CHEF": {
-    "name": "The Chefs' Warehouse Inc.",
-    "wikiTitle": "Albertsons"
   },
   "CHGG": {
     "name": "Chegg Inc.",
@@ -3302,33 +1575,13 @@
     "name": "Chemung Financial Corp",
     "wikiTitle": "Chemung Canal Trust Company"
   },
-  "CHMI": {
-    "name": "Cherry Hill Mortgage Investment Corporation",
-    "wikiTitle": "The Rouse Company"
-  },
-  "CHNR": {
-    "name": "China Natural Resources Inc.",
-    "wikiTitle": "PetroChina"
-  },
-  "CHOW": {
-    "name": "ChowChow Cloud International Holdings Limited",
-    "wikiTitle": "Grab Holdings"
-  },
   "CHRD": {
     "name": "Chord Energy Corporation",
     "wikiTitle": "Chord Energy"
   },
-  "CHRS": {
-    "name": "Coherus Oncology Inc.",
-    "wikiTitle": null
-  },
   "CHRW": {
     "name": "C.H. Robinson Worldwide Inc.",
     "wikiTitle": "C.H. Robinson"
-  },
-  "CHSCP": {
-    "name": "CHS Inc. 8%  Cumulative Redeemable",
-    "wikiTitle": null
   },
   "CHT": {
     "name": "Chunghwa Telecom Co. Ltd.",
@@ -3338,78 +1591,17 @@
     "name": "The Cigna Group",
     "wikiTitle": "The Cigna Group"
   },
-  "CIB": {
-    "name": "Grupo Cibest S.A.",
-    "wikiTitle": "Banco Cuscatlán"
-  },
   "CIEN": {
     "name": "Ciena Corporation",
     "wikiTitle": "Ciena"
-  },
-  "CIFR": {
-    "name": "Cipher Mining Inc.",
-    "wikiTitle": "Companies listed on the Toronto Stock Exchange (C)",
-    "error": "potential miss"
-  },
-  "CIIT": {
-    "name": "Tianci International Inc.",
-    "wikiTitle": "Graphene",
-    "error": "potential miss"
-  },
-  "CIM": {
-    "name": "Chimera Investment Corporation",
-    "wikiTitle": "Hermeus"
   },
   "CINF": {
     "name": "Cincinnati Financial Corporation",
     "wikiTitle": "Cincinnati Financial"
   },
-  "CING": {
-    "name": "Cingulate Inc.",
-    "wikiTitle": "Brain activity and meditation",
-    "error": "potential miss"
-  },
-  "CIO": {
-    "name": "City Office REIT Inc.",
-    "wikiTitle": "Real estate investment trust",
-    "error": "potential miss"
-  },
-  "CION": {
-    "name": "CION Investment Corporation",
-    "wikiTitle": "David's Bridal"
-  },
-  "CISO": {
-    "name": "CISO Global Inc.",
-    "wikiTitle": "Motorola Solutions"
-  },
-  "CISS": {
-    "name": "C3is Inc.",
-    "wikiTitle": null
-  },
-  "CITR": {
-    "name": "General Enterprise Ventures Inc.",
-    "wikiTitle": "Hewlett Packard Enterprise"
-  },
-  "CIVB": {
-    "name": "Civista Bancshares Inc.",
-    "wikiTitle": "FirstMerit Corporation"
-  },
-  "CIVI": {
-    "name": "Civitas Resources Inc.",
-    "wikiTitle": "Acorda Therapeutics"
-  },
   "CIX": {
     "name": "CompX International Inc.",
     "wikiTitle": "NL Industries"
-  },
-  "CJMB": {
-    "name": "Callan JMB Inc.",
-    "wikiTitle": null
-  },
-  "CKX": {
-    "name": "CKX Lands Inc.",
-    "wikiTitle": "19 Recordings",
-    "error": "potential miss"
   },
   "CL": {
     "name": "Colgate-Palmolive Company",
@@ -3423,26 +1615,9 @@
     "name": "Core Laboratories Inc.",
     "wikiTitle": "Core Laboratories"
   },
-  "CLBK": {
-    "name": "Columbia Financial Inc.",
-    "wikiTitle": "Ameriprise Financial"
-  },
   "CLBT": {
     "name": "Cellebrite DI Ltd.",
     "wikiTitle": "Cellebrite"
-  },
-  "CLCO": {
-    "name": "Cool Company Ltd.",
-    "wikiTitle": "Nothing (company)"
-  },
-  "CLDI": {
-    "name": "Calidi Biotherapeutics Inc.",
-    "wikiTitle": null
-  },
-  "CLDX": {
-    "name": "Celldex Therapeutics Inc.",
-    "wikiTitle": "List of biotech and pharmaceutical companies in the New York metropolitan area",
-    "error": "potential miss"
   },
   "CLF": {
     "name": "Cleveland-Cliffs Inc.",
@@ -3452,10 +1627,6 @@
     "name": "Clearfield Inc.",
     "wikiTitle": "Clearfield, Inc."
   },
-  "CLGN": {
-    "name": "CollPlant Biotechnologies Ltd",
-    "wikiTitle": "List of Israeli companies listed on the Nasdaq"
-  },
   "CLH": {
     "name": "Clean Harbors Inc.",
     "wikiTitle": "Clean Harbors"
@@ -3464,61 +1635,17 @@
     "name": "ClearSign Technologies Corporation",
     "wikiTitle": "ClearSign Technologies"
   },
-  "CLLS": {
-    "name": "Cellectis S.A.",
-    "wikiTitle": "André Choulika",
-    "error": "potential miss"
-  },
-  "CLMB": {
-    "name": "Climb Global Solutions Inc.",
-    "wikiTitle": "Univar Solutions"
-  },
   "CLMT": {
     "name": "Calumet Inc.",
     "wikiTitle": "Calumet, Inc."
-  },
-  "CLNE": {
-    "name": "Clean Energy Fuels Corp.",
-    "wikiTitle": "Valero Energy"
-  },
-  "CLNN": {
-    "name": "Clene Inc.",
-    "wikiTitle": "List of English translations from medieval sources: C",
-    "error": "potential miss"
   },
   "CLPR": {
     "name": "Clipper Realty Inc.",
     "wikiTitle": "Clipper Equity"
   },
-  "CLPS": {
-    "name": "CLPS Incorporation",
-    "wikiTitle": "Commercial Lunar Payload Services",
-    "error": "potential miss"
-  },
-  "CLPT": {
-    "name": "ClearPoint Neuro Inc.",
-    "wikiTitle": "Neuro-linguistic programming",
-    "error": "potential miss"
-  },
-  "CLRB": {
-    "name": "Cellectar Biosciences Inc. ",
-    "wikiTitle": null
-  },
-  "CLRO": {
-    "name": "ClearOne Inc. (DE)",
-    "wikiTitle": "IHeartMedia"
-  },
   "CLS": {
     "name": "Celestica Inc.",
     "wikiTitle": "Celestica"
-  },
-  "CLSK": {
-    "name": "CleanSpark Inc.",
-    "wikiTitle": "Tesla, Inc."
-  },
-  "CLST": {
-    "name": "Catalyst Bancorp Inc.",
-    "wikiTitle": "EagleBank"
   },
   "CLVT": {
     "name": "Clarivate Plc",
@@ -3528,18 +1655,9 @@
     "name": "Clearwater Paper Corporation",
     "wikiTitle": "Clearwater Paper"
   },
-  "CLWT": {
-    "name": "Euro Tech Holdings Company Limited",
-    "wikiTitle": "Nasdaq-100"
-  },
   "CLX": {
     "name": "Clorox Company (The)",
     "wikiTitle": "Clorox"
-  },
-  "CLYM": {
-    "name": "Climb Bio Inc.",
-    "wikiTitle": "Yasuko Namba",
-    "error": "potential miss"
   },
   "CM": {
     "name": "Canadian Imperial Bank of Commerce",
@@ -3561,10 +1679,6 @@
     "name": "Commercial Metals Company",
     "wikiTitle": "Commercial Metals Company"
   },
-  "CMCL": {
-    "name": "Caledonia Mining Corporation Plc",
-    "wikiTitle": "Carnival Corporation & plc"
-  },
   "CMCM": {
     "name": "Cheetah Mobile Inc.",
     "wikiTitle": "Cheetah Mobile"
@@ -3572,10 +1686,6 @@
   "CMCO": {
     "name": "Columbus McKinnon Corporation",
     "wikiTitle": "Magnetek"
-  },
-  "CMDB": {
-    "name": "Costamare Bulkers Holdings Limited",
-    "wikiTitle": "Greek Merchant Marine"
   },
   "CMG": {
     "name": "Chipotle Mexican Grill Inc.",
@@ -3585,32 +1695,9 @@
     "name": "Cummins Inc.",
     "wikiTitle": "Cummins"
   },
-  "CMMB": {
-    "name": "Chemomab Therapeutics Ltd. American",
-    "wikiTitle": "Stan Polovets",
-    "error": "potential miss"
-  },
-  "CMND": {
-    "name": "Clearmind Medicine Inc.",
-    "wikiTitle": "MEAI",
-    "error": "potential miss"
-  },
-  "CMP": {
-    "name": "Compass Minerals Intl Inc",
-    "wikiTitle": "List of S&P 400 companies",
-    "error": "potential miss"
-  },
   "CMPR": {
     "name": "Cimpress plc",
     "wikiTitle": "Cimpress"
-  },
-  "CMPX": {
-    "name": "Compass Therapeutics Inc.",
-    "wikiTitle": "Cybin"
-  },
-  "CMRC": {
-    "name": "Commerce.com Inc. Series 1",
-    "wikiTitle": "Fanatics, Inc."
   },
   "CMRE": {
     "name": "Costamare Inc.",
@@ -3623,10 +1710,6 @@
   "CMT": {
     "name": "Core Molding Technologies Inc",
     "wikiTitle": "Core Molding Technologies"
-  },
-  "CMTL": {
-    "name": "Comtech Telecommunications Corp.",
-    "wikiTitle": "Gilat Satellite Networks"
   },
   "CNA": {
     "name": "CNA Financial Corporation",
@@ -3644,14 +1727,6 @@
     "name": "Conduent Incorporated",
     "wikiTitle": "Conduent"
   },
-  "CNET": {
-    "name": "ZW Data Action Technologies Inc.",
-    "wikiTitle": "Brand24"
-  },
-  "CNF": {
-    "name": "CNFinance Holdings Limited",
-    "wikiTitle": null
-  },
   "CNH": {
     "name": "CNH Industrial N.V.",
     "wikiTitle": "CNH Industrial"
@@ -3659,11 +1734,6 @@
   "CNI": {
     "name": "Canadian National Railway Company",
     "wikiTitle": "Canadian National Railway"
-  },
-  "CNL": {
-    "name": "Collective Mining Ltd.",
-    "wikiTitle": "Data mining",
-    "error": "potential miss"
   },
   "CNMD": {
     "name": "CONMED Corporation",
@@ -3673,46 +1743,13 @@
     "name": "CNO Financial Group Inc.",
     "wikiTitle": "CNO Financial Group"
   },
-  "CNOB": {
-    "name": "ConnectOne Bancorp Inc.",
-    "wikiTitle": "Fiserv"
-  },
-  "CNOBP": {
-    "name": "ConnectOne Bancorp Inc.",
-    "wikiTitle": "Fiserv"
-  },
-  "CNP": {
-    "name": "CenterPoint Energy Inc (Holding Co)",
-    "wikiTitle": "Apple Inc."
-  },
   "CNQ": {
     "name": "Canadian Natural Resources Limited",
     "wikiTitle": "Canadian Natural Resources"
   },
-  "CNR": {
-    "name": "Core Natural Resources Inc.",
-    "wikiTitle": "Cleveland-Cliffs"
-  },
   "CNS": {
     "name": "Cohen & Steers Inc",
     "wikiTitle": "Cohen & Steers"
-  },
-  "CNSP": {
-    "name": "CNS Pharmaceuticals Inc.",
-    "wikiTitle": "Teva Pharmaceuticals"
-  },
-  "CNTA": {
-    "name": "Centessa Pharmaceuticals plc",
-    "wikiTitle": null
-  },
-  "CNTB": {
-    "name": "Connect Biopharma Holdings Limited",
-    "wikiTitle": "Horizon Therapeutics"
-  },
-  "CNTX": {
-    "name": "Context Therapeutics Inc.",
-    "wikiTitle": "Regenerative medicine advanced therapy",
-    "error": "potential miss"
   },
   "CNTY": {
     "name": "Century Casinos Inc.",
@@ -3734,61 +1771,17 @@
     "name": "The Vita Coco Company Inc.",
     "wikiTitle": "Vita Coco"
   },
-  "COCP": {
-    "name": "Cocrystal Pharma Inc.",
-    "wikiTitle": "Phillip Frost",
-    "error": "potential miss"
-  },
-  "CODA": {
-    "name": "Coda Octopus Group Inc.",
-    "wikiTitle": "Panda Project"
-  },
-  "CODX": {
-    "name": "Co-Diagnostics Inc.",
-    "wikiTitle": "Merck & Co."
-  },
-  "COE": {
-    "name": "51Talk Online Education Group",
-    "wikiTitle": null
-  },
   "COF": {
     "name": "Capital One Financial Corporation",
     "wikiTitle": "Capital One"
-  },
-  "COFS": {
-    "name": "ChoiceOne Financial Services Inc.",
-    "wikiTitle": "President's Choice Financial"
-  },
-  "COGT": {
-    "name": "Cogent Biosciences Inc.",
-    "wikiTitle": "Greenhill & Co."
-  },
-  "COHN": {
-    "name": "Cohen & Company Inc.",
-    "wikiTitle": "Chewy (company)"
   },
   "COHR": {
     "name": "Coherent Corp.",
     "wikiTitle": "Coherent Corp."
   },
-  "COHU": {
-    "name": "Cohu Inc.",
-    "wikiTitle": "Trans World Airlines",
-    "error": "potential miss"
-  },
   "COKE": {
     "name": "Coca-Cola Consolidated Inc.",
     "wikiTitle": "Coca-Cola Consolidated"
-  },
-  "COLB": {
-    "name": "Columbia Banking System Inc.",
-    "wikiTitle": "History of banking",
-    "error": "potential miss"
-  },
-  "COLL": {
-    "name": "Collegium Pharmaceutical Inc.",
-    "wikiTitle": "List of S&P 500 companies",
-    "error": "potential miss"
   },
   "COLM": {
     "name": "Columbia Sportswear Company",
@@ -3806,15 +1799,6 @@
     "name": "The Cooper Companies Inc.",
     "wikiTitle": "The Cooper Companies"
   },
-  "COOK": {
-    "name": "Traeger Inc.",
-    "wikiTitle": "The Predator (film)",
-    "error": "potential miss"
-  },
-  "COOT": {
-    "name": "Australian Oilseeds Holdings Limited",
-    "wikiTitle": "Archer Daniels Midland"
-  },
   "COP": {
     "name": "ConocoPhillips",
     "wikiTitle": "ConocoPhillips"
@@ -3823,24 +1807,6 @@
     "name": "Cencora Inc.",
     "wikiTitle": "Cencora"
   },
-  "CORT": {
-    "name": "Corcept Therapeutics Incorporated",
-    "wikiTitle": "List of S&P 600 companies",
-    "error": "potential miss"
-  },
-  "CORZ": {
-    "name": "Core Scientific Inc.",
-    "wikiTitle": "Thermo Fisher Scientific"
-  },
-  "COSM": {
-    "name": "Cosmos Health Inc.",
-    "wikiTitle": "Wiz, Inc."
-  },
-  "COSO": {
-    "name": "CoastalSouth Bancshares Inc.",
-    "wikiTitle": "List of companies of the United States by state",
-    "error": "potential miss"
-  },
   "COST": {
     "name": "Costco Wholesale Corporation",
     "wikiTitle": "Costco"
@@ -3848,10 +1814,6 @@
   "COUR": {
     "name": "Coursera Inc.",
     "wikiTitle": "Coursera"
-  },
-  "COYA": {
-    "name": "Coya Therapeutics Inc.",
-    "wikiTitle": null
   },
   "CP": {
     "name": "Canadian Pacific Kansas City Limited",
@@ -3869,10 +1831,6 @@
     "name": "The Campbell's Company",
     "wikiTitle": "Campbell's"
   },
-  "CPBI": {
-    "name": "Central Plains Bancshares Inc.",
-    "wikiTitle": "Huntington Bancshares"
-  },
   "CPF": {
     "name": "Central Pacific Financial Corp New",
     "wikiTitle": "Central Pacific Bank"
@@ -3880,11 +1838,6 @@
   "CPHC": {
     "name": "Canterbury Park Holding Corporation 'New'",
     "wikiTitle": "Canterbury Park"
-  },
-  "CPIX": {
-    "name": "Cumberland Pharmaceuticals Inc.",
-    "wikiTitle": "Conivaptan",
-    "error": "potential miss"
   },
   "CPK": {
     "name": "Chesapeake Utilities Corporation",
@@ -3894,25 +1847,9 @@
     "name": "Capri Holdings Limited",
     "wikiTitle": "Capri Holdings"
   },
-  "CPRT": {
-    "name": "Copart Inc. (DE)",
-    "wikiTitle": "ADP (company)"
-  },
   "CPRX": {
     "name": "Catalyst Pharmaceuticals Inc.",
     "wikiTitle": "Catalyst Pharmaceuticals"
-  },
-  "CPSH": {
-    "name": "CPS Technologies Corp.",
-    "wikiTitle": "Mattr"
-  },
-  "CPSS": {
-    "name": "Consumer Portfolio Services Inc.",
-    "wikiTitle": "Select Portfolio Servicing"
-  },
-  "CQP": {
-    "name": "Cheniere Energy Partners LP Common",
-    "wikiTitle": "Bechtel"
   },
   "CR": {
     "name": "Crane Company",
@@ -3926,36 +1863,9 @@
     "name": "Corebridge Financial Inc.",
     "wikiTitle": "Corebridge Financial"
   },
-  "CRBU": {
-    "name": "Caribou Biosciences Inc.",
-    "wikiTitle": "Jennifer Doudna",
-    "error": "potential miss"
-  },
   "CRC": {
     "name": "California Resources Corporation",
     "wikiTitle": "California Resources Corporation"
-  },
-  "CRDF": {
-    "name": "Cardiff Oncology Inc.",
-    "wikiTitle": "Peter Elliott (pharmacologist)",
-    "error": "potential miss"
-  },
-  "CREG": {
-    "name": "Smart Powerr Corp.",
-    "wikiTitle": null
-  },
-  "CRESY": {
-    "name": "Cresud S.A.C.I.F. y A.",
-    "wikiTitle": null
-  },
-  "CREV": {
-    "name": "Carbon Revolution Public Limited",
-    "wikiTitle": "Climate change",
-    "error": "potential miss"
-  },
-  "CREX": {
-    "name": "Creative Realities Inc.",
-    "wikiTitle": "Adobe Inc."
   },
   "CRGO": {
     "name": "Freightos Limited",
@@ -3969,15 +1879,6 @@
     "name": "Carter's Inc.",
     "wikiTitle": "Carter's"
   },
-  "CRIS": {
-    "name": "Curis Inc.",
-    "wikiTitle": "ACT Biotech Inc",
-    "error": "potential miss"
-  },
-  "CRK": {
-    "name": "Comstock Resources Inc.",
-    "wikiTitle": "S&P Global"
-  },
   "CRL": {
     "name": "Charles River Laboratories International Inc.",
     "wikiTitle": "Charles River Laboratories"
@@ -3985,18 +1886,6 @@
   "CRM": {
     "name": "Salesforce Inc.",
     "wikiTitle": "Salesforce"
-  },
-  "CRMD": {
-    "name": "CorMedix Inc.",
-    "wikiTitle": null
-  },
-  "CRML": {
-    "name": "Critical Metals Corp.",
-    "wikiTitle": "The Metals Company"
-  },
-  "CRMT": {
-    "name": "America's Car-Mart Inc",
-    "wikiTitle": "Walmart"
   },
   "CRNC": {
     "name": "Cerence Inc.",
@@ -4042,16 +1931,6 @@
     "name": "CorVel Corp.",
     "wikiTitle": "CorVel Corporation"
   },
-  "CRVO": {
-    "name": "CervoMed Inc.",
-    "wikiTitle": "List of enclaves and exclaves",
-    "error": "potential miss"
-  },
-  "CRVS": {
-    "name": "Corvus Pharmaceuticals Inc.",
-    "wikiTitle": "Burlingame, California",
-    "error": "potential miss"
-  },
   "CRWS": {
     "name": "Crown Crafts Inc",
     "wikiTitle": "Crown Crafts"
@@ -4080,44 +1959,13 @@
     "name": "Carlisle Companies Incorporated",
     "wikiTitle": "Carlisle Companies"
   },
-  "CSPI": {
-    "name": "CSP Inc.",
-    "wikiTitle": "Sunoco"
-  },
-  "CSQ": {
-    "name": "Calamos Strategic Total Return",
-    "wikiTitle": "Kraft Heinz"
-  },
-  "CSR": {
-    "name": "D/B/A Centerspace",
-    "wikiTitle": "List of companies based in Oregon",
-    "error": "potential miss"
-  },
   "CSTE": {
     "name": "Caesarstone Ltd.",
     "wikiTitle": "Caesarstone"
   },
-  "CSTL": {
-    "name": "Castle Biosciences Inc.",
-    "wikiTitle": "DecisionDx-UM",
-    "error": "potential miss"
-  },
   "CSTM": {
     "name": "Constellium SE",
     "wikiTitle": "Constellium"
-  },
-  "CSV": {
-    "name": "Carriage Services Inc.",
-    "wikiTitle": "ESPN (streaming service)",
-    "error": "potential miss"
-  },
-  "CSW": {
-    "name": "CSW Industrials Inc.",
-    "wikiTitle": "Corby Spirit and Wine"
-  },
-  "CSWC": {
-    "name": "Capital Southwest Corporation",
-    "wikiTitle": "Hilltop Holdings Inc."
   },
   "CSX": {
     "name": "CSX Corporation",
@@ -4127,49 +1975,13 @@
     "name": "Cintas Corporation",
     "wikiTitle": "Cintas"
   },
-  "CTGO": {
-    "name": "Contango ORE Inc.",
-    "wikiTitle": "Gold mining in Alaska",
-    "error": "potential miss"
-  },
-  "CTKB": {
-    "name": "Cytek Biosciences Inc.",
-    "wikiTitle": "List of S&P 600 companies",
-    "error": "potential miss"
-  },
   "CTLP": {
     "name": "Cantaloupe Inc.",
     "wikiTitle": "Cantaloupe, Inc."
   },
-  "CTM": {
-    "name": "Castellum Inc.",
-    "wikiTitle": "Umm el-Jimal",
-    "error": "potential miss"
-  },
-  "CTMX": {
-    "name": "CytomX Therapeutics Inc.",
-    "wikiTitle": "AbbVie"
-  },
-  "CTO": {
-    "name": "CTO Realty Growth Inc.",
-    "wikiTitle": "Keller Williams Realty"
-  },
-  "CTOR": {
-    "name": "Citius Oncology Inc.",
-    "wikiTitle": "List of biotech and pharmaceutical companies in the New York metropolitan area",
-    "error": "potential miss"
-  },
-  "CTOS": {
-    "name": "Custom Truck One Source Inc.",
-    "wikiTitle": "Daimler Truck North America"
-  },
   "CTRA": {
     "name": "Coterra Energy Inc.",
     "wikiTitle": "Coterra"
-  },
-  "CTRE": {
-    "name": "CareTrust REIT Inc.",
-    "wikiTitle": "Welltower"
   },
   "CTRM": {
     "name": "Castor Maritime Inc.",
@@ -4179,11 +1991,6 @@
     "name": "Citi Trends Inc.",
     "wikiTitle": "Citi Trends"
   },
-  "CTS": {
-    "name": "CTS Corporation",
-    "wikiTitle": "Cadillac CTS",
-    "error": "potential miss"
-  },
   "CTSO": {
     "name": "Cytosorbents Corporation",
     "wikiTitle": "Cytosorbents Corporation"
@@ -4191,11 +1998,6 @@
   "CTVA": {
     "name": "Corteva Inc.",
     "wikiTitle": "Corteva"
-  },
-  "CTXR": {
-    "name": "Citius Pharmaceuticals Inc.",
-    "wikiTitle": "List of biotech and pharmaceutical companies in the New York metropolitan area",
-    "error": "potential miss"
   },
   "CUBE": {
     "name": "CubeSmart",
@@ -4205,43 +2007,13 @@
     "name": "Customers Bancorp Inc",
     "wikiTitle": "Customers Bank"
   },
-  "CUE": {
-    "name": "Cue Biopharma Inc.",
-    "wikiTitle": null
-  },
-  "CULP": {
-    "name": "Culp Inc.",
-    "wikiTitle": "Verizon"
-  },
-  "CURB": {
-    "name": "Curbline Properties Corp.",
-    "wikiTitle": "List of S&P 400 companies",
-    "error": "potential miss"
-  },
-  "CURR": {
-    "name": "Currenc Group Inc.",
-    "wikiTitle": "Animoca Brands"
-  },
-  "CURX": {
-    "name": "Curanex Pharmaceuticals Inc",
-    "wikiTitle": null
-  },
   "CUZ": {
     "name": "Cousins Properties Incorporated",
     "wikiTitle": "Cousins Properties"
   },
-  "CV": {
-    "name": "CapsoVision Inc.",
-    "wikiTitle": "Andor",
-    "error": "potential miss"
-  },
   "CVAC": {
     "name": "CureVac N.V.",
     "wikiTitle": "CureVac"
-  },
-  "CVBF": {
-    "name": "CVB Financial Corporation",
-    "wikiTitle": "Nasdaq Financial-100"
   },
   "CVCO": {
     "name": "Cavco Industries Inc.",
@@ -4255,10 +2027,6 @@
     "name": "Civeo Corporation (Canada)",
     "wikiTitle": "Civeo Corporation"
   },
-  "CVGI": {
-    "name": "Commercial Vehicle Group Inc.",
-    "wikiTitle": "JAC Group"
-  },
   "CVGW": {
     "name": "Calavo Growers Inc.",
     "wikiTitle": "Calavo Growers"
@@ -4266,10 +2034,6 @@
   "CVI": {
     "name": "CVR Energy Inc.",
     "wikiTitle": "Coffeyville Resources"
-  },
-  "CVKD": {
-    "name": "Cadrenal Therapeutics Inc.",
-    "wikiTitle": null
   },
   "CVLT": {
     "name": "Commvault Systems Inc.",
@@ -4279,15 +2043,6 @@
     "name": "Cel-Sci Corporation",
     "wikiTitle": "Cel-Sci Corporation"
   },
-  "CVR": {
-    "name": "Chicago Rivet & Machine Co.",
-    "wikiTitle": "Chicago Pneumatic"
-  },
-  "CVRX": {
-    "name": "go.",
-    "wikiTitle": "List of reporting marks: C",
-    "error": "potential miss"
-  },
   "CVS": {
     "name": "CVS Health Corporation",
     "wikiTitle": "CVS Health"
@@ -4295,10 +2050,6 @@
   "CVU": {
     "name": "CPI Aerostructures Inc.",
     "wikiTitle": "CPI Aerostructures"
-  },
-  "CVV": {
-    "name": "CVD Equipment Corporation",
-    "wikiTitle": "KLA Corporation"
   },
   "CVX": {
     "name": "Chevron Corporation",
@@ -4312,10 +2063,6 @@
     "name": "Community West Bancshares",
     "wikiTitle": "Community West Bancshares"
   },
-  "CWCO": {
-    "name": "Consolidated Water Co. Ltd.",
-    "wikiTitle": "Consolidated Contractors Company"
-  },
   "CWK": {
     "name": "Cushman & Wakefield Ltd.",
     "wikiTitle": "Cushman & Wakefield"
@@ -4323,10 +2070,6 @@
   "CWT": {
     "name": "California Water Service Group",
     "wikiTitle": "California Water Service Group"
-  },
-  "CXDO": {
-    "name": "Crexendo Inc.",
-    "wikiTitle": null
   },
   "CXT": {
     "name": "Crane NXT Co.",
@@ -4344,14 +2087,6 @@
     "name": "CyberArk Software Ltd.",
     "wikiTitle": "CyberArk"
   },
-  "CYCN": {
-    "name": "Cyclerion Therapeutics Inc.",
-    "wikiTitle": null
-  },
-  "CYCU": {
-    "name": "Cycurion Inc.",
-    "wikiTitle": null
-  },
   "CYD": {
     "name": "China Yuchai International Limited",
     "wikiTitle": "China Yuchai International"
@@ -4360,53 +2095,17 @@
     "name": "Community Health Systems Inc.",
     "wikiTitle": "Community Health Systems"
   },
-  "CYN": {
-    "name": "Cyngn Inc.",
-    "wikiTitle": "CyanogenMod",
-    "error": "potential miss"
-  },
-  "CYPH": {
-    "name": "Cypherpunk Technologies Inc.",
-    "wikiTitle": "Cypherpunk",
-    "error": "potential miss"
-  },
-  "CYRX": {
-    "name": "CryoPort Inc.",
-    "wikiTitle": "List of video game publishers",
-    "error": "potential miss"
-  },
   "CYTK": {
     "name": "Cytokinetics Incorporated",
     "wikiTitle": "Cytokinetics"
-  },
-  "CZFS": {
-    "name": "Citizens Financial Services Inc.",
-    "wikiTitle": "Citizens Financial Group"
-  },
-  "CZNC": {
-    "name": "Citizens & Northern Corp",
-    "wikiTitle": "Northern Trust"
   },
   "CZR": {
     "name": "Caesars Entertainment Inc.",
     "wikiTitle": "Caesars Entertainment"
   },
-  "CZWI": {
-    "name": "Citizens Community Bancorp Inc.",
-    "wikiTitle": "Glacier Bancorp"
-  },
   "D": {
     "name": "Dominion Energy Inc.",
     "wikiTitle": "Dominion Energy"
-  },
-  "DAC": {
-    "name": "Danaos Corporation",
-    "wikiTitle": "Visayan Electric Company"
-  },
-  "DAIC": {
-    "name": "CID HoldCo Inc.",
-    "wikiTitle": "List of The Eminence in Shadow characters",
-    "error": "potential miss"
   },
   "DAIO": {
     "name": "Data I/O Corporation",
@@ -4415,11 +2114,6 @@
   "DAKT": {
     "name": "Daktronics Inc.",
     "wikiTitle": "Daktronics"
-  },
-  "DAL": {
-    "name": "Delta Air Lines Inc.",
-    "wikiTitle": "Delta Air Lines fleet",
-    "error": "potential miss"
   },
   "DAN": {
     "name": "Dana Incorporated",
