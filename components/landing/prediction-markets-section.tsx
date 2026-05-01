@@ -209,7 +209,7 @@ export function PredictionMarketsSection() {
       <div className="container mx-auto px-4 max-w-7xl">
 
 
-        <div className="flex items-center justify-center gap-8 mb-16">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-16">
           <div className="text-center">
             <Badge variant="outline" className="mb-4 border-cyan-500/50 text-cyan-400">
               Prediction Markets Intelligence
