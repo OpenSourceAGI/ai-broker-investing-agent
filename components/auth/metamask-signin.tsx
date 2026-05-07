@@ -17,7 +17,10 @@ export function MetaMaskSignIn() {
 
   useEffect(() => {
     if (session?.user) {
-      router.push("/dashboard")
+      fetch('/api/user/check-survey')
+        .then(r => r.json())
+        .then(data => router.push(data.hasCompletedSurvey ? "/" : "/survey"))
+        .catch(() => router.push("/survey"))
     }
     if (typeof window !== "undefined") {
       setHasMetaMask(!!window.ethereum)
@@ -84,10 +87,15 @@ export function MetaMaskSignIn() {
         throw new Error(verifyError.message || "Verification failed")
       }
 
-      // Success - redirect to dashboard
       if (data) {
         router.refresh()
-        router.push("/dashboard")
+        try {
+          const surveyResponse = await fetch('/api/user/check-survey')
+          const surveyData = await surveyResponse.json()
+          router.push(surveyData.hasCompletedSurvey ? "/" : "/survey")
+        } catch {
+          router.push("/survey")
+        }
       }
 
     } catch (err) {
