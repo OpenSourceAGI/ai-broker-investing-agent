@@ -21,14 +21,13 @@ export function GoogleSignIn() {
           const data = await response.json()
 
           if (data.hasCompletedSurvey) {
-            router.push("/dashboard")
+            router.push("/")
           } else {
             router.push("/survey")
           }
         } catch (error) {
           console.error("Error checking survey status:", error)
-          // Default to dashboard if check fails
-          router.push("/dashboard")
+          router.push("/survey")
         }
       }
     }
@@ -44,14 +43,14 @@ export function GoogleSignIn() {
     setIsLoading(true)
     await signIn.social({
       provider: "google",
-      callbackURL: "/dashboard",
+      callbackURL: "/survey",
     })
   }
 
   const handleDevLogin = async () => {
     setIsLoading(true)
     await signIn.anonymous({
-      callbackURL: "/dashboard",
+      callbackURL: "/survey",
     })
   }
 

@@ -55,9 +55,9 @@ export default function InvestorSurvey() {
       // Scroll to top to show success message
       window.scrollTo({ top: 0, behavior: "smooth" })
 
-      // Redirect to dashboard after 2 seconds
+      // Redirect to homepage after 2 seconds
       setTimeout(() => {
-        router.push("/dashboard")
+        router.push("/")
       }, 2000)
 
   }
