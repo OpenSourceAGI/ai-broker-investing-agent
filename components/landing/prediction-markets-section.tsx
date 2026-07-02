@@ -21,6 +21,7 @@ import {
 import { MarketCorrelations } from "./market-correlations"
 import Image from "next/image"
 import { InfoTooltip } from "@/components/landing/info-tooltip"
+import { BorderBeam } from "@/components/ui/border-beam"
 
 const topTraders = [
 
@@ -206,8 +207,12 @@ export function PredictionMarketsSection() {
   const [selectedTrader, setSelectedTrader] = useState<string | null>(null)
 
   return (
-    <section id="prediction-markets" className="py-24 bg-muted/30 overflow-hidden">
-      <div className="container mx-auto px-4 max-w-7xl">
+    <section id="prediction-markets" className="relative py-24 bg-muted/30 overflow-hidden">
+      {/* Ambient hero-style glow orbs */}
+      <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl animate-hero-orb" />
+      <div className="pointer-events-none absolute -bottom-32 -right-24 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl animate-hero-orb [animation-delay:-5s]" />
+
+      <div className="relative container mx-auto px-4 max-w-[900px]">
 
 
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-16">
@@ -215,7 +220,9 @@ export function PredictionMarketsSection() {
             <Badge variant="outline" className="mb-4 border-cyan-500/50 text-cyan-400">
               Prediction Markets Intelligence
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Polymarket & Kalshi Analysis</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance bg-gradient-to-r from-foreground via-cyan-400 to-foreground bg-clip-text text-transparent animate-hero-shimmer">
+              Polymarket & Kalshi Analysis
+            </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
               LLM outcome analysis & copy trading signals{" "}
               <InfoTooltip iconClassName="h-5 w-5">
@@ -294,7 +301,8 @@ export function PredictionMarketsSection() {
 
 
         {/* Copy Trading Leaderboard */}
-        <Card className="bg-card/50 border-border/50 backdrop-blur max-w-4xl mx-auto">
+        <Card className="relative overflow-hidden bg-card/50 border-border/50 backdrop-blur max-w-4xl mx-auto">
+          <BorderBeam size={100} duration={10} colorFrom="#22d3ee" colorTo="#34d399" />
           <CardHeader>
 
 

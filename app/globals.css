@@ -184,6 +184,30 @@
   }
 }
 
+@keyframes hero-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes hero-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+
 @layer utilities {
   .animate-marquee {
     animation: marquee var(--duration, 40s) linear infinite;
@@ -199,6 +223,15 @@
 
   .animate-hero-orb {
     animation: hero-orb 10s ease-in-out infinite;
+  }
+
+  .animate-hero-shimmer {
+    background-size: 200% auto;
+    animation: hero-shimmer 5s ease-in-out infinite;
+  }
+
+  .animate-hero-glow-pulse {
+    animation: hero-glow-pulse 7s ease-in-out infinite;
   }
 
   /* Hide scrollbar for Chrome, Safari and Opera */

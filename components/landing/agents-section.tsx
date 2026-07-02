@@ -78,13 +78,20 @@ const otherTeams = [
 
 export function AgentsSection() {
   return (
-    <section id="agents" className="overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="agents" className="relative overflow-hidden">
+      {/* Ambient hero-style glow orbs */}
+      <div className="pointer-events-none absolute top-10 -right-24 h-80 w-80 rounded-full bg-violet-500/10 blur-3xl animate-hero-orb" />
+      <div className="pointer-events-none absolute bottom-0 -left-24 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl animate-hero-orb [animation-delay:-3s]" />
+
+      <div className="relative mx-auto max-w-[900px] px-4 sm:px-6 lg:px-8">
         {/* Analyst Team */}
         <div className="">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             {analystTeam.map((analyst) => (
-              <Card key={analyst.name} className="border-border bg-card">
+              <Card
+                key={analyst.name}
+                className="border-border bg-card/80 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+              >
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-1/10">
@@ -115,7 +122,10 @@ export function AgentsSection() {
         {/* Other Teams */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           {otherTeams.map((team) => (
-            <Card key={team.name} className="relative overflow-hidden border-border bg-card">
+            <Card
+              key={team.name}
+              className="relative overflow-hidden border-border bg-card/80 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+            >
               <div className={`absolute right-0 top-0 h-32 w-32 ${team.bg} blur-3xl`} />
               <CardHeader>
                 <div className="flex items-center gap-4">

@@ -5,6 +5,7 @@ import { TrendingUp, ArrowLeftRight, Zap, Timer, ChevronRight, Check, X } from "
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { InfoTooltip } from "@/components/landing/info-tooltip"
+import { BorderBeam } from "@/components/ui/border-beam"
 
 const tradingViewStrategies = [
   "RSI-Adaptive T3 & SAR Strategy",
@@ -185,11 +186,15 @@ export function StrategiesSection() {
   const colors = colorVariants[activeStrategy.color as keyof typeof colorVariants]
 
   return (
-    <section id="strategies" className="border-t border-border px-4 py-24 sm:px-6 lg:px-8 overflow-hidden">
-      <div className="mx-auto max-w-7xl">
+    <section id="strategies" className="relative border-t border-border px-4 py-24 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Ambient hero-style glow orbs */}
+      <div className="pointer-events-none absolute -top-20 right-1/4 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl animate-hero-orb" />
+      <div className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl animate-hero-orb [animation-delay:-7s]" />
+
+      <div className="relative mx-auto max-w-[900px]">
         <div className="mb-16 flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:gap-12">
           <div className="flex-1 text-center lg:text-left">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl bg-gradient-to-r from-foreground via-purple-400 to-foreground bg-clip-text text-transparent animate-hero-shimmer">
               Algorithmic Trading Strategies{" "}
               <InfoTooltip iconClassName="h-5 w-5">
                 Four AI-powered algorithmic strategies leveraging technical indicators (MACD, RSI,
@@ -212,7 +217,8 @@ export function StrategiesSection() {
         </div>
 
         {/* TradingView Expert Strategies Card */}
-        <div className="mb-12 rounded-2xl border border-purple-500/30 bg-purple-500/5 p-6 lg:p-8">
+        <div className="relative mb-12 overflow-hidden rounded-2xl border border-purple-500/30 bg-purple-500/5 p-6 lg:p-8 backdrop-blur-sm">
+          <BorderBeam size={90} duration={9} colorFrom="#a855f7" colorTo="#34d399" />
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-xl font-bold text-foreground flex items-center gap-2">

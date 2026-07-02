@@ -66,8 +66,12 @@ const apiDataSources = [
 
 export function SignalIndicators() {
   return (
-    <section id="signals" className=" px-4  sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <section id="signals" className="relative overflow-hidden px-4 sm:px-6 lg:px-8">
+      {/* Ambient hero-style glow orbs */}
+      <div className="pointer-events-none absolute -top-16 left-1/3 h-72 w-72 rounded-full bg-teal-500/10 blur-3xl animate-hero-orb" />
+      <div className="pointer-events-none absolute bottom-0 -right-20 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl animate-hero-orb [animation-delay:-5s]" />
+
+      <div className="relative mx-auto max-w-[900px]">
 
 
         <div className="mt-4">
@@ -77,7 +81,7 @@ export function SignalIndicators() {
             {apiDataSources.map((source) => (
               <div
                 key={source.name}
-                className="group rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/40"
+                className="group rounded-xl border border-border bg-card/80 p-6 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5"
               >
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20">

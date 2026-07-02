@@ -61,10 +61,10 @@ export function HeroSection() {
       <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl animate-hero-orb" />
       <div className="pointer-events-none absolute -bottom-40 -right-24 h-[28rem] w-[28rem] rounded-full bg-violet-500/15 blur-3xl animate-hero-orb [animation-delay:-5s]" />
 
-      <div className="mx-auto max-w-7xl px-6 pt-16 pb-8 lg:px-8 relative z-10 min-h-[85vh] flex flex-col justify-center">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left: copy + CTAs */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+      <div className="mx-auto max-w-[900px] px-6 pt-16 pb-8 lg:px-8 relative z-10 min-h-[85vh] flex flex-col justify-center">
+        <div className="flex flex-col gap-12 items-center">
+          {/* Copy + CTAs */}
+          <div className="flex flex-col items-center text-center">
             <motion.div
               {...fadeUp}
               transition={{ duration: 0.5 }}
@@ -82,7 +82,7 @@ export function HeroSection() {
               <span className="block bg-gradient-to-br from-foreground via-foreground to-foreground/40 bg-clip-text text-transparent">
                 Vibe-Trade Like a Boss
               </span>
-              <span className="block bg-gradient-to-r from-primary via-emerald-400 to-teal-400 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-primary via-emerald-400 to-teal-400 bg-clip-text text-transparent animate-hero-shimmer">
                 Auto-Invest Like a Hedge Fund
               </span>
             </motion.h1>
@@ -103,7 +103,7 @@ export function HeroSection() {
             <motion.div
               {...fadeUp}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-4"
+              className="mt-8 flex flex-wrap items-center justify-center gap-4"
             >
               <Link href="/login" rel="noopener noreferrer">
                 <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background">
@@ -126,7 +126,7 @@ export function HeroSection() {
             <motion.div
               {...fadeUp}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-5"
+              className="mt-6 flex flex-wrap items-center justify-center gap-5"
             >
               <Link href="https://play.google.com/store/apps/details?id=com.autoinvestment.broker.app" target="_blank" rel="noopener noreferrer">
                 <Image
@@ -160,13 +160,14 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Right: video + floating graphics */}
+          {/* Video + floating graphics */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative"
+            className="relative w-full"
           >
+            <div className="pointer-events-none absolute -inset-8 rounded-[2rem] bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-violet-500/15 blur-2xl animate-hero-glow-pulse" />
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-background/50 backdrop-blur-sm aspect-video">
               <iframe
                 className="absolute inset-0 w-full h-full"

@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { InfoTooltip } from "@/components/landing/info-tooltip";
+import { Marquee } from "@/components/ui/marquee";
+import { BorderBeam } from "@/components/ui/border-beam";
 
 export function BrokerPlatformsSection() {
   const brokers = [
@@ -105,20 +107,29 @@ export function BrokerPlatformsSection() {
     },
   ];
   return (
-    <section className="relative sm:px-6 lg:px-8 bg-muted/30">
-      <div className="mx-auto max-w-7xl">
+    <section className="relative overflow-hidden px-4 sm:px-6 lg:px-8 bg-muted/30">
+      {/* Ambient hero-style glow orbs */}
+      <div className="pointer-events-none absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl animate-hero-orb" />
+      <div className="pointer-events-none absolute -bottom-24 right-1/4 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl animate-hero-orb [animation-delay:-4s]" />
+
+      <div className="relative mx-auto max-w-[900px]">
         {/* Flow Arrow */}
         <div className="my-8 flex justify-center">
-          <div className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2">
-            <span className="text-sm text-muted-foreground">
+          <div className="relative flex items-center gap-2 overflow-hidden rounded-full border border-primary/30 bg-card/80 px-4 py-2 shadow-lg backdrop-blur-sm">
+            <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-sm font-medium bg-gradient-to-r from-primary via-emerald-400 to-teal-400 bg-clip-text text-transparent animate-hero-shimmer">
               Order flow to auto trade on
             </span>
             <ArrowRight className="h-4 w-4 text-primary" />
+            <BorderBeam size={36} duration={5} />
           </div>
         </div>
 
-        {/* Broker Cards Grid */}
-        <div className="flex gap-4 overflow-x-auto pb-4 mb-12 custom-scrollbar">
+        {/* Broker Cards — auto-scrolling, no scrollbar */}
+        <Marquee
+          pauseOnHover
+          className="mb-12 [--duration:35s] [--gap:1rem] [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
+        >
           {brokers.map((broker) => (
             <Card
               key={broker.name}
@@ -204,9 +215,13 @@ export function BrokerPlatformsSection() {
                   )}
                 </Button> */}
               </div>
+
+              {broker.status === "Active" && (
+                <BorderBeam size={50} duration={8} colorFrom="#34d399" colorTo="#14b8a6" />
+              )}
             </Card>
           ))}
-        </div>
+        </Marquee>
       </div>
     </section>
   );

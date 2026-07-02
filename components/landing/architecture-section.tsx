@@ -17,8 +17,12 @@ const workflow = [
 
 export function ArchitectureSection() {
   return (
-    <section id="workflow" className="m-10 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      <div className="mx-auto max-w-7xl">
+    <section id="workflow" className="relative my-10 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Ambient hero-style glow orbs */}
+      <div className="pointer-events-none absolute -top-20 -left-20 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl animate-hero-orb" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-teal-500/10 blur-3xl animate-hero-orb [animation-delay:-6s]" />
+
+      <div className="relative mx-auto max-w-[900px]">
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="relative flex items-center justify-center overflow-hidden rounded-2xl ">
 
@@ -32,7 +36,7 @@ export function ArchitectureSection() {
             />
           </div>
           <div className="flex flex-col justify-center">
-            <h3 className="text-2xl font-bold text-foreground">
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-emerald-400 bg-clip-text text-transparent animate-hero-shimmer">
               Hedge Fund Level Research, Automated{" "}
               <InfoTooltip iconClassName="h-5 w-5">
                 Our AI agents analyze candlestick patterns, moving averages, and technical
