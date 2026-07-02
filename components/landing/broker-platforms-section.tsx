@@ -14,6 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 import Link from "next/link";
+import { InfoTooltip } from "@/components/landing/info-tooltip";
 
 export function BrokerPlatformsSection() {
   const brokers = [
@@ -164,22 +165,17 @@ export function BrokerPlatformsSection() {
                     </div>
                   </div>
 
-                  <broker.icon className={`h-6 w-6 text-primary opacity-50`} />
-                </div>
-
-                {/* Description */}
-                <p className="text-sm text-muted-foreground mb-3">
-                  {broker.description}
-                </p>
-
-                {/* Features */}
-                <div className="space-y-1.5 mb-3">
-                  {broker.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-1.5">
-                      <CheckCircle className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-xs">{feature}</span>
-                    </div>
-                  ))}
+                  <div className="flex items-center gap-1.5">
+                    <InfoTooltip>
+                      <p className="mb-1.5">{broker.description}</p>
+                      <ul className="space-y-0.5">
+                        {broker.features.map((feature, idx) => (
+                          <li key={idx}>• {feature}</li>
+                        ))}
+                      </ul>
+                    </InfoTooltip>
+                    <broker.icon className={`h-6 w-6 text-primary opacity-50`} />
+                  </div>
                 </div>
 
                 {/* Assets */}

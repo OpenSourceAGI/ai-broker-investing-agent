@@ -1,5 +1,6 @@
 import { ArrowRight, ArrowDown } from "lucide-react"
 import Image from "next/image"
+import { InfoTooltip } from "@/components/landing/info-tooltip"
 
 const workflow = [
   { name: "Analyst Team", desc: "4 specialized analysts gather data", color: "text-chart-1", border: "border-chart-1" },
@@ -32,12 +33,12 @@ export function ArchitectureSection() {
           </div>
           <div className="flex flex-col justify-center">
             <h3 className="text-2xl font-bold text-foreground">
-              Automation of Hedge Fund Level of Research
+              Hedge Fund Level Research, Automated{" "}
+              <InfoTooltip iconClassName="h-5 w-5">
+                Our AI agents analyze candlestick patterns, moving averages, and technical
+                indicators in real-time, providing institutional-grade market insights.
+              </InfoTooltip>
             </h3>
-            <p className="mt-4 text-muted-foreground">
-              Our AI agents analyze candlestick patterns, moving averages, and technical indicators in real-time,
-              providing institutional-grade market insights.
-            </p>
 
             <div className="mt-12 flex justify-center">
               <Image

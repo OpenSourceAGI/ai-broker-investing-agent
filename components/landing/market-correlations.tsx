@@ -17,6 +17,7 @@ import {
   AlertCircle,
   ArrowRight,
 } from "lucide-react"
+import { InfoTooltip } from "@/components/landing/info-tooltip"
 
 const correlationCategories = [
   {
@@ -329,11 +330,14 @@ export function MarketCorrelations() {
         <Badge variant="outline" className="mb-4 border-violet-500/50 text-violet-400">
           Cross-Market Intelligence
         </Badge>
-        <h3 className="text-3xl font-bold mb-4">Stock Price Correlations with Event Prediction</h3>
-        <p className="text-muted-foreground max-w-3xl mx-auto">
-          Discover how prediction markets correlate with traditional securities across sectors. Our AI identifies
-          non-obvious relationships, providing 45-60 day advance signals for strategic positioning.
-        </p>
+        <h3 className="text-3xl font-bold mb-4">
+          Stock Price Correlations with Event Prediction{" "}
+          <InfoTooltip iconClassName="h-5 w-5">
+            Discover how prediction markets correlate with traditional securities across sectors.
+            Our AI identifies non-obvious relationships, providing 45-60 day advance signals for
+            strategic positioning.
+          </InfoTooltip>
+        </h3>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -397,11 +401,11 @@ export function MarketCorrelations() {
                           </div>
                         </div>
                         <div className={`p-4 rounded-lg ${colors.bg} border ${colors.border}`}>
-                          <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                          <h4 className="text-sm font-semibold flex items-center gap-2">
                             <AlertCircle className="h-4 w-4" />
                             Trading Strategy
+                            <InfoTooltip>{correlation.strategy}</InfoTooltip>
                           </h4>
-                          <p className="text-sm text-muted-foreground">{correlation.strategy}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -420,14 +424,18 @@ export function MarketCorrelations() {
               <AlertCircle className="w-6 h-6 text-violet-400" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold mb-2">XGBoost & Prophet TimeSeries ML Models</h4>
-              <p className="text-sm text-muted-foreground mb-4">
-                Our platform combines 5-10 prediction market signals to forecast individual stock movements. The system
-                requires 3 validation criteria before generating high-conviction signals: elite forecaster consensus
-                (top 2% show &gt;65% agreement), cross-market confirmation (multiple related markets align), and
-                traditional indicator confluence (technical analysis and fundamentals support prediction market signal).
-                When all criteria meet thresholds, historical accuracy exceeds 70% over 3-6 month horizons.
-              </p>
+              <h4 className="font-semibold mb-4 flex items-center gap-2">
+                XGBoost & Prophet TimeSeries ML Models
+                <InfoTooltip>
+                  Our platform combines 5-10 prediction market signals to forecast individual stock
+                  movements. The system requires 3 validation criteria before generating
+                  high-conviction signals: elite forecaster consensus (top 2% show &gt;65%
+                  agreement), cross-market confirmation (multiple related markets align), and
+                  traditional indicator confluence (technical analysis and fundamentals support
+                  prediction market signal). When all criteria meet thresholds, historical accuracy
+                  exceeds 70% over 3-6 month horizons.
+                </InfoTooltip>
+              </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-3 rounded-lg bg-background/50">
                   <p className="text-xs text-muted-foreground mb-1">Correlation Pairs Tracked</p>

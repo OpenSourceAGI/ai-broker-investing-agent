@@ -11,6 +11,7 @@ import {
   DollarSign,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { InfoTooltip } from "@/components/landing/info-tooltip"
 
 const apiDataSources = [
   {
@@ -86,10 +87,12 @@ export function SignalIndicators() {
                     {source.category}
                   </Badge>
                 </div>
-                <h3 className="font-semibold text-foreground">{source.name}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{source.description}</p>
+                <h3 className="font-semibold text-foreground flex items-center gap-1.5">
+                  {source.name}
+                  <InfoTooltip>{source.description}</InfoTooltip>
+                </h3>
                 <div className="mt-4 flex flex-wrap gap-1.5">
-                  {source.endpoints.slice(0, 5).map((endpoint) => (
+                  {source.endpoints.slice(0, 3).map((endpoint) => (
                     <span
                       key={endpoint}
                       className="rounded-md bg-secondary px-2 py-1 text-xs font-medium text-muted-foreground"
@@ -97,10 +100,13 @@ export function SignalIndicators() {
                       {endpoint}
                     </span>
                   ))}
-                  {source.endpoints.length > 5 && (
-                    <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                      +{source.endpoints.length - 5} more
-                    </span>
+                  {source.endpoints.length > 3 && (
+                    <InfoTooltip
+                      className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary hover:text-primary"
+                      label={`+${source.endpoints.length - 3} more`}
+                    >
+                      {source.endpoints.slice(3).join(" · ")}
+                    </InfoTooltip>
                   )}
                 </div>
               </div>
