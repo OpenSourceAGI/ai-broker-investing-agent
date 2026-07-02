@@ -4,6 +4,7 @@ import { useState } from "react"
 import { TrendingUp, ArrowLeftRight, Zap, Timer, ChevronRight, Check, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+import { InfoTooltip } from "@/components/landing/info-tooltip"
 
 const tradingViewStrategies = [
   "RSI-Adaptive T3 & SAR Strategy",
@@ -189,13 +190,14 @@ export function StrategiesSection() {
         <div className="mb-16 flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:gap-12">
           <div className="flex-1 text-center lg:text-left">
             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Algorithmic Trading Strategies
+              Algorithmic Trading Strategies{" "}
+              <InfoTooltip iconClassName="h-5 w-5">
+                Four AI-powered algorithmic strategies leveraging technical indicators (MACD, RSI,
+                Bollinger Bands, ATR) for different market conditions. Each strategy is powered by
+                our multi-agent system analyzing chart patterns, volume signals, and momentum
+                indicators with precision timing.
+              </InfoTooltip>
             </h2>
-            <p className="mt-4 max-w-2xl text-muted-foreground">
-              Four AI-powered algorithmic strategies leveraging technical indicators (MACD, RSI, Bollinger Bands, ATR)
-              for different market conditions. Each strategy is powered by our multi-agent system analyzing chart patterns,
-              volume signals, and momentum indicators with precision timing.
-            </p>
           </div>
           <div className="relative h-48 w-full max-w-xs overflow-hidden rounded-xl border border-border lg:h-56 lg:max-w-md">
             <Image
@@ -213,10 +215,13 @@ export function StrategiesSection() {
         <div className="mb-12 rounded-2xl border border-purple-500/30 bg-purple-500/5 p-6 lg:p-8">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-xl font-bold text-foreground">Select Strategies to Backtest</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Choose from TradingView expert algorithms - like having a personal hedge fund team
-              </p>
+              <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                Select Strategies to Backtest
+                <InfoTooltip>
+                  Choose from TradingView expert algorithms — like having a personal hedge fund
+                  team.
+                </InfoTooltip>
+              </h3>
             </div>
             <div className="flex items-center gap-2 text-purple-400">
               <Zap className="h-5 w-5" />

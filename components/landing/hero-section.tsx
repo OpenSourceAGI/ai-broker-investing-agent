@@ -24,6 +24,7 @@ import {
   LogIn,
 } from "lucide-react"
 import Link from "next/link"
+import { InfoTooltip } from "@/components/landing/info-tooltip"
 
 const features = [
   { icon: Users, label: "Multi-Agent Teams" },
@@ -91,7 +92,12 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="mt-6 max-w-md text-lg text-muted-foreground"
             >
-              AI agent teams research, debate, and execute trades across stocks and prediction markets.
+              AI agents research, debate, and trade for you.{" "}
+              <InfoTooltip>
+                Teams of specialized AI agents gather data, hold bull-vs-bear debates, and execute
+                trades across stocks and prediction markets — like a hedge fund research desk on
+                autopilot.
+              </InfoTooltip>
             </motion.p>
 
             <motion.div

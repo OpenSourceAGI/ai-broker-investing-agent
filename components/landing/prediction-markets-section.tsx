@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import { MarketCorrelations } from "./market-correlations"
 import Image from "next/image"
+import { InfoTooltip } from "@/components/landing/info-tooltip"
 
 const topTraders = [
 
@@ -216,8 +217,11 @@ export function PredictionMarketsSection() {
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Polymarket & Kalshi Analysis</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-              Research-based LLM analysis on prediction market outcomes with copy trading signals from top investors,
-              senators, and traders
+              LLM outcome analysis & copy trading signals{" "}
+              <InfoTooltip iconClassName="h-5 w-5">
+                Research-based LLM analysis on prediction market outcomes with copy trading
+                signals from top investors, senators, and traders.
+              </InfoTooltip>
             </p>
           </div>
           <Image
@@ -275,8 +279,10 @@ export function PredictionMarketsSection() {
                 <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 w-fit mb-4">
                   <feature.icon className="w-5 h-5 text-cyan-400" />
                 </div>
-                <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground mb-3">{feature.description}</p>
+                <h3 className="font-semibold mb-2 flex items-center gap-1.5">
+                  {feature.title}
+                  <InfoTooltip>{feature.description}</InfoTooltip>
+                </h3>
                 <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-400">
                   {feature.stats}
                 </Badge>
@@ -424,14 +430,15 @@ export function PredictionMarketsSection() {
                   <Brain className="w-6 h-6 text-cyan-400" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <h4 className="font-semibold mb-4 flex items-center gap-2">
                     LLM Outcome Analysis
                     <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Live</Badge>
+                    <InfoTooltip>
+                      Our AI agents analyze prediction market data alongside news sentiment, social
+                      media trends, and historical patterns to identify high-probability outcomes
+                      and arbitrage opportunities.
+                    </InfoTooltip>
                   </h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Our AI agents analyze prediction market data alongside news sentiment, social media trends, and
-                    historical patterns to identify high-probability outcomes and arbitrage opportunities.
-                  </p>
                   <div className="grid sm:grid-cols-3 gap-4">
                     <div className="p-3 rounded-lg bg-background/50">
                       <p className="text-xs text-muted-foreground mb-1">Markets Analyzed</p>

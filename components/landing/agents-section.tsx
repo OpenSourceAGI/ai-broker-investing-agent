@@ -9,8 +9,9 @@ import {
   ShieldCheck,
   ArrowRight,
 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
+import { InfoTooltip } from "@/components/landing/info-tooltip"
 
 const analystTeam = [
   {
@@ -90,12 +91,10 @@ export function AgentsSection() {
                       <analyst.icon className="h-5 w-5 text-chart-1" />
                     </div>
                     <CardTitle className="text-sm text-foreground">{analyst.name}</CardTitle>
+                    <InfoTooltip iconClassName="h-3.5 w-3.5">{analyst.description}</InfoTooltip>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="mb-3 text-xs text-muted-foreground">
-                    {analyst.description}
-                  </CardDescription>
                   <div className="flex flex-wrap gap-1">
                     {analyst.features.map((feature) => (
                       <span
@@ -124,10 +123,10 @@ export function AgentsSection() {
                     <team.icon className={`h-6 w-6 ${team.color}`} />
                   </div>
                   <CardTitle className="text-foreground">{team.name}</CardTitle>
+                  <InfoTooltip>{team.description}</InfoTooltip>
                 </div>
               </CardHeader>
               <CardContent>
-                <CardDescription className="mb-4 text-muted-foreground">{team.description}</CardDescription>
                 <div className="flex flex-wrap gap-2">
                   {team.features.map((feature) => (
                     <span
