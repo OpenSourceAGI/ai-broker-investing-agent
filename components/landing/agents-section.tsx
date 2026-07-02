@@ -158,8 +158,8 @@ export function AgentsSection() {
         <Image
           src="/images/diagram-research-flow.png"
           alt="Stock Prediction System Architecture Flow Diagram"
-          width={900}
-          height={600}
+          width={1376}
+          height={768}
           className="object-contain rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl max-w-full h-auto"
         />
       </div>
