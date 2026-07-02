@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-primary text-white;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* Tile/header surfaces (#1c2e4a) on primary canvas */
+@layer components {
+  .ui-surface {
+    @apply bg-secondary rounded-xl border border-brand-muted/45 shadow-xl shadow-black/45;
+  }
+  .ui-surface-sm {
+    @apply bg-secondary rounded-lg border border-brand-muted/45 shadow-lg shadow-black/40;
+  }
+}
+
+/* Smooth scrollbar — palette-aligned */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-brand-navy;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-brand-muted/45;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-brand-muted/70;
+}
+
+/* Subtle focus rings */
+:focus-visible {
+  outline: 2px solid theme('colors.accent');
+  outline-offset: 2px;
+  border-radius: 6px;
+}

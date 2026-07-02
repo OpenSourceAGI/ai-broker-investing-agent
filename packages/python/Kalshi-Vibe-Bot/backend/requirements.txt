@@ -1,0 +1,12 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-dotenv==1.0.0
+httpx==0.28.1
+pydantic==2.13.3  # Windows-friendly wheel for Python 3.13+
+pydantic-settings==2.1.0
+sqlalchemy==2.0.49  # 2.0.38+ fixes TypingOnly crash on Python 3.13/3.14
+python-dateutil==2.8.2
+tzdata>=2024.1
+websockets==12.0
+aiofiles==23.2.1
+cryptography==41.0.7
