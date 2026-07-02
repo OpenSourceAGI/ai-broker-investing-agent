@@ -1,6 +1,11 @@
 import { createMDX } from "fumadocs-mdx/next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
+// Makes Cloudflare bindings (D1, send_email, ...) available via
+// getCloudflareContext() during `next dev`.
+initOpenNextCloudflareForDev();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

@@ -82,6 +82,31 @@
 - **Risk Team** (Risky/Safe/Neutral): Debates position sizing
 - **Portfolio Manager**: Final authority on all trading decisions
 
+## ☁️ Deploy to Cloudflare Workers
+
+The app runs on Cloudflare Workers via [OpenNext](https://opennext.js.org/cloudflare), with D1 as the database, better-auth for authentication, and Email Workers for transactional email (verification, password reset, invitations).
+
+```bash
+# Local dev (Next.js dev server; D1 & email bindings proxied via miniflare)
+npm run dev
+
+# Apply drizzle migrations to D1
+npm run db:migrate:local    # local miniflare D1
+npm run db:migrate:remote   # production D1 (ai-broker-db)
+
+# Preview the production worker locally
+npm run preview
+
+# Deploy
+npm run deploy
+```
+
+Setup notes:
+
+- Bindings are declared in `wrangler.jsonc`: `DB` (D1 database `ai-broker-db`), `SEND_EMAIL` (Email Workers), cron triggers for the `/api/cron/*` routes.
+- Secrets: `wrangler secret put BETTER_AUTH_SECRET` (likewise `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRON_SECRET`, and optionally `RESEND_API_KEY` as an email fallback).
+- Email Workers requires [Email Routing](https://developers.cloudflare.com/email-routing/) to be enabled on the zone, with the `EMAIL_FROM` sender on a verified domain and recipient destination rules configured; without the binding, sending falls back to Resend (if configured) or console logging.
+
 ## 📂 Third Party APIs
 
 - **[Alpaca](https://alpaca.markets/)**: Broker & trading as a service.

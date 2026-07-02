@@ -21,9 +21,15 @@
     "dev": "concurrently \"next dev\" \"wait-on http://localhost:3000 && opener http://localhost:3000\"",
     "build": "next build",
     "build:lib": "vite build",
+    "build:workers": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:migrate:local": "wrangler d1 migrations apply ai-broker-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply ai-broker-db --remote",
     "docs:generate": "fumadocs-mdx",
     "docs:generate:api": "bun lib/docs/generate-docs.ts",
     "start": "next start"
@@ -40,6 +46,8 @@
     "@langchain/langgraph": "^1.1.4",
     "@langchain/openai": "^1.2.8",
     "@libsql/client": "^0.17.0",
+    "@opennextjs/cloudflare": "^1.6.5",
+    "mimetext": "^3.0.27",
     "@polymarket/clob-client": "5.2.1",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-alert-dialog": "1.1.15",
@@ -106,6 +114,7 @@
     "grab-url": "^1.0.20",
     "hast-util-to-jsx-runtime": "latest",
     "indicatorts": "^2.2.2",
+    "jszip": "^3.10.1",
     "katex": "^0.16.28",
     "langchain": "^1.2.21",
     "lightweight-charts": "^5.1.0",
@@ -149,6 +158,7 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250620.0",
     "@fumadocs/cli": "^1.2.4",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.2.3",
@@ -164,6 +174,7 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
-    "wait-on": "^9.0.3"
+    "wait-on": "^9.0.3",
+    "wrangler": "^4.24.0"
   }
 }

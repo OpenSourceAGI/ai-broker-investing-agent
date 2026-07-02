@@ -1,0 +1,54 @@
+/**
+ * Cloudflare Workers configuration for the Next.js app, built with
+ * `opennextjs-cloudflare build` and deployed with `opennextjs-cloudflare deploy`.
+ *
+ * Secrets (set with `wrangler secret put <NAME>`):
+ *   BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET,
+ *   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, CRON_SECRET, RESEND_API_KEY (optional fallback)
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ai-broker-investing-agent",
+  "main": "worker.ts",
+  "compatibility_date": "2025-05-05",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ai-broker-db",
+      "database_id": "37dbe79c-2687-4127-ad02-2372e15ac077",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Cloudflare Email Workers: outbound email for auth (verification, password
+  // reset) and team invitations. Requires Email Routing to be enabled on the
+  // zone and the sender address configured under a verified domain.
+  "send_email": [
+    {
+      "name": "SEND_EMAIL"
+    }
+  ],
+  // Required by OpenNext for internal revalidation requests, and used by the
+  // scheduled handler in worker.ts to invoke the Next.js cron API routes.
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "ai-broker-investing-agent"
+    }
+  ],
+  // Replaces the Vercel crons: each schedule is routed to its API route in worker.ts.
+  "triggers": {
+    "crons": ["0 0 * * *", "15 0 * * *"]
+  },
+  "vars": {
+    "NEXT_PUBLIC_APP_URL": "https://autoinvestment.broker",
+    "EMAIL_FROM": "noreply@autoinvestment.broker"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

@@ -11,6 +11,7 @@ import { stripe } from "@better-auth/stripe"
 import Stripe from "stripe"
 import { plans, type Plan } from "./payments/plans";
 import { headers } from "next/headers";
+import { sendEmail, renderEmailLayout, renderEmailButton } from "./email/send-email";
 
 // Lazy Stripe client initialization to avoid build-time errors
 let _stripeClient: Stripe | null = null
@@ -124,6 +125,50 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+    // Delivered through Cloudflare Email Workers (SEND_EMAIL binding).
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your password",
+        text: `Reset your password: ${url}`,
+        html: renderEmailLayout(
+          "Reset Your Password",
+          `
+          <p style="font-size: 16px; color: #555;">
+            We received a request to reset the password for your account.
+          </p>
+          ${renderEmailButton("Reset Password", url)}
+          <p style="font-size: 14px; color: #888;">
+            If you didn't request this, you can safely ignore this email.
+          </p>
+          `
+        ),
+      });
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    // Delivered through Cloudflare Email Workers (SEND_EMAIL binding).
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email address",
+        text: `Verify your email: ${url}`,
+        html: renderEmailLayout(
+          "Verify Your Email",
+          `
+          <p style="font-size: 16px; color: #555;">
+            Welcome! Confirm your email address to finish setting up your account.
+          </p>
+          ${renderEmailButton("Verify Email", url)}
+          <p style="font-size: 14px; color: #888;">
+            If you didn't create an account, you can safely ignore this email.
+          </p>
+          `
+        ),
+      });
+    },
   },
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
