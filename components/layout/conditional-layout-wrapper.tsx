@@ -14,6 +14,7 @@ export function ConditionalLayoutWrapper({
 }) {
   const pathname = usePathname()
   const isDocsPage = pathname.startsWith("/docs")
+  const isHomepage = pathname === "/"
 
   if (isDocsPage) {
     // Docs pages use app sidebar + their own fumadocs layout
@@ -28,9 +29,9 @@ export function ConditionalLayoutWrapper({
     )
   }
 
-  // Other pages use the app sidebar
+  // Other pages use the app sidebar; on desktop the homepage loads with it expanded
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={isHomepage}>
       <AppSidebar />
       <SidebarInset className="md:pb-0 overflow-x-hidden">
         <StockTicker fixed="top" />
