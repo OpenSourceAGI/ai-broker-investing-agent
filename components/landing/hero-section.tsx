@@ -148,7 +148,7 @@ export function HeroSection() {
                 <ArrowUpRight className="h-3 w-3" />
               </Link>
               <Link
-                href="https://drive.google.com/file/d/1QJqoy3on4Q34djAM2DgMW7udBRfSHuMg/view?usp=drive_link"
+                href="https://zenodo.org/records/20836179"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
