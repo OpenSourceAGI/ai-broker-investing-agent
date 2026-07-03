@@ -1,66 +1,97 @@
 import Link from "next/link"
-import { FileText, Shield, Mail, ExternalLink, Bot } from "lucide-react"
-import { Button } from "@/components/ui/button"
-const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME;
+import Image from "next/image"
+
+const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME
+
+const columns = [
+  {
+    heading: "Trade",
+    links: [
+      { label: "Research Agents", href: "#agents" },
+      { label: "Algo Bots", href: "#strategies" },
+      { label: "Copy Trading", href: "#copy-trading" },
+      { label: "Prediction Markets", href: "#prediction-markets" },
+    ],
+  },
+  {
+    heading: "Manage",
+    links: [
+      { label: "Portfolio", href: "/portfolio" },
+      { label: "Markets", href: "/markets" },
+      { label: "Leaders", href: "/leaders" },
+      { label: "Debate", href: "/debate" },
+    ],
+  },
+  {
+    heading: "Learn",
+    links: [
+      { label: "Docs", href: "/docs" },
+      { label: "Research Paper", href: "https://zenodo.org/records/20836179" },
+      { label: "Risk Disclosure", href: "/docs/risk-disclosure" },
+      { label: "AI Ethics", href: "https://rights.institute/ethics/" },
+    ],
+  },
+  {
+    heading: "Company",
+    links: [
+      { label: "Terms & Privacy", href: "/legal/privacy" },
+      { label: "Contact", href: "mailto:contact@autoinvestment.broker" },
+      { label: "Google Play", href: "https://play.google.com/store/apps/details?id=com.autoinvestment.broker.app" },
+    ],
+  },
+]
 
 export function Footer() {
-    return (
-        <footer className="border-t border-border/40 bg-background/50 backdrop-blur-xl">
-            <div className="container mx-auto px-4 py-8 md:py-12">
-                <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-                    <div className="flex items-center gap-2 group cursor-default">
-                        {/* <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                            <div className="w-4 h-4 rounded-full bg-primary/50 group-hover:scale-110 transition-transform duration-300" />
-                        </div>
-                        <span className="text-lg font-semibold text-foreground tracking-tight group-hover:text-primary transition-colors duration-300">
-                            {APP_NAME}Run Your Own AI Hedge Fund Team
-
-                        </span> */}
-                    </div>
-
-                    <nav className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-                        <Link
-                            href="/docs/risk-disclosure"
-                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 hover:text-primary transition-all duration-300 hover:scale-105"
-                        >
-                            <FileText className="w-4 h-4" />
-                            Risk Disclosure
-                        </Link>
-                        <Link
-                            href="/legal/privacy"
-                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 hover:text-primary transition-all duration-300 hover:scale-105"
-                        >
-                            <Shield className="w-4 h-4" />
-                            Terms & Privacy
-                        </Link>
-
-                        <Link
-                            href="https://rights.institute/ethics/"
-                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 hover:text-primary transition-all duration-300 hover:scale-105"
-                        >
-                            <Bot className="w-4 h-4" />
-                            AI Ethics
-                        </Link>
-
-                        
-
-                        <Link
-                            href="mailto:contact@autoinvestment.broker"
-                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 hover:text-primary transition-all duration-300 hover:scale-105"
-                        >
-                            <Mail className="w-4 h-4" />
-                            Contact
-                        </Link>
-                    </nav>
-
-                    <div className="flex flex-col items-center md:items-end gap-2 text-sm text-muted-foreground/60">
-                        <div className="flex items-center gap-1 hover:text-muted-foreground transition-colors duration-300">
-                            &copy; {new Date().getFullYear()} {APP_NAME}
-                        </div>
-                        <span className="text-xs">San Francisco, CA. All rights reserved.</span>
-                    </div>
-                </div>
+  return (
+    <footer className="bg-ink text-cream">
+      <div className="mx-auto max-w-[1400px] px-6 py-16">
+        <div className="grid gap-12 md:grid-cols-[1.5fr_repeat(4,1fr)]">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg">
+                <Image
+                  src="/apple-touch-icon.png"
+                  alt="Logo"
+                  width={32}
+                  height={32}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <span className="font-display text-2xl">{APP_NAME}</span>
             </div>
-        </footer>
-    )
+            <p className="mt-4 max-w-xs text-sm text-cream/60">
+              Auto-invest like a hedge fund. AI agents that research, debate, and trade — for you.
+            </p>
+          </div>
+
+          {columns.map((column) => (
+            <div key={column.heading}>
+              <div className="text-xs uppercase tracking-[0.2em] text-cream/50">
+                {column.heading}
+              </div>
+              <ul className="mt-4 space-y-2 text-sm">
+                {column.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-cream/80 transition-colors hover:text-emerald-400"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-16 flex flex-col justify-between gap-4 border-t border-cream/10 pt-8 text-xs text-cream/50 sm:flex-row">
+          <div>
+            © {new Date().getFullYear()} {APP_NAME}. San Francisco, CA. All rights reserved.
+          </div>
+          <div>Investing involves risk of loss. Not investment advice.</div>
+        </div>
+      </div>
+    </footer>
+  )
 }
