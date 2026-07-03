@@ -36,14 +36,17 @@ const columns = [
     links: [
       { label: "Terms & Privacy", href: "/legal/privacy" },
       { label: "Contact", href: "mailto:contact@autoinvestment.broker" },
-      { label: "Google Play", href: "https://play.google.com/store/apps/details?id=com.autoinvestment.broker.app" },
+      {
+        label: "Google Play",
+        href: "https://play.google.com/store/apps/details?id=com.autoinvestment.broker.app",
+      },
     ],
   },
 ]
 
 export function Footer() {
   return (
-    <footer className="bg-ink text-cream">
+    <footer className="border-t border-border bg-background text-foreground">
       <div className="mx-auto max-w-[1400px] px-6 py-16">
         <div className="grid gap-12 md:grid-cols-[1.5fr_repeat(4,1fr)]">
           <div>
@@ -59,14 +62,15 @@ export function Footer() {
               </div>
               <span className="font-display text-2xl">{APP_NAME}</span>
             </div>
-            <p className="mt-4 max-w-xs text-sm text-cream/60">
-              Auto-invest like a hedge fund. AI agents that research, debate, and trade — for you.
+            <p className="mt-4 max-w-xs text-sm text-muted-foreground">
+              Auto-invest like a hedge fund. AI agents that research, debate,
+              and trade — for you.
             </p>
           </div>
 
           {columns.map((column) => (
             <div key={column.heading}>
-              <div className="text-xs uppercase tracking-[0.2em] text-cream/50">
+              <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 {column.heading}
               </div>
               <ul className="mt-4 space-y-2 text-sm">
@@ -74,7 +78,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-cream/80 transition-colors hover:text-emerald-400"
+                      className="text-muted-foreground transition-colors hover:text-primary"
                     >
                       {link.label}
                     </Link>
@@ -85,9 +89,10 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col justify-between gap-4 border-t border-cream/10 pt-8 text-xs text-cream/50 sm:flex-row">
+        <div className="mt-16 flex flex-col justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground sm:flex-row">
           <div>
-            © {new Date().getFullYear()} {APP_NAME}. San Francisco, CA. All rights reserved.
+            © {new Date().getFullYear()} {APP_NAME}. San Francisco, CA. All
+            rights reserved.
           </div>
           <div>Investing involves risk of loss. Not investment advice.</div>
         </div>

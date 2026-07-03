@@ -18,13 +18,23 @@ const tickers = [
 
 export function TickerTape() {
   return (
-    <div className="border-y border-white/10 bg-ink py-1 text-cream">
+    <div className="border-y border-border bg-background py-1 text-foreground">
       <Marquee className="[--duration:50s] [--gap:2.5rem] p-2">
         {tickers.map((t) => (
-          <span key={t.symbol} className="flex items-center gap-3 text-sm whitespace-nowrap">
-            <span className="font-mono font-semibold tracking-tight">{t.symbol}</span>
-            <span className="font-mono text-cream/50">{t.price}</span>
-            <span className={cn("font-mono", t.up ? "text-emerald-400" : "text-red-400")}>
+          <span
+            key={t.symbol}
+            className="flex items-center gap-3 text-sm whitespace-nowrap"
+          >
+            <span className="font-mono font-semibold tracking-tight">
+              {t.symbol}
+            </span>
+            <span className="font-mono text-muted-foreground">{t.price}</span>
+            <span
+              className={cn(
+                "font-mono",
+                t.up ? "text-emerald-400" : "text-red-400",
+              )}
+            >
               {t.change}
             </span>
           </span>

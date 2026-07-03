@@ -24,8 +24,9 @@ export default function LandingPage() {
         description="Give your AI agent a dedicated brokerage account. It researches, debates competing theses, then places trades — you monitor performance in one calm dashboard."
         ctaLabel="Meet the agents"
         ctaHref="/debate"
-        imageSrc="/images/landing/feature-agent.jpg"
-        imageAlt="AI trading agent on smartphone dashboard"
+        imageSrc="/images/diagram-research-flow.png"
+        imageAlt="AI agent research flow diagram"
+        imageClassName="object-contain p-4"
       />
 
       <AgentsTeamSection />
