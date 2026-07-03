@@ -22,11 +22,12 @@ export default function LandingPage() {
         eyebrow="Agentic Trading"
         title="Send your agent to the market"
         description="Give your AI agent a dedicated brokerage account. It researches, debates competing theses, then places trades — you monitor performance in one calm dashboard."
-        ctaLabel="Meet the agents"
-        ctaHref="/debate"
         imageSrc="/images/diagram-research-flow.png"
         imageAlt="AI agent research flow diagram"
-        imageClassName="object-contain p-4"
+        imageClassName="object-contain p-1"
+        imagePriority
+        imageWide
+        imageZoomable
       />
 
       <AgentsTeamSection />
