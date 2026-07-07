@@ -5,17 +5,16 @@ import {
 } from "@/lib/kyc/didit-webhook";
 
 /**
- * POST /api/webhooks/didit
- * Legacy Didit.me webhook URL — kept for backward compatibility.
- * The dashboard-configured endpoint is /api/kyc/webhook; both share the
- * same handler.
+ * POST /api/kyc/webhook
+ * Didit.me webhook endpoint (v3.0) — the URL configured in the Didit
+ * dashboard (https://autoinvestment.broker/api/kyc/webhook).
  */
 export async function POST(request: NextRequest) {
   return handleDiditWebhook(request);
 }
 
 /**
- * GET /api/webhooks/didit
+ * GET /api/kyc/webhook
  * Health check endpoint
  */
 export async function GET() {

@@ -494,6 +494,13 @@ export function SettingsDialog({
             <span className="font-medium">Incomplete</span>
           </div>
         )
+      case "expired":
+        return (
+          <div className="flex items-center gap-2 text-gray-600">
+            <AlertCircle className="h-5 w-5" />
+            <span className="font-medium">Expired</span>
+          </div>
+        )
       default:
         return (
           <div className="flex items-center gap-2 text-gray-600">
@@ -535,7 +542,7 @@ export function SettingsDialog({
           {kycStatus === "rejected" && (
             <div className="rounded-lg bg-red-50 dark:bg-red-950/20 p-4 text-sm">
               <p className="text-red-800 dark:text-red-200">
-                Your verification was not approved. Please contact support for more information.
+                Your verification was not approved. You can resubmit your documents below, or contact support for more information.
               </p>
             </div>
           )}
@@ -552,6 +559,14 @@ export function SettingsDialog({
             <div className="rounded-lg bg-gray-50 dark:bg-gray-950/20 p-4 text-sm">
               <p className="text-gray-800 dark:text-gray-200">
                 Your previous verification was not completed. Please start a new verification.
+              </p>
+            </div>
+          )}
+
+          {kycStatus === "expired" && (
+            <div className="rounded-lg bg-gray-50 dark:bg-gray-950/20 p-4 text-sm">
+              <p className="text-gray-800 dark:text-gray-200">
+                Your previous verification session expired. Please start a new verification.
               </p>
             </div>
           )}
@@ -575,6 +590,11 @@ export function SettingsDialog({
                 <>
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                   Starting Verification...
+                </>
+              ) : ["rejected", "abandoned", "expired"].includes(kycStatus) ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Resubmit KYC Verification
                 </>
               ) : (
                 <>
