@@ -46,7 +46,7 @@
     "@langchain/langgraph": "^1.1.4",
     "@langchain/openai": "^1.2.8",
     "@libsql/client": "^0.17.0",
-    "@opennextjs/cloudflare": "^1.6.5",
+    "@opennextjs/cloudflare": "1.18.1",
     "mimetext": "^3.0.27",
     "@polymarket/clob-client": "5.2.1",
     "@radix-ui/react-accordion": "1.2.12",
