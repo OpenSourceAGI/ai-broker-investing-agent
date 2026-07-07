@@ -21,7 +21,7 @@ export const users = sqliteTable("users", {
   surveyResponse: text("survey_response"), // JSON string of survey responses
 
   // KYC Verification (Didit.me)
-  kycStatus: text("kyc_status").default("not_started"), // not_started, pending, in_review, approved, rejected, abandoned
+  kycStatus: text("kyc_status").default("not_started"), // not_started, pending, in_review, approved, rejected, abandoned, expired
   kycSessionId: text("kyc_session_id"),
   kycVerifiedAt: integer("kyc_verified_at", { mode: "timestamp" }),
 

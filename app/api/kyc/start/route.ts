@@ -4,10 +4,13 @@ import { users } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import axios from "axios";
+import { RESUBMITTABLE_KYC_STATUSES } from "@/lib/kyc/didit-webhook";
 
 /**
  * POST /api/kyc/start
- * Initiates a KYC verification session with Didit.me
+ * Initiates a KYC verification session with Didit.me.
+ * Also used to resubmit after a rejected, abandoned, or expired
+ * verification — a new Didit session replaces the previous one.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -40,6 +43,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    // Any other status (rejected, abandoned, expired, or a pending session
+    // the user closed) may start a new session; the webhook handler ignores
+    // late events from the replaced session.
 
     // Check for required environment variables
     const apiKey = process.env.DIDIT_API_KEY;
@@ -58,7 +64,8 @@ export async function POST(request: NextRequest) {
       "https://verification.didit.me/v2/session/",
       {
         workflow_id: workflowId,
-        external_id: user.id, // Our internal user ID
+        vendor_data: user.id, // Our internal user ID, echoed back in webhooks
+        external_id: user.id,
         metadata: {
           email: user.email,
         },
@@ -135,9 +142,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const status = user.kycStatus || "not_started";
+
     return NextResponse.json({
-      status: user.kycStatus || "not_started",
+      status,
       verifiedAt: user.kycVerifiedAt,
+      canResubmit: (RESUBMITTABLE_KYC_STATUSES as readonly string[]).includes(
+        status
+      ),
     });
   } catch (error) {
     console.error("Error fetching KYC status:", error);
