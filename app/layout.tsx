@@ -1,11 +1,19 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
+import { Instrument_Serif } from "next/font/google"
 import { cookies } from "next/headers"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 import { UIConfigProvider } from "@/lib/ui-config"
 import "./globals.css"
 import "@/components/theme/themes-shadcn.css"
 import { ConditionalLayoutWrapper } from "@/components/layout/conditional-layout-wrapper"
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
+})
 
 export const metadata: Metadata = {
   title: "AI Broker - LLM Agents Debate Stocks & Events",
@@ -34,7 +42,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning className={`theme-${theme}`}>
-      <body className="font-sans antialiased">
+      <body className={`font-sans antialiased ${instrumentSerif.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
