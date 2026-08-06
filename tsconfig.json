@@ -35,6 +35,12 @@
       "investing/*": [
         "./packages/investing/src/*"
       ],
+      "predictos": [
+        "./packages/predictos/src/index.ts"
+      ],
+      "predictos/*": [
+        "./packages/predictos/src/*"
+      ],
       "fumadocs-mdx:collections/server": [
         "./.source/server.ts"
       ]

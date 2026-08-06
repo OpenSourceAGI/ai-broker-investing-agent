@@ -18,17 +18,20 @@ export default defineConfig({
   build: {
     minify: "terser",
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: {
+        index: resolve(__dirname, "src/index.ts"),
+        "ai/index": resolve(__dirname, "src/ai/index.ts"),
+        "data/kalshi": resolve(__dirname, "src/data/kalshi.ts"),
+        "data/polymarket": resolve(__dirname, "src/data/polymarket.ts"),
+        "agents/index": resolve(__dirname, "src/agents/index.ts"),
+        arbitrage: resolve(__dirname, "src/arbitrage.ts"),
+      },
       formats: ["es", "cjs"],
-      fileName: (format) => `index.${format === "es" ? "mjs" : "js"}`,
+      fileName: (format, entryName) =>
+        `${entryName}.${format === "es" ? "mjs" : "js"}`,
     },
     rollupOptions: {
-      external: [
-        "react", "react-dom", "next",
-        "axios", "csv-parse", "date-fns", "dotenv", "drizzle-orm",
-        "ethers", "indicatorts", "langchain", "nanoid",
-        "predictos", "sec-edgar-toolkit", "xgboost_node", "zod",
-      ],
+      external: ["ethers"],
     },
     terserOptions: {
       compress: {

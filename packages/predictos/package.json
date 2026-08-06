@@ -1,0 +1,79 @@
+{
+  "name": "predictos",
+  "version": "0.1.0",
+  "description": "PredictOS 'Super Intelligence' core (prediction-market multi-agent analysis, data clients, and cross-platform arbitrage) adapted from PredictionXBT/PredictOS, refactored from Deno/Supabase edge functions into Node/TypeScript ESM.",
+  "license": "MIT",
+  "author": "PredictionXBT (original); adapted for the investing package",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./ai": {
+      "import": "./dist/ai/index.mjs",
+      "require": "./dist/ai/index.js",
+      "types": "./dist/ai/index.d.ts"
+    },
+    "./data/kalshi": {
+      "import": "./dist/data/kalshi.mjs",
+      "require": "./dist/data/kalshi.js",
+      "types": "./dist/data/kalshi.d.ts"
+    },
+    "./data/polymarket": {
+      "import": "./dist/data/polymarket.mjs",
+      "require": "./dist/data/polymarket.js",
+      "types": "./dist/data/polymarket.d.ts"
+    },
+    "./agents": {
+      "import": "./dist/agents/index.mjs",
+      "require": "./dist/agents/index.js",
+      "types": "./dist/agents/index.d.ts"
+    },
+    "./arbitrage": {
+      "import": "./dist/arbitrage.mjs",
+      "require": "./dist/arbitrage.js",
+      "types": "./dist/arbitrage.d.ts"
+    }
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "prediction-markets",
+    "polymarket",
+    "kalshi",
+    "arbitrage",
+    "trading-agents",
+    "grok",
+    "openai",
+    "predictos"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ethers": "^6.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "terser": "^5.49.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.0.0"
+  }
+}
