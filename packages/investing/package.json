@@ -37,6 +37,11 @@
       "require": "./dist/constants/index.js",
       "types": "./dist/constants/index.d.ts"
     },
+    "./predictos": {
+      "import": "./dist/predictos/index.mjs",
+      "require": "./dist/predictos/index.js",
+      "types": "./dist/predictos/index.d.ts"
+    },
     "./utils": {
       "import": "./dist/utils.mjs",
       "require": "./dist/utils.js",
