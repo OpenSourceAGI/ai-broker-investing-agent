@@ -1,5 +1,5 @@
-import { db } from "../../../../lib/db";
-import { zuluTraders, zuluCurrencyStats } from "../../../../lib/db/schema";
+import { db } from "../db";
+import { zuluTraders, zuluCurrencyStats } from "../db/schema";
 import { eq, desc, asc, sql } from "drizzle-orm";
 
 // ============================================================================

@@ -1,7 +1,9 @@
 import { config } from 'dotenv'
 import { defineConfig } from 'drizzle-kit'
 
+// Local .env wins; the monorepo root .env is the shared fallback.
 config({ path: '.env' })
+config({ path: '../../.env' })
 
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
 const databaseId = process.env.CLOUDFLARE_DATABASE_ID || '37dbe79c-2687-4127-ad02-2372e15ac077' // ai-broker-db

@@ -6,7 +6,9 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const filePath = path.join(process.cwd(), 'packages/investing/src/algo-stategies/algo-strategies.json');
+    // The app runs from apps/ai-broker-web; the workspace packages live two
+    // levels up at the monorepo root.
+    const filePath = path.join(process.cwd(), '../../packages/investing/src/algo-stategies/algo-strategies.json');
     
     // Check if file exists
     if (!fs.existsSync(filePath)) {

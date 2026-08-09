@@ -13,10 +13,14 @@ docs/.next
 /coverage
 *lock*
 .claude/
+# turborepo
+.turbo/
+**/.turbo/
 # next.js
 /.next/
 /out/
 .next/*
+**/out/
 # production
 /build
 
@@ -39,7 +43,9 @@ yarn-error.log*
 
 # cloudflare
 .open-next/
+**/.open-next/
 .wrangler/
+**/.wrangler/
 .claude
 .vscode
 
@@ -59,7 +65,9 @@ supabase/**/*.env
 */.next/*
 .next/
 .next/*
+**/.next/
 local.db
 *.db
 drizzle/
 .source/
+**/.source/

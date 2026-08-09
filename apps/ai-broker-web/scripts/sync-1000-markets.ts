@@ -8,7 +8,7 @@
  */
 
 import "dotenv/config";
-import { syncMarketsIncremental } from "../packages/investing/src/prediction/sync/incremental-markets";
+import { syncMarketsIncremental } from "../../../packages/investing/src/prediction/sync/incremental-markets";
 
 async function main() {
   const args = process.argv.slice(2);

@@ -1,7 +1,7 @@
 import {
   fetchMarkets,
   fetchMarketsDashboard,
-} from "./packages/investing/src/prediction/polymarket";
+} from "../../../packages/investing/src/prediction/polymarket";
 
 async function main() {
   try {

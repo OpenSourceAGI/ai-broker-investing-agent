@@ -1,7 +1,7 @@
 import { grab, log } from "grab-url";
 import fs from "fs/promises";
-import { db } from "../../../../lib/db";
-import { nvstlyLeaders, nvstlyTrades } from "../../../../lib/db/schema";
+import { db } from "../db";
+import { nvstlyLeaders, nvstlyTrades } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 const LEADERS_FILE = "./data/leaders.json";

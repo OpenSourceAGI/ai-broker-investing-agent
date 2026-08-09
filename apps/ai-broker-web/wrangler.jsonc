@@ -7,7 +7,7 @@
  *   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, CRON_SECRET, RESEND_API_KEY (optional fallback)
  */
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
+  "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "ai-broker-investing-agent",
   "main": "worker.ts",
   "compatibility_date": "2025-05-05",
