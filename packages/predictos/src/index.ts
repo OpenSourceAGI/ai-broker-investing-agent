@@ -49,3 +49,11 @@ export { findArbitrage } from "./arbitrage.js";
 
 // Event/market URL fetching
 export { getEvents } from "./events.js";
+
+// Additional API clients used by the research/execution agents.
+// These are namespaced to avoid name collisions with the market-data clients
+// above (e.g. `PolymarketMarket` exists in both `data/polymarket` and the
+// Gamma/CLOB trading client `clients/polymarket`).
+export * as polyfactual from "./clients/polyfactual.js";
+export * as x402 from "./clients/x402.js";
+export * as polymarketClob from "./clients/polymarket.js";

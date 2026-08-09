@@ -31,7 +31,15 @@ export default defineConfig({
         `${entryName}.${format === "es" ? "mjs" : "js"}`,
     },
     rollupOptions: {
-      external: ["ethers"],
+      external: [
+        "ethers",
+        "@polymarket/clob-client",
+        // Optional peer deps used only by the x402 Solana payment path
+        // (imported dynamically via variable specifiers).
+        "@solana/web3.js",
+        "@solana/spl-token",
+        "bs58",
+      ],
     },
     terserOptions: {
       compress: {
