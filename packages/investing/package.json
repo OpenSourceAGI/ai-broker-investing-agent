@@ -27,6 +27,11 @@
       "require": "./dist/prediction/index.js",
       "types": "./dist/prediction/index.d.ts"
     },
+    "./predictos": {
+      "import": "./dist/predictos/index.mjs",
+      "require": "./dist/predictos/index.js",
+      "types": "./dist/predictos/index.d.ts"
+    },
     "./trading-agents": {
       "import": "./dist/trading-agents/index.mjs",
       "require": "./dist/trading-agents/index.js",
@@ -36,11 +41,6 @@
       "import": "./dist/constants/index.mjs",
       "require": "./dist/constants/index.js",
       "types": "./dist/constants/index.d.ts"
-    },
-    "./predictos": {
-      "import": "./dist/predictos/index.mjs",
-      "require": "./dist/predictos/index.js",
-      "types": "./dist/predictos/index.d.ts"
     },
     "./utils": {
       "import": "./dist/utils.mjs",
@@ -96,6 +96,7 @@
     "langchain": "^1.2.3",
     "nanoid": "5.1.6",
     "pinets": "^0.8.3",
+    "predictos": "file:../predictos",
     "sec-edgar-toolkit": "^0.1.1",
     "yahoo-finance2": "^3.10.2",
     "zod": "4.3.4"

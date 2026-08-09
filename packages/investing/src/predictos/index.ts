@@ -1,27 +1,12 @@
 /**
- * PredictOS agent toolkit
+ * Re-export of the `predictos` package public API.
  *
- * Reusable backend TypeScript ported/adapted from the PredictOS project
- * (https://github.com/PredictionXBT/PredictOS, MIT, Copyright 2025 PredictionXBT).
+ * `predictos` is the PredictOS "Super Intelligence" core (prediction-market
+ * multi-agent analysis, data clients, and cross-platform arbitrage), adapted
+ * from PredictionXBT/PredictOS. See `packages/predictos`.
  *
- * The original code targeted Deno / Supabase edge functions. It has been adapted
- * to Node/ESM for the `investing` package:
- * - `Deno.env.get(...)` -> `process.env.*`
- * - Deno URL / `npm:` / `jsr:` imports -> npm imports (global `fetch`, Node 18+)
- * - `serve(...)` / `Deno.serve(...)` HTTP + CORS wrappers removed; each agent is a
- *   plain exported async function.
- *
- * Public surface:
- * - Agent functions (and their type namespaces) at the top level
- * - AI provider clients + prompt builders under `ai`
- * - Data-provider / x402 clients under `clients`
+ * Usage:
+ *   import { runEventAnalysisAgent, findArbitrage, getEvents } from "investing/predictos";
  */
 
-// Agent functions + per-agent type namespaces
-export * from "./agents";
-
-// AI provider clients and prompt builders
-export * as ai from "./ai";
-
-// Fetch-based API clients (dflow, dome, polyfactual, polymarket, x402)
-export * as clients from "./clients";
+export * from "predictos";

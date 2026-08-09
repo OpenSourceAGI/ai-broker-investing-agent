@@ -18,23 +18,16 @@ export default defineConfig({
   build: {
     minify: "terser",
     lib: {
-      entry: {
-        index: resolve(__dirname, "src/index.ts"),
-        "predictos/index": resolve(__dirname, "src/predictos/index.ts"),
-      },
+      entry: resolve(__dirname, "src/index.ts"),
       formats: ["es", "cjs"],
-      fileName: (format, entryName) =>
-        `${entryName}.${format === "es" ? "mjs" : "js"}`,
+      fileName: (format) => `index.${format === "es" ? "mjs" : "js"}`,
     },
     rollupOptions: {
       external: [
         "react", "react-dom", "next",
         "axios", "csv-parse", "date-fns", "dotenv", "drizzle-orm",
         "ethers", "indicatorts", "langchain", "nanoid",
-        "sec-edgar-toolkit", "xgboost_node", "zod",
-        "@polymarket/clob-client",
-        // Optional peer deps used only by the x402 Solana payment path
-        "@solana/web3.js", "@solana/spl-token", "bs58",
+        "predictos", "sec-edgar-toolkit", "xgboost_node", "zod",
       ],
     },
     terserOptions: {
