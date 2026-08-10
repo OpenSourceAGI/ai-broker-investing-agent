@@ -19,7 +19,7 @@ import {
   syncTopTradersTradeHistory,
   resumeTradeHistorySync,
   getTradeHistorySyncProgress,
-} from "../packages/investing/src/prediction/sync/trade-history";
+} from "../../../packages/investing/src/prediction/sync/trade-history";
 
 async function main() {
   const args = process.argv.slice(2);

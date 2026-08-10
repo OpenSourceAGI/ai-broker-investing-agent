@@ -1,0 +1,73 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/packages/*": [
+        "../../packages/*"
+      ],
+      "@/*": [
+        "./*"
+      ],
+      "investing/stocks": [
+        "../../packages/investing/src/stocks/stock-names-client.ts"
+      ],
+      "investing": [
+        "../../packages/investing/src/index.ts"
+      ],
+      "investing/*": [
+        "../../packages/investing/src/*"
+      ],
+      "predictos": [
+        "../../packages/predictos/src/index.ts"
+      ],
+      "predictos/*": [
+        "../../packages/predictos/src/*"
+      ],
+      "fumadocs-mdx:collections/server": [
+        "./.source/server.ts"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "hooks/**/*.ts",
+    "hooks/**/*.tsx",
+    "scripts/**/*.ts",
+    ".source/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "*.ts",
+    "*.tsx",
+    "*.mts",
+    "*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".next",
+    ".open-next",
+    "docs",
+    "lib/api-client"
+  ]
+}

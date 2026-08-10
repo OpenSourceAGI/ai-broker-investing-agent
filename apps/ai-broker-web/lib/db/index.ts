@@ -56,4 +56,4 @@ export const db = new Proxy({} as Database, {
 /**
  * Re-export database connection from packages/investing
  */
-export * from "../../packages/investing/src/db";
+export * from "../../../../packages/investing/src/db";

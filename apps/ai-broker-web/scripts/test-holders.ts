@@ -3,8 +3,8 @@
  * Run with: npx tsx scripts/test-holders.ts
  */
 
-import { fetchMarketHolders } from "../packages/investing/src/prediction/api/analytics";
-import { fetchMarketDetails } from "../packages/investing/src/prediction/api/analytics";
+import { fetchMarketHolders } from "../../../packages/investing/src/prediction/api/analytics";
+import { fetchMarketDetails } from "../../../packages/investing/src/prediction/api/analytics";
 
 async function testHoldersFetch() {
   console.log("=== Testing Polymarket Holders API ===\n");

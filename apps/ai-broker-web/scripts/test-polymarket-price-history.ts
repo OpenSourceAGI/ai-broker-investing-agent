@@ -23,9 +23,9 @@ import {
   fetchPriceHistory,
   syncPriceHistory,
   getPriceHistory,
-} from '../packages/investing/src/prediction/polymarket'
-import { db } from '../packages/investing/src/db'
-import { polymarketPriceHistory } from '../packages/investing/src/db/schema'
+} from '../../../packages/investing/src/prediction/polymarket'
+import { db } from '../../../packages/investing/src/db'
+import { polymarketPriceHistory } from '../../../packages/investing/src/db/schema'
 import { eq } from 'drizzle-orm'
 
 async function testPolymarketPriceHistory() {

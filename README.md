@@ -35,7 +35,7 @@
 
 <p align="center">
     <a href="https://play.google.com/store/apps/details?id=com.autoinvestment.broker.app">
-        <img src="public/images/download-google-play.png" alt="Get it on Google Play" height="60" />
+        <img src="apps/ai-broker-web/public/images/download-google-play.png" alt="Get it on Google Play" height="60" />
     </a>
 </p>
 
@@ -53,6 +53,41 @@
 - **Top Traders Leaderboard**: Real-time tracking of top performers from ZuluTrade and Polymarket.
 - **Interactive Dashboard**: Modern UI with specific agent reports, history tracking, and technical charts.
 - **"Bull vs. Bear" Debates**: Automated debates to assess risk and reward before every trade.
+
+## 📦 Monorepo Layout
+
+The repo is a [Turborepo](https://turborepo.com) workspace. Every command below can be run
+from the repo root, and `turbo` fans it out to the workspaces that define it.
+
+```
+.
+├── apps/
+│   └── ai-broker-web/        # Next.js app (UI, API routes, docs, D1 schema & migrations)
+├── packages/
+│   ├── investing/            # Trading agents, market data, prediction markets
+│   ├── predictos/            # Prediction-market analysis & cross-platform arbitrage
+│   ├── ai-broker-api-client/ # Generated API client
+│   ├── fin-data-api/         # Financial data API service
+│   └── mcp-server/           # MCP server generated from the OpenAPI spec
+├── devdocs/                  # Internal engineering notes
+├── third-party-trading-bots/ # Vendored reference bots
+├── turbo.json                # Task graph & caching
+├── tsconfig.base.json        # Shared TypeScript compiler options
+├── README.md
+├── CHANGELOG.md
+└── LICENSE.md
+```
+
+```bash
+npm install                   # installs every workspace
+npm run dev                   # turbo run dev
+npm run build                 # turbo run build (packages first, then the app)
+npm run test                  # turbo run test
+
+# Scope a command to a single workspace
+npx turbo run build --filter=ai-broker-web
+npx turbo run test --filter=investing
+```
 
 ## 🤖 AI Agents & Strategies
 
@@ -103,7 +138,8 @@ npm run deploy
 
 Setup notes:
 
-- Bindings are declared in `wrangler.jsonc`: `DB` (D1 database `ai-broker-db`), `SEND_EMAIL` (Email Workers), cron triggers for the `/api/cron/*` routes.
+- Bindings are declared in `apps/ai-broker-web/wrangler.jsonc`: `DB` (D1 database `ai-broker-db`), `SEND_EMAIL` (Email Workers), cron triggers for the `/api/cron/*` routes.
+- Environment variables for the app belong in `apps/ai-broker-web/.env` (Next.js only reads env files next to the app). `drizzle.config.ts` additionally falls back to a root `.env`.
 - Secrets: `wrangler secret put BETTER_AUTH_SECRET` (likewise `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRON_SECRET`, and optionally `RESEND_API_KEY` as an email fallback).
 - Email Workers requires [Email Routing](https://developers.cloudflare.com/email-routing/) to be enabled on the zone, with the `EMAIL_FROM` sender on a verified domain and recipient destination rules configured; without the binding, sending falls back to Resend (if configured) or console logging.
 
