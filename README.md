@@ -119,10 +119,11 @@ npx turbo run test --filter=investing
 
 ## ☁️ Deploy to Cloudflare Workers
 
-The app runs on Cloudflare Workers via [OpenNext](https://opennext.js.org/cloudflare), with D1 as the database, better-auth for authentication, and Email Workers for transactional email (verification, password reset, invitations).
+The app runs on Cloudflare Workers via [vinext](https://github.com/cloudflare/vinext) — the Next.js API surface reimplemented as a Vite plugin — with D1 as the database, better-auth for authentication, and Email Workers for transactional email (verification, password reset, invitations).
 
 ```bash
-# Local dev (Next.js dev server; D1 & email bindings proxied via miniflare)
+# Local dev (vinext dev server; the server runs in workerd, so D1 & email
+# bindings from wrangler.jsonc are live)
 npm run dev
 
 # Apply drizzle migrations to D1
@@ -138,8 +139,10 @@ npm run deploy
 
 Setup notes:
 
-- Bindings are declared in `apps/ai-broker-web/wrangler.jsonc`: `DB` (D1 database `ai-broker-db`), `SEND_EMAIL` (Email Workers), cron triggers for the `/api/cron/*` routes.
-- Environment variables for the app belong in `apps/ai-broker-web/.env` (Next.js only reads env files next to the app). `drizzle.config.ts` additionally falls back to a root `.env`.
+- The build is configured in `apps/ai-broker-web/vite.config.ts` (there is no `next.config`): the `vinext()` plugin holds the Next.js options, and `@cloudflare/vite-plugin` runs the server environment in workerd. `apps/ai-broker-web/worker/index.ts` is the Worker entry — it delegates to vinext's fetch handler and adds the cron `scheduled` handler.
+- Bindings are declared in `apps/ai-broker-web/wrangler.jsonc`: `DB` (D1 database `ai-broker-db`), `SEND_EMAIL` (Email Workers), cron triggers for the `/api/cron/*` routes. Read them in server code with `import { env } from "cloudflare:workers"`.
+- Page-level ISR is served from the Cloudflare edge cache (`cache: { cdn: cdnAdapter() }` in `vite.config.ts`, `"cache": { "enabled": true }` in `wrangler.jsonc`). Add `data: kvDataAdapter()` and a `VINEXT_KV_CACHE` KV binding if the `"use cache"` data cache is needed.
+- Environment variables for the app belong in `apps/ai-broker-web/.env` (vinext reads `.env*` files next to the app, following Next.js precedence). `drizzle.config.ts` additionally falls back to a root `.env`.
 - Secrets: `wrangler secret put BETTER_AUTH_SECRET` (likewise `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRON_SECRET`, and optionally `RESEND_API_KEY` as an email fallback).
 - Email Workers requires [Email Routing](https://developers.cloudflare.com/email-routing/) to be enabled on the zone, with the `EMAIL_FROM` sender on a verified domain and recipient destination rules configured; without the binding, sending falls back to Resend (if configured) or console logging.
 

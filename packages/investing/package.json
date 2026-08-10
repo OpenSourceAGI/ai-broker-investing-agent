@@ -109,7 +109,6 @@
     "zod": "4.3.4"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "1.18.1",
     "@types/node": "^25.0.3",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
@@ -117,12 +116,6 @@
     "vitest": "^3.0.0"
   },
   "peerDependencies": {
-    "drizzle-orm": "^0.45.1",
-    "@opennextjs/cloudflare": "1.18.1"
-  },
-  "peerDependenciesMeta": {
-    "@opennextjs/cloudflare": {
-      "optional": true
-    }
+    "drizzle-orm": "^0.45.1"
   }
 }

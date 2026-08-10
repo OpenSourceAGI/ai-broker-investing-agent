@@ -1,5 +1,6 @@
 import { createMimeMessage } from "mimetext";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { EmailMessage } from "cloudflare:email";
+import { env } from "cloudflare:workers";
 
 export interface SendEmailOptions {
   to: string;
@@ -32,7 +33,6 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
 
   // 1. Cloudflare Email Workers
   try {
-    const { env } = getCloudflareContext();
     if (env?.SEND_EMAIL) {
       const msg = createMimeMessage();
       msg.setSender({ name: fromName, addr: from });
@@ -43,15 +43,10 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
       }
       msg.addMessage({ contentType: "text/html", data: options.html });
 
-      // EmailMessage comes from `cloudflare:email`, which only resolves in
-      // the wrangler-bundled entrypoint; worker.ts puts it on globalThis.
-      const EmailMessage = (globalThis as Record<string, unknown>).__CF_EMAIL_MESSAGE__ as
-        | (new (from: string, to: string, raw: string) => unknown)
-        | undefined;
-      if (EmailMessage) {
-        await env.SEND_EMAIL.send(new EmailMessage(from, options.to, msg.asRaw()) as never);
-        return { success: true, provider: "cloudflare" };
-      }
+      await env.SEND_EMAIL.send(
+        new EmailMessage(from, options.to, msg.asRaw()) as never,
+      );
+      return { success: true, provider: "cloudflare" };
     }
   } catch (error) {
     console.error("Cloudflare email send failed, trying fallback:", error);
