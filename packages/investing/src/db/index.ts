@@ -11,24 +11,21 @@ type Database = ReturnType<typeof drizzleLibsql<typeof fullSchema>>;
 let _db: Database | null = null;
 
 /**
- * Resolve the database for the current runtime: the Cloudflare D1 binding
- * (via @opennextjs/cloudflare) when running on Workers, otherwise libsql
- * against DATABASE_URL or a local file. Imported dynamically so this package
- * still builds standalone (vite lib build) without the Next.js runtime.
+ * Resolve the database for the current runtime: the Cloudflare D1 binding when
+ * running on Workers, otherwise libsql against DATABASE_URL or a local file.
+ *
+ * The bindings are read off globalThis rather than imported from
+ * `cloudflare:workers` so this package still builds standalone (vite lib build)
+ * and stays usable from plain Node scripts and browser bundles. The web app's
+ * Worker entry (apps/ai-broker-web/worker/index.ts) publishes them.
  */
 function resolveDb(): Database {
   if (_db) return _db;
 
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getCloudflareContext } = require("@opennextjs/cloudflare");
-    const { env } = getCloudflareContext();
-    if (env?.DB) {
-      _db = drizzleD1(env.DB, { schema: fullSchema }) as unknown as Database;
-      return _db;
-    }
-  } catch {
-    // Not on Cloudflare Workers — fall back to libsql.
+  const env = (globalThis as { __CLOUDFLARE_ENV__?: { DB?: unknown } }).__CLOUDFLARE_ENV__;
+  if (env?.DB) {
+    _db = drizzleD1(env.DB as never, { schema: fullSchema }) as unknown as Database;
+    return _db;
   }
 
   const client = createClient({

@@ -13,7 +13,6 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "build:workers": "turbo run build:workers",
     "start": "turbo run start",
     "preview": "turbo run preview",
     "deploy": "turbo run deploy",

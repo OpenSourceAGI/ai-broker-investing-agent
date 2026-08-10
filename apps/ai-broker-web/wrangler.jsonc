@@ -1,6 +1,7 @@
 /**
  * Cloudflare Workers configuration for the Next.js app, built with
- * `opennextjs-cloudflare build` and deployed with `opennextjs-cloudflare deploy`.
+ * `vinext build` (via @cloudflare/vite-plugin) and deployed with
+ * `vinext-cloudflare deploy`.
  *
  * Secrets (set with `wrangler secret put <NAME>`):
  *   BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET,
@@ -9,12 +10,20 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "ai-broker-investing-agent",
-  "main": "worker.ts",
-  "compatibility_date": "2025-05-05",
+  // Wraps vinext's fetch handler to add cron trigger routing.
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // Backs the vinext CDN cache adapter (page-level ISR) in vite.config.ts.
+  "cache": {
+    "enabled": true
+  },
   "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    // Client bundle emitted by `vinext build`.
+    "directory": "dist/client",
+    "binding": "ASSETS",
+    // vinext routes unmatched paths through the Worker, not the asset server.
+    "not_found_handling": "none"
   },
   "d1_databases": [
     {
@@ -32,15 +41,8 @@
       "name": "SEND_EMAIL"
     }
   ],
-  // Required by OpenNext for internal revalidation requests, and used by the
-  // scheduled handler in worker.ts to invoke the Next.js cron API routes.
-  "services": [
-    {
-      "binding": "WORKER_SELF_REFERENCE",
-      "service": "ai-broker-investing-agent"
-    }
-  ],
-  // Replaces the Vercel crons: each schedule is routed to its API route in worker.ts.
+  // Replaces the Vercel crons: each schedule is routed to its API route by the
+  // scheduled handler in worker/index.ts.
   "triggers": {
     "crons": ["0 0 * * *", "15 0 * * *"]
   },

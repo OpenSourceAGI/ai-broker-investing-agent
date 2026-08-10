@@ -1,7 +1,7 @@
 import { createClient } from "@libsql/client";
 import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { drizzle as drizzleD1 } from "drizzle-orm/d1";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { env } from "cloudflare:workers";
 import * as schema from "./schema";
 import * as relations from "./relations";
 
@@ -13,21 +13,17 @@ let _db: Database | null = null;
 
 /**
  * Resolve the database for the current runtime:
- * - Cloudflare Workers (and `next dev` via initOpenNextCloudflareForDev):
- *   the D1 binding `DB` from wrangler.jsonc, through drizzle-orm/d1.
+ * - Cloudflare Workers (including `vinext dev`, which runs the server
+ *   environment in workerd): the D1 binding `DB` from wrangler.jsonc, through
+ *   drizzle-orm/d1.
  * - Anywhere else (build, scripts): libsql against DATABASE_URL or a local file.
  */
 function resolveDb(): Database {
   if (_db) return _db;
 
-  try {
-    const { env } = getCloudflareContext();
-    if (env?.DB) {
-      _db = drizzleD1(env.DB as never, { schema: fullSchema }) as unknown as Database;
-      return _db;
-    }
-  } catch {
-    // Not inside a Cloudflare request context — fall back to libsql.
+  if (env?.DB) {
+    _db = drizzleD1(env.DB as never, { schema: fullSchema }) as unknown as Database;
+    return _db;
   }
 
   const client = createClient({
@@ -39,8 +35,8 @@ function resolveDb(): Database {
 }
 
 /**
- * Lazy proxy so the D1 binding is only read at request time (module scope has
- * no Cloudflare context) while keeping the existing `import { db }` call sites.
+ * Lazy proxy so the driver is only constructed on first use, while keeping the
+ * existing `import { db }` call sites.
  */
 export const db = new Proxy({} as Database, {
   get(_target, prop) {

@@ -15,8 +15,6 @@
         "^build"
       ],
       "outputs": [
-        ".next/**",
-        "!.next/cache/**",
         ".source/**",
         "dist/**",
         "build/**"
@@ -25,23 +23,8 @@
     "ai-broker-web#build": {
       "dependsOn": [],
       "outputs": [
-        ".next/**",
-        "!.next/cache/**",
+        "dist/**",
         ".source/**"
-      ]
-    },
-    "build:workers": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".open-next/**",
-        ".next/**",
-        "!.next/cache/**"
-      ],
-      "env": [
-        "CLOUDFLARE_ACCOUNT_ID",
-        "CLOUDFLARE_API_TOKEN"
       ]
     },
     "dev": {
@@ -64,10 +47,13 @@
     },
     "deploy": {
       "dependsOn": [
-        "^build",
-        "build"
+        "^build"
       ],
-      "cache": false
+      "cache": false,
+      "env": [
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_API_TOKEN"
+      ]
     },
     "test": {
       "dependsOn": [
