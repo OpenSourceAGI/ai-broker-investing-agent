@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { sharedItems, notifications, users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { sendEmail, renderEmailLayout, renderEmailButton } from "@/lib/email/send-email"
 
 // GET - Get items shared with user
 export async function GET(request: NextRequest) {
@@ -118,8 +119,19 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // TODO: Send email to recipient
-    // Integrate with email service (Resend, SendGrid, etc.)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://autoinvestment.broker"
+    const itemLabel = itemType.replace("_", " ")
+    const viewUrl = recipient.length > 0
+      ? `${appUrl}/shared/${sharedItem.id}`
+      : `${appUrl}/sign-up?redirect=/shared/${sharedItem.id}`
+    await sendEmail({
+      to: email,
+      subject: `${session.user.name} shared ${symbol ? symbol + " " : ""}${itemLabel} with you`,
+      html: renderEmailLayout(
+        "Shared with you",
+        `<p>${session.user.name} shared a ${itemLabel}${symbol ? ` for <strong>${symbol}</strong>` : ""} with you${title ? `: <strong>${title}</strong>` : ""}.</p>${message ? `<p style="font-style:italic;">"${message}"</p>` : ""}${renderEmailButton("View", viewUrl)}`
+      ),
+    })
 
     return NextResponse.json({
       success: true,

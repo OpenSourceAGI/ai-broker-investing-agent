@@ -127,15 +127,16 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { name, description } = body
+    const { name, description, upgradeMembers } = body
+
+    const updates: Record<string, unknown> = { updatedAt: new Date() }
+    if (name !== undefined) updates.name = name
+    if (description !== undefined) updates.description = description
+    if (upgradeMembers !== undefined) updates.upgradeMembers = !!upgradeMembers
 
     await db
       .update(teams)
-      .set({
-        name,
-        description,
-        updatedAt: new Date(),
-      })
+      .set(updates)
       .where(eq(teams.id, teamId))
 
     return NextResponse.json({
