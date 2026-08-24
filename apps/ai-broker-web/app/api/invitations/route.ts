@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { userInvitations, users, notifications } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+import { sendEmail, renderEmailLayout, renderEmailButton } from "@/lib/email/send-email"
 
 // GET - Get user's sent and received invitations
 export async function GET(request: NextRequest) {
@@ -106,8 +107,16 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // TODO: Send email invitation
-    // You can integrate with a service like Resend, SendGrid, or Nodemailer here
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://autoinvestment.broker"
+    const acceptUrl = `${appUrl}/sign-up?invite=${invitation.id}`
+    await sendEmail({
+      to: email,
+      subject: `${session.user.name} invited you`,
+      html: renderEmailLayout(
+        "You've been invited",
+        `<p>${session.user.name} invited you to join${organizationId ? " their organization" : ""}.</p>${renderEmailButton("Accept Invitation", acceptUrl)}<p style="color:#888;font-size:12px;">This invitation expires in 7 days.</p>`
+      ),
+    })
 
     return NextResponse.json({
       success: true,

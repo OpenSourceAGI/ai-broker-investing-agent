@@ -1,34 +1,89 @@
-// Team management actions
-// TODO: Implement team CRUD operations
+// Client-side helpers for team management, backed by the /api/teams,
+// /api/teams/[id]/invite, and /api/users/search routes.
 
-export async function getTeams() {
-  return []
+export interface TeamMemberUser {
+  id: string
+  name: string
+  email: string
+  image?: string | null
 }
 
-export async function getUserTeams() {
-  return []
+export interface TeamMember {
+  id: string
+  role: string
+  user: TeamMemberUser
 }
 
-export async function createTeam(data: any) {
-  throw new Error('Not implemented')
+export interface Team {
+  id: string
+  organizationId: string
+  name: string
+  description: string | null
+  upgradeMembers: boolean
+  members: TeamMember[]
 }
 
-export async function updateTeam(id: string, data: any) {
-  throw new Error('Not implemented')
+async function parseJson(res: Response) {
+  const data = await res.json().catch(() => ({}))
+  return { ok: res.ok, data }
+}
+
+export async function getTeams(): Promise<Team[]> {
+  return getUserTeams()
+}
+
+export async function getUserTeams(): Promise<Team[]> {
+  const res = await fetch("/api/teams")
+  const { ok, data } = await parseJson(res)
+  return ok && data.success ? data.data : []
+}
+
+export async function createTeam(name: string, description?: string, upgradeMembers?: boolean) {
+  const res = await fetch("/api/teams", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, description, upgradeMembers }),
+  })
+  const { ok, data } = await parseJson(res)
+  return ok ? { success: true, data: data.data } : { success: false, error: data.error }
+}
+
+export async function updateTeam(id: string, name: string, description?: string, upgradeMembers?: boolean) {
+  const res = await fetch(`/api/teams/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, description, upgradeMembers }),
+  })
+  const { ok, data } = await parseJson(res)
+  return ok ? { success: true } : { success: false, error: data.error }
 }
 
 export async function deleteTeam(id: string) {
-  throw new Error('Not implemented')
+  const res = await fetch(`/api/teams/${id}`, { method: "DELETE" })
+  const { ok, data } = await parseJson(res)
+  return ok ? { success: true } : { success: false, error: data.error }
 }
 
 export async function inviteMemberToTeam(teamId: string, email: string) {
-  throw new Error('Not implemented')
+  const res = await fetch(`/api/teams/${teamId}/invite`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  })
+  const { ok, data } = await parseJson(res)
+  return ok ? { success: true, invited: !!data.invited } : { success: false, error: data.error }
 }
 
 export async function removeMemberFromTeam(teamId: string, userId: string) {
-  throw new Error('Not implemented')
+  const res = await fetch(`/api/teams/${teamId}/members?userId=${encodeURIComponent(userId)}`, {
+    method: "DELETE",
+  })
+  const { ok, data } = await parseJson(res)
+  return ok ? { success: true } : { success: false, error: data.error }
 }
 
-export async function searchUsers(query: string) {
-  return []
+export async function searchUsers(query: string): Promise<TeamMemberUser[]> {
+  const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`)
+  const { ok, data } = await parseJson(res)
+  return ok && data.success ? data.data : []
 }
