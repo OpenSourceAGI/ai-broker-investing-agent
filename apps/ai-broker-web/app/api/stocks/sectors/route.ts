@@ -1,9 +1,18 @@
 // Sector Info API Route
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+// Bundled at build time: Cloudflare Workers has no filesystem to read from at
+// request time.
+import sectorInfo from '@/packages/investing/src/stock-names-data/sector-info.json';
 
-const SECTOR_INFO_FILE = path.join(process.cwd(), 'data/sector-info.json');
+interface SectorInfo {
+    sector: string;
+    totalCompanies?: number;
+    totalMarketCap?: number;
+    industries?: unknown;
+    top10Companies?: unknown;
+}
+
+const sectors = sectorInfo as SectorInfo[];
 
 export async function GET(request: NextRequest) {
     try {
@@ -12,27 +21,10 @@ export async function GET(request: NextRequest) {
         const includeCompanies = searchParams.get('includeCompanies') === 'true';
         const includeIndustries = searchParams.get('includeIndustries') === 'true';
 
-        // Check if file exists
-        if (!fs.existsSync(SECTOR_INFO_FILE)) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Sector info data not found. Run import:stocks to generate.',
-                    code: 'FILE_NOT_FOUND',
-                    timestamp: new Date().toISOString()
-                },
-                { status: 404 }
-            );
-        }
-
-        // Read sector info data
-        const fileContent = fs.readFileSync(SECTOR_INFO_FILE, 'utf-8');
-        const sectors = JSON.parse(fileContent);
-
         // If specific sector requested
         if (sector) {
-            const sectorData = sectors.find((s: any) => 
-                s.sector.toLowerCase() === sector.toLowerCase()
+            const sectorData = sectors.find(
+                (s) => s.sector.toLowerCase() === sector.toLowerCase()
             );
 
             if (!sectorData) {
@@ -41,7 +33,7 @@ export async function GET(request: NextRequest) {
                         success: false,
                         error: `Sector '${sector}' not found`,
                         code: 'SECTOR_NOT_FOUND',
-                        availableSectors: sectors.map((s: any) => s.sector),
+                        availableSectors: sectors.map((s) => s.sector),
                         timestamp: new Date().toISOString()
                     },
                     { status: 404 }
@@ -49,7 +41,7 @@ export async function GET(request: NextRequest) {
             }
 
             // Filter data based on query params
-            const filteredData = { ...sectorData };
+            const filteredData: SectorInfo = { ...sectorData };
             if (!includeCompanies) {
                 delete filteredData.top10Companies;
             }
@@ -65,7 +57,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Return all sectors with basic info
-        const sectorSummary = sectors.map((s: any) => ({
+        const sectorSummary = sectors.map((s) => ({
             sector: s.sector,
             totalCompanies: s.totalCompanies,
             totalMarketCap: s.totalMarketCap,
