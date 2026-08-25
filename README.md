@@ -145,6 +145,8 @@ Setup notes:
 - Environment variables for the app belong in `apps/ai-broker-web/.env` (vinext reads `.env*` files next to the app, following Next.js precedence). `drizzle.config.ts` additionally falls back to a root `.env`.
 - Secrets: `wrangler secret put BETTER_AUTH_SECRET` (likewise `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRON_SECRET`, and optionally `RESEND_API_KEY` as an email fallback).
 - Email Workers requires [Email Routing](https://developers.cloudflare.com/email-routing/) to be enabled on the zone, with the `EMAIL_FROM` sender on a verified domain and recipient destination rules configured; without the binding, sending falls back to Resend (if configured) or console logging.
+- Workers has no filesystem and no long-lived TCP: server code must reach data through the `DB` binding rather than `@libsql/client`, and read bundled JSON through an `import` rather than `fs`. Adding either back is what breaks a deploy that builds cleanly.
+- Bundle size: the Worker is uploaded compressed and must stay under Cloudflare's 10 MB limit (3 MB on the free plan). The current server bundle is ~7 MB gzipped, so large new dependencies or bundled datasets need checking — `find apps/ai-broker-web/dist/server -name '*.js' -not -path '*/ssr/*' | xargs cat | gzip -9 | wc -c` after a build.
 
 ## 📂 Third Party APIs
 

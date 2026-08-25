@@ -1,31 +1,37 @@
-# Vercel Cron Jobs
+# Cloudflare Cron Triggers
 
-This directory contains cron job endpoints that are automatically triggered by Vercel's cron scheduler.
+This directory contains cron job endpoints driven by Cloudflare Workers
+[cron triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/).
+
+A trigger does not call an HTTP route by itself: it invokes the Worker's
+`scheduled()` handler in [`worker/index.ts`](../../../worker/index.ts), which maps
+each schedule to the route below and dispatches it through the same fetch handler,
+carrying the `CRON_SECRET` bearer token these routes expect.
 
 ## Setup
 
-### 1. Environment Variables
-
-Add the following to your Vercel project environment variables:
+### 1. Secret
 
 ```bash
-CRON_SECRET=your_random_secret_here
-```
-
-Generate a secure random string for the CRON_SECRET:
-```bash
+# Generate a secure random string
 openssl rand -base64 32
+
+# Store it on the Worker
+npx wrangler secret put CRON_SECRET
 ```
 
-### 2. Vercel Configuration
+### 2. Schedules
 
-The cron jobs are configured in [vercel.json](../../../vercel.json) at the project root.
+Schedules live in [`wrangler.jsonc`](../../../wrangler.jsonc) under `triggers.crons`,
+and the schedule → route mapping lives in `CRON_ROUTES` in `worker/index.ts`. Both
+have to be updated together — a schedule with no mapped route logs a warning and
+does nothing.
 
 ## Available Cron Jobs
 
 ### `/api/cron/sync-markets` - Polymarket Data Sync
 
-**Schedule:** Every 15 minutes (`*/15 * * * *`)
+**Schedule:** Daily at 00:00 UTC (`0 0 * * *`)
 
 **Purpose:** Incrementally syncs the top 1000 high volume Polymarket prediction markets
 
@@ -45,7 +51,7 @@ The cron jobs are configured in [vercel.json](../../../vercel.json) at the proje
 
 ### `/api/cron/refresh-quotes` - Stock Quote Cache Refresh
 
-**Schedule:** Every 5 minutes (`*/5 * * * *`)
+**Schedule:** Daily at 00:15 UTC (`15 0 * * *`)
 
 **Purpose:** Refreshes stock quotes for ~35 popular symbols to keep cache fresh
 
@@ -69,7 +75,7 @@ The cron jobs are configured in [vercel.json](../../../vercel.json) at the proje
 
 ## Testing Locally
 
-You can test cron jobs locally using curl:
+Hit the route directly:
 
 ```bash
 # With authentication (requires valid CRON_SECRET)
@@ -79,11 +85,19 @@ curl -H "Authorization: Bearer your_cron_secret_here" http://localhost:3000/api/
 curl -H "Cookie: your_session_cookie" http://localhost:3000/api/cron/sync-markets
 ```
 
+The `scheduled()` handler adds nothing but the schedule → route lookup and the
+`CRON_SECRET` header, so exercising the route directly covers the work itself.
+(`wrangler dev --test-scheduled` does not apply here: the deployed bundle is built
+with `no_bundle`, so wrangler cannot inject its `/__scheduled` middleware — that
+path falls through to the app and 404s.) To confirm the mapping end to end, deploy
+and check `wrangler tail` for the `Cron <route> -> 200` line the handler logs.
+
 ## Monitoring
 
-View cron job logs in:
-- **Vercel Dashboard:** Go to your project → Deployments → Select deployment → Functions → Select function
-- **Real-time logs:** Use `vercel logs` CLI command
+- **Dashboard:** Workers & Pages → the Worker → Logs (Workers Logs is enabled via
+  `observability` in `wrangler.jsonc`); the Settings → Trigger Events tab lists
+  cron run history.
+- **Real-time logs:** `npx wrangler tail`
 
 ## Response Format
 
@@ -126,28 +140,31 @@ If a cron job fails:
 
 ## Limitations
 
-- **Vercel Free/Hobby:** Cron jobs are not available
-- **Vercel Pro:** Up to 2 cron jobs
-- **Vercel Enterprise:** Unlimited cron jobs
-- **Timeout:** Max execution time is 300 seconds (5 minutes) on Pro
-- **Concurrency:** Cron jobs don't run concurrently by default
+- **Schedules per Worker:** up to 5 cron triggers.
+- **Granularity:** schedules are evaluated in UTC and fire at most once per minute.
+- **CPU time:** a scheduled invocation gets up to 15 minutes of CPU time, well above
+  the 30s default for fetch handlers — but wall-clock work still has to fit the
+  Worker's limits, so long syncs should batch.
+- **Concurrency:** a trigger fires one invocation; overlapping runs are possible if a
+  previous run has not finished.
 
 ## Adding New Cron Jobs
 
-1. Create a new route handler in this directory (e.g., `sync-example/route.ts`)
-2. Implement authentication check using CRON_SECRET pattern
-3. Add the endpoint to [vercel.json](../../../vercel.json):
-   ```json
-   {
-     "crons": [
-       {
-         "path": "/api/cron/sync-example",
-         "schedule": "0 * * * *"
-       }
-     ]
+1. Create a new route handler in this directory (e.g., `sync-example/route.ts`).
+2. Implement the authentication check using the CRON_SECRET pattern.
+3. Add the schedule to [`wrangler.jsonc`](../../../wrangler.jsonc):
+   ```jsonc
+   "triggers": {
+     "crons": ["0 0 * * *", "15 0 * * *", "0 * * * *"]
    }
    ```
-4. Deploy to Vercel
+4. Map it to the route in `CRON_ROUTES` in [`worker/index.ts`](../../../worker/index.ts):
+   ```ts
+   const CRON_ROUTES: Record<string, string> = {
+     "0 * * * *": "/api/cron/sync-example",
+   };
+   ```
+5. `npm run deploy`
 
 ## Cron Schedule Format
 

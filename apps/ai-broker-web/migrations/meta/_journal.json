@@ -120,6 +120,13 @@
       "when": 1770345863924,
       "tag": "0016_secret_wonder_man",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1787647566930,
+      "tag": "0017_greedy_jackal",
+      "breakpoints": true
     }
   ]
 }

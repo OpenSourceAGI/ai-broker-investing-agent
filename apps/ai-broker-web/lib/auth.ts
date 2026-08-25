@@ -40,6 +40,8 @@ export const auth = betterAuth({
       account: schema.accounts,
       verification: schema.verifications,
       walletAddress: schema.walletAddresses,
+      // @better-auth/stripe subscription model.
+      subscription: schema.subscriptions,
     },
   }),
   socialProviders: {
