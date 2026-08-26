@@ -5,7 +5,6 @@
 
 import { z } from 'zod';
 import { Fetcher } from '../../../types/base';
-import { makeRequest } from '../../../utils/http';
 
 export const FamaFrenchFactorDataQuerySchema = z.object({
   factor: z
@@ -38,19 +37,9 @@ export class FamaFrenchFactorDataFetcher
   }
 
   async extractData(
-    query: FamaFrenchFactorDataQuery,
-    credentials?: Record<string, string>
+    _query: FamaFrenchFactorDataQuery,
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
-    const baseUrl = 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp';
-    const frequencyMap: Record<string, string> = {
-      daily: '_daily',
-      monthly: '',
-      annual: '_annual',
-    };
-
-    const freq = frequencyMap[query.frequency];
-    const url = `${baseUrl}/${query.factor}${freq}_CSV.zip`;
-
     // Note: This requires ZIP file download and CSV parsing
     // Placeholder implementation
     return [

@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { Fetcher, QueryParams, Data } from '../../../types/base';
+import { Fetcher } from '../../../types/base';
 import { makeRequest } from '../../../utils/http';
 import { formatDate } from '../../../utils/dates';
 
@@ -170,7 +170,7 @@ export class CftcCotFetcher implements Fetcher<CftcCotQuery, CftcCotData> {
   /**
    * Transform and validate the data
    */
-  transformData(query: CftcCotQuery, data: any[]): CftcCotData[] {
+  transformData(_query: CftcCotQuery, data: any[]): CftcCotData[] {
     const stringCols = [
       'market_and_exchange_names',
       'cftc_contract_market_code',

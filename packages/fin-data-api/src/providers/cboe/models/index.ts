@@ -34,7 +34,7 @@ export class CBOEIndexFetcher implements Fetcher<CBOEIndexQuery, CBOEIndexData> 
 
   async extractData(
     query: CBOEIndexQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const symbol = query.symbol.toUpperCase();
     const url = `https://cdn.cboe.com/api/global/delayed_quotes/historical/${symbol}.json`;

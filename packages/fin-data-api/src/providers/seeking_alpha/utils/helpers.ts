@@ -4,7 +4,6 @@
  */
 
 import { makeRequest } from '../../../utils/http';
-import { dateRange } from '../../../utils/dates';
 
 export const HEADERS = {
   'User-Agent':

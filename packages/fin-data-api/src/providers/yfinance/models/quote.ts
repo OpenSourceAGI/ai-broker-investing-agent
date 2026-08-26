@@ -41,7 +41,7 @@ export class YFinanceQuoteFetcher implements Fetcher<YFinanceQuoteQuery, YFinanc
 
   async extractData(
     query: YFinanceQuoteQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const symbols = query.symbol.split(',').map((s) => s.trim());
     const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(',')}`;
@@ -60,7 +60,7 @@ export class YFinanceQuoteFetcher implements Fetcher<YFinanceQuoteQuery, YFinanc
     return response.quoteResponse.result;
   }
 
-  transformData(query: YFinanceQuoteQuery, data: any[]): YFinanceQuoteData[] {
+  transformData(_query: YFinanceQuoteQuery, data: any[]): YFinanceQuoteData[] {
     return data.map((item) =>
       YFinanceQuoteDataSchema.parse({
         symbol: item.symbol,

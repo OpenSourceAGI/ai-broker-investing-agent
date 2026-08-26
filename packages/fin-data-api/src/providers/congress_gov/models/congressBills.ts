@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { Fetcher, QueryParams, Data } from '../../../types/base';
+import { Fetcher } from '../../../types/base';
 import { BillType, BillTypes, billTypeDocstring } from '../utils/constants';
 import { yearToCongress, getAllBillsByType, getBillsByType } from '../utils/helpers';
 

@@ -5,7 +5,6 @@
 
 import { z } from 'zod';
 import { Fetcher } from '../../../types/base';
-import { makeRequest } from '../../../utils/http';
 
 export const TMXQuoteQuerySchema = z.object({
   symbol: z.string().describe('Stock symbol'),
@@ -35,15 +34,8 @@ export class TMXQuoteFetcher implements Fetcher<TMXQuoteQuery, TMXQuoteData> {
 
   async extractData(
     query: TMXQuoteQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
-    const url = `https://www.tmx.com/quote/${query.symbol}`;
-
-    const headers = {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    };
-
     // Note: TMX requires web scraping
     // Placeholder implementation
     return [
@@ -59,7 +51,7 @@ export class TMXQuoteFetcher implements Fetcher<TMXQuoteQuery, TMXQuoteData> {
     ];
   }
 
-  transformData(query: TMXQuoteQuery, data: any[]): TMXQuoteData[] {
+  transformData(_query: TMXQuoteQuery, data: any[]): TMXQuoteData[] {
     return data.map((item) => TMXQuoteDataSchema.parse(item));
   }
 }

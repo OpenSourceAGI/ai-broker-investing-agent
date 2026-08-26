@@ -70,7 +70,7 @@ export class BizTocNewsFetcher implements Fetcher<BizTocNewsQuery, BizTocNewsDat
     return articles.slice(0, query.limit);
   }
 
-  transformData(query: BizTocNewsQuery, data: any[]): BizTocNewsData[] {
+  transformData(_query: BizTocNewsQuery, data: any[]): BizTocNewsData[] {
     return data.map((item) => BizTocNewsDataSchema.parse(item));
   }
 }

@@ -69,7 +69,7 @@ export class BLSSeriesFetcher implements Fetcher<BLSSeriesQuery, BLSSeriesData> 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      data: requestBody,
     });
 
     if (response.status !== 'REQUEST_SUCCEEDED') {

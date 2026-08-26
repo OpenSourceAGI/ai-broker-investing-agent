@@ -36,7 +36,7 @@ export class FinVizQuoteFetcher implements Fetcher<FinVizQuoteQuery, FinVizQuote
 
   async extractData(
     query: FinVizQuoteQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const url = `https://finviz.com/quote.ashx?t=${query.symbol}`;
 
@@ -45,7 +45,7 @@ export class FinVizQuoteFetcher implements Fetcher<FinVizQuoteQuery, FinVizQuote
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     };
 
-    const html = await makeRequest(url, { headers });
+    await makeRequest(url, { headers });
 
     // Note: This would require HTML parsing in a real implementation
     // For now, we'll return a placeholder indicating scraping is needed

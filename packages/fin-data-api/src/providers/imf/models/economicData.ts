@@ -35,7 +35,7 @@ export class IMFEconomicDataFetcher
 
   async extractData(
     query: IMFEconomicDataQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const baseUrl = 'https://www.imf.org/external/datamapper/api/v1';
     const url = `${baseUrl}/${query.indicator}/${query.country}`;
@@ -68,7 +68,7 @@ export class IMFEconomicDataFetcher
     return results;
   }
 
-  transformData(query: IMFEconomicDataQuery, data: any[]): IMFEconomicDataData[] {
+  transformData(_query: IMFEconomicDataQuery, data: any[]): IMFEconomicDataData[] {
     return data.map((item) => IMFEconomicDataDataSchema.parse(item));
   }
 }
