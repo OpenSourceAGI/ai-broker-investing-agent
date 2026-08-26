@@ -36,7 +36,7 @@ export class DeribitOptionsFetcher implements Fetcher<DeribitOptionsQuery, Derib
 
   async extractData(
     query: DeribitOptionsQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const url =
       `https://www.deribit.com/api/v2/public/get_instruments?` +
@@ -51,7 +51,7 @@ export class DeribitOptionsFetcher implements Fetcher<DeribitOptionsQuery, Derib
     return response.result;
   }
 
-  transformData(query: DeribitOptionsQuery, data: any[]): DeribitOptionsData[] {
+  transformData(_query: DeribitOptionsQuery, data: any[]): DeribitOptionsData[] {
     return data.map((item) =>
       DeribitOptionsDataSchema.parse({
         instrument_name: item.instrument_name,

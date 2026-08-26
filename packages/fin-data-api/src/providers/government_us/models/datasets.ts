@@ -35,7 +35,7 @@ export class GovernmentUSDatasetFetcher
 
   async extractData(
     query: GovernmentUSDatasetQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const url = `https://catalog.data.gov/api/3/action/package_show?id=${query.dataset_id}`;
 
@@ -48,7 +48,7 @@ export class GovernmentUSDatasetFetcher
     return [response.result];
   }
 
-  transformData(query: GovernmentUSDatasetQuery, data: any[]): GovernmentUSDatasetData[] {
+  transformData(_query: GovernmentUSDatasetQuery, data: any[]): GovernmentUSDatasetData[] {
     return data.map((item) =>
       GovernmentUSDatasetDataSchema.parse({
         title: item.title,

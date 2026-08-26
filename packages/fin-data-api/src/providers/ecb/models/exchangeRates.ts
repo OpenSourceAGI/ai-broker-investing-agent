@@ -32,9 +32,8 @@ export class ECBExchangeRatesFetcher
 
   async extractData(
     query: ECBExchangeRatesQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
-    const series = `EXR.D.${query.currency}.EUR.SP00.A`;
     let url = `https://data-api.ecb.europa.eu/service/data/EXR/D.${query.currency}.EUR.SP00.A`;
 
     const params: string[] = [];
@@ -86,7 +85,7 @@ export class ECBExchangeRatesFetcher
     return results;
   }
 
-  transformData(query: ECBExchangeRatesQuery, data: any[]): ECBExchangeRatesData[] {
+  transformData(_query: ECBExchangeRatesQuery, data: any[]): ECBExchangeRatesData[] {
     return data.map((item) => ECBExchangeRatesDataSchema.parse(item));
   }
 }

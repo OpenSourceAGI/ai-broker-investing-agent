@@ -34,7 +34,7 @@ export class NasdaqQuoteFetcher implements Fetcher<NasdaqQuoteQuery, NasdaqQuote
 
   async extractData(
     query: NasdaqQuoteQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const url = `https://api.nasdaq.com/api/quote/${query.symbol}/info?assetclass=stocks`;
 

@@ -63,7 +63,7 @@ export class StockgridOptionsFlowFetcher
     return response;
   }
 
-  transformData(query: StockgridOptionsFlowQuery, data: any[]): StockgridOptionsFlowData[] {
+  transformData(_query: StockgridOptionsFlowQuery, data: any[]): StockgridOptionsFlowData[] {
     return data.map((item) =>
       StockgridOptionsFlowDataSchema.parse({
         timestamp: item.timestamp || item.time,

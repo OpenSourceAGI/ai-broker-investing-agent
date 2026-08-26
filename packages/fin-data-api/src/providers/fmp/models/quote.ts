@@ -55,7 +55,7 @@ export class FMPQuoteFetcher implements Fetcher<FMPQuoteQuery, FMPQuoteData> {
     return response;
   }
 
-  transformData(query: FMPQuoteQuery, data: any[]): FMPQuoteData[] {
+  transformData(_query: FMPQuoteQuery, data: any[]): FMPQuoteData[] {
     return data.map((item) =>
       FMPQuoteDataSchema.parse({
         symbol: item.symbol,

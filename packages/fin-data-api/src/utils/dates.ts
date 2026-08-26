@@ -79,6 +79,15 @@ export function subtractDays(date: Date, days: number): Date {
 }
 
 /**
+ * Add years to a date
+ */
+export function addYears(date: Date, years: number): Date {
+  const result = new Date(date);
+  result.setFullYear(result.getFullYear() + years);
+  return result;
+}
+
+/**
  * Get the number of days between two dates
  */
 export function daysBetween(startDate: Date, endDate: Date): number {

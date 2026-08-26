@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { Fetcher, QueryParams, Data } from '../../../types/base';
+import { Fetcher } from '../../../types/base';
 import { HEADERS } from '../utils/helpers';
 import { makeRequest } from '../../../utils/http';
 import { getDateArray, formatDate, addDays, today } from '../../../utils/dates';
@@ -74,7 +74,7 @@ export class SACalendarEarningsFetcher
    */
   async extractData(
     query: SACalendarEarningsQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const results: any[] = [];
 
@@ -142,7 +142,7 @@ export class SACalendarEarningsFetcher
   /**
    * Transform raw data to structured format
    */
-  transformData(query: SACalendarEarningsQuery, data: any[]): SACalendarEarningsData[] {
+  transformData(_query: SACalendarEarningsQuery, data: any[]): SACalendarEarningsData[] {
     const transformedData: SACalendarEarningsData[] = [];
 
     // Sort by release date

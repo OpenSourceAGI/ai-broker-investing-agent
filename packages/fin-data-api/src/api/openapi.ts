@@ -43,7 +43,7 @@ import { YFinanceQuoteQuerySchema, YFinanceQuoteDataSchema } from '../providers/
 /**
  * Generate OpenAPI 3.0 Specification
  */
-export function generateOpenAPISpec() {
+export function generateOpenAPISpec(): Record<string, unknown> {
   return {
     openapi: '3.0.0',
     info: {

@@ -89,7 +89,7 @@ export class TiingoStockPriceFetcher
     return response;
   }
 
-  transformData(query: TiingoStockPriceQuery, data: any[]): TiingoStockPriceData[] {
+  transformData(_query: TiingoStockPriceQuery, data: any[]): TiingoStockPriceData[] {
     return data.map((item) =>
       TiingoStockPriceDataSchema.parse({
         date: item.date.split('T')[0],

@@ -6,7 +6,7 @@
 import { z } from 'zod';
 import { Fetcher } from '../../../types/base';
 import { makeRequest } from '../../../utils/http';
-import { formatDate, addYears, today } from '../../../utils/dates';
+import { addYears, today } from '../../../utils/dates';
 import { INTERVALS_DICT, getInterval } from '../utils/helpers';
 
 /**

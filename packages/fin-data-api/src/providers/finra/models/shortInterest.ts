@@ -5,7 +5,6 @@
 
 import { z } from 'zod';
 import { Fetcher } from '../../../types/base';
-import { makeRequest } from '../../../utils/http';
 
 export const FINRAShortInterestQuerySchema = z.object({
   symbol: z.string().describe('Stock symbol'),
@@ -34,7 +33,7 @@ export class FINRAShortInterestFetcher
 
   async extractData(
     query: FINRAShortInterestQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     // FINRA data access requires specific parsing
     // Placeholder implementation
@@ -50,7 +49,7 @@ export class FINRAShortInterestFetcher
     ];
   }
 
-  transformData(query: FINRAShortInterestQuery, data: any[]): FINRAShortInterestData[] {
+  transformData(_query: FINRAShortInterestQuery, data: any[]): FINRAShortInterestData[] {
     return data.map((item) => FINRAShortInterestDataSchema.parse(item));
   }
 }

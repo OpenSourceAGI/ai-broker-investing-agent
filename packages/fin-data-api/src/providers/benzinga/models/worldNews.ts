@@ -108,7 +108,7 @@ export class BenzingaWorldNewsFetcher
     return response;
   }
 
-  transformData(query: BenzingaWorldNewsQuery, data: any[]): BenzingaWorldNewsData[] {
+  transformData(_query: BenzingaWorldNewsQuery, data: any[]): BenzingaWorldNewsData[] {
     return data.map((item) => {
       const transformed: any = {
         date: item.created || item.date,

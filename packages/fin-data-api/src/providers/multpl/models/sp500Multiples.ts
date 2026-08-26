@@ -46,7 +46,7 @@ export class MultplSP500MultiplesFetcher
 
   async extractData(
     query: MultplSP500MultiplesQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const urlPath = URL_DICT[query.series_name];
     if (!urlPath) {
@@ -60,7 +60,7 @@ export class MultplSP500MultiplesFetcher
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     };
 
-    const html = await makeRequest(url, { headers });
+    await makeRequest(url, { headers });
 
     // Note: This requires HTML table parsing
     // Placeholder implementation

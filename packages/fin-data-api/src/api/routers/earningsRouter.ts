@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import { SACalendarEarningsFetcher } from '../../providers/seeking_alpha/models/calendarEarnings';
 import { createOBBject, createError } from '../../types/base';
 
-const router = Router();
+const router: Router = Router();
 const fetcher = new SACalendarEarningsFetcher();
 
 /**

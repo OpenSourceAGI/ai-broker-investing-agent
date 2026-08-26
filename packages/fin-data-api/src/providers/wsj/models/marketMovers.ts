@@ -34,7 +34,7 @@ export class WSJMarketMoversFetcher
 
   async extractData(
     query: WSJMarketMoversQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const typeMap: Record<string, string> = {
       gainers: 'gainers',
@@ -49,7 +49,7 @@ export class WSJMarketMoversFetcher
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     };
 
-    const html = await makeRequest(url, { headers });
+    await makeRequest(url, { headers });
 
     // Note: This requires HTML scraping - placeholder implementation
     return [
@@ -65,7 +65,7 @@ export class WSJMarketMoversFetcher
     ].slice(0, query.limit);
   }
 
-  transformData(query: WSJMarketMoversQuery, data: any[]): WSJMarketMoversData[] {
+  transformData(_query: WSJMarketMoversQuery, data: any[]): WSJMarketMoversData[] {
     return data.map((item) =>
       WSJMarketMoversDataSchema.parse({
         symbol: item.symbol,
