@@ -33,7 +33,7 @@ does nothing.
 
 **Schedule:** Daily at 00:00 UTC (`0 0 * * *`)
 
-**Purpose:** Incrementally syncs the top 1000 high volume Polymarket prediction markets
+**Purpose:** Incrementally syncs the top 1000 high volume Polymarket prediction markets.
 
 **What it does:**
 - Fetches the top 1000 markets sorted by 24h volume
@@ -44,34 +44,33 @@ does nothing.
 
 **Features:**
 - Non-destructive: Updates existing markets without deleting
-- Batch processing: Processes price history (batches of 50) and holders (batches of 20)
+- Batch processing: Processes price history and holders in batches
 - Error resilient: Continues even if individual markets fail
 - Automatic categorization: Assigns categories (Politics, Sports, Crypto, etc.) and subcategories
-- Rate limit protection: 2-second delays between holder batches
+- Rate limit protection between holder batches
 
 ### `/api/cron/refresh-quotes` - Stock Quote Cache Refresh
 
 **Schedule:** Daily at 00:15 UTC (`15 0 * * *`)
 
-**Purpose:** Refreshes stock quotes for ~35 popular symbols to keep cache fresh
+**Purpose:** Refreshes stock quotes for popular symbols to keep cache fresh.
 
 **What it does:**
 - Fetches real-time quotes for popular stocks (AAPL, MSFT, GOOGL, SPY, etc.)
 - Updates quote cache with fresh data
 - Ensures frequently accessed stocks have up-to-date prices
-- Cache TTL: 5 minutes
+- Bypasses stale cache to ensure latest prices
 
 **Features:**
-- Fast execution: ~2-5 seconds typical
-- Popular symbols: Tech giants, major ETFs, financials, and more
-- Force fresh data: Bypasses cache to ensure latest prices
-- Multiple sources: Uses unified quote service with fallback providers
+- Fast execution: typically a few seconds
+- Popular symbols: tech giants, major ETFs, financials, and more
+- Multiple sources: uses unified quote service with fallback providers
 
 ### `/api/cron/sync-polymarket` - Leaders and Categories
 
 **Schedule:** Not yet configured (manual trigger only)
 
-**Purpose:** Syncs Polymarket leaderboard and category data
+**Purpose:** Syncs Polymarket leaderboard and category data.
 
 ## Testing Locally
 
@@ -121,6 +120,7 @@ All cron jobs return a consistent JSON response:
 ## Error Handling
 
 If a cron job fails:
+
 ```json
 {
   "success": false,
@@ -133,12 +133,12 @@ If a cron job fails:
 ## Security
 
 - All cron endpoints require either:
-  - Valid `Authorization: Bearer <CRON_SECRET>` header (for automated jobs)
-  - Valid user session (for manual triggers)
-- Never commit CRON_SECRET to version control
-- Rotate CRON_SECRET regularly
+  - Valid `Authorization: Bearer <CRON_SECRET>` header for scheduled jobs
+  - Valid user session for manual triggers
+- Never commit `CRON_SECRET` to version control
+- Rotate `CRON_SECRET` regularly
 
-## Limitations
+## Cloudflare Worker Notes
 
 - **Schedules per Worker:** up to 5 cron triggers.
 - **Granularity:** schedules are evaluated in UTC and fire at most once per minute.
@@ -170,7 +170,7 @@ If a cron job fails:
 
 The schedule uses standard cron syntax:
 
-```
+```text
 ┌───────────── minute (0 - 59)
 │ ┌───────────── hour (0 - 23)
 │ │ ┌───────────── day of month (1 - 31)
@@ -183,5 +183,5 @@ The schedule uses standard cron syntax:
 Examples:
 - `*/15 * * * *` - Every 15 minutes
 - `0 * * * *` - Every hour
-- `0 0 * * *` - Every day at midnight
+- `0 0 * * *` - Every day at midnight UTC
 - `0 */6 * * *` - Every 6 hours
