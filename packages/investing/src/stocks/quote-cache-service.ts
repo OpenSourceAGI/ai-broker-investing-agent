@@ -3,19 +3,14 @@
  * Handles caching of stock quotes, fundamentals, and historical data
  */
 
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
 import { eq } from "drizzle-orm";
+import { db } from "../db";
 import * as schema from "../db/schema";
 import type { NormalizedQuote } from "./unified-quote-service";
 
-// Initialize database connection
-const client = createClient({
-  url: process.env.DATABASE_URL || "file:./local.db",
-  authToken: process.env.DATABASE_AUTH_TOKEN,
-});
-
-const db = drizzle(client, { schema });
+// The shared connection resolves to the Cloudflare D1 binding on Workers and to
+// libsql everywhere else. Creating a libsql client here instead would hard-fail
+// on Workers, where the `file:` fallback URL is not a supported scheme.
 
 // Cache TTL in milliseconds
 const FUNDAMENTALS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
@@ -359,15 +354,9 @@ export class QuoteCacheService {
    * Clear expired cache entries
    */
   async clearExpiredCache(): Promise<void> {
-    try {
-      const now = new Date();
-      const expiryTime = new Date(now.getTime() - QUOTE_CACHE_TTL);
-
-      // This would require a more complex query with drizzle
-      // For now, we'll rely on the TTL check when reading
-    } catch (error: any) {
-      console.error(`[QuoteCache] Error clearing expired cache:`, error.message);
-    }
+    // Not implemented: reads already discard entries past their TTL, so nothing
+    // depends on a sweep. (The previous body referenced an undeclared
+    // QUOTE_CACHE_TTL and threw a ReferenceError when called.)
   }
 }
 

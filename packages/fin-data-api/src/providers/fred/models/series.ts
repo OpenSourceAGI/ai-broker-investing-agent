@@ -85,7 +85,7 @@ export class FREDSeriesFetcher implements Fetcher<FREDSeriesQuery, FREDSeriesDat
     return response.observations;
   }
 
-  transformData(query: FREDSeriesQuery, data: any[]): FREDSeriesData[] {
+  transformData(_query: FREDSeriesQuery, data: any[]): FREDSeriesData[] {
     return data
       .map((item) => ({
         date: item.date,

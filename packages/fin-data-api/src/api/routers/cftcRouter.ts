@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import { CftcCotFetcher } from '../../providers/cftc/models/cot';
 import { createOBBject, createError } from '../../types/base';
 
-const router = Router();
+const router: Router = Router();
 const fetcher = new CftcCotFetcher();
 
 /**

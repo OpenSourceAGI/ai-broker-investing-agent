@@ -5,7 +5,6 @@
 
 import { z } from 'zod';
 import { Fetcher } from '../../../types/base';
-import { makeRequest } from '../../../utils/http';
 
 export const FederalReserveInterestRatesQuerySchema = z.object({
   start_date: z.string().or(z.date()).optional().describe('Start date'),
@@ -41,10 +40,8 @@ export class FederalReserveInterestRatesFetcher
 
   async extractData(
     query: FederalReserveInterestRatesQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
-    const baseUrl = 'https://www.federalreserve.gov/datadownload';
-
     // Note: Federal Reserve data access requires specific parsing
     // Placeholder implementation
     return [
@@ -58,7 +55,7 @@ export class FederalReserveInterestRatesFetcher
   }
 
   transformData(
-    query: FederalReserveInterestRatesQuery,
+    _query: FederalReserveInterestRatesQuery,
     data: any[]
   ): FederalReserveInterestRatesData[] {
     return data.map((item) => FederalReserveInterestRatesDataSchema.parse(item));

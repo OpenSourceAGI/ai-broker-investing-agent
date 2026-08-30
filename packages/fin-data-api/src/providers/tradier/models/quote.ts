@@ -66,7 +66,7 @@ export class TradierQuoteFetcher implements Fetcher<TradierQuoteQuery, TradierQu
     return quotes;
   }
 
-  transformData(query: TradierQuoteQuery, data: any[]): TradierQuoteData[] {
+  transformData(_query: TradierQuoteQuery, data: any[]): TradierQuoteData[] {
     return data.map((item) =>
       TradierQuoteDataSchema.parse({
         symbol: item.symbol,

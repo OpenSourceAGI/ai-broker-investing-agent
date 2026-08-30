@@ -84,7 +84,7 @@ export class EconDBEconomicDataFetcher
     return results;
   }
 
-  transformData(query: EconDBEconomicDataQuery, data: any[]): EconDBEconomicDataData[] {
+  transformData(_query: EconDBEconomicDataQuery, data: any[]): EconDBEconomicDataData[] {
     return data.map((item) => EconDBEconomicDataDataSchema.parse(item));
   }
 }

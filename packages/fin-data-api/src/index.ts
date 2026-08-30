@@ -40,12 +40,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
 // Root endpoint
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.json({
     name: 'Financial Data API',
     version: '1.0.0',
@@ -65,7 +65,7 @@ app.use('/api/earnings', earningsRouter);
 app.use('/api/cftc', cftcRouter);
 
 // OpenAPI JSON endpoint
-app.get('/openapi.json', (req: Request, res: Response) => {
+app.get('/openapi.json', (_req: Request, res: Response) => {
   res.json(generateOpenAPISpec());
 });
 
@@ -95,7 +95,7 @@ app.use((req: Request, res: Response) => {
 });
 
 // Error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled error:', err);
   res.status(500).json({
     error: {

@@ -41,7 +41,7 @@ export class SECFilingsFetcher implements Fetcher<SECFilingsQuery, SECFilingsDat
 
   async extractData(
     query: SECFilingsQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     // First, get CIK from symbol if needed
     let cik = query.cik;
@@ -103,7 +103,7 @@ export class SECFilingsFetcher implements Fetcher<SECFilingsQuery, SECFilingsDat
     return filings;
   }
 
-  transformData(query: SECFilingsQuery, data: any[]): SECFilingsData[] {
+  transformData(_query: SECFilingsQuery, data: any[]): SECFilingsData[] {
     return data.map((item) => SECFilingsDataSchema.parse(item));
   }
 }

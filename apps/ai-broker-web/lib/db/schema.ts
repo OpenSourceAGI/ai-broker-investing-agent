@@ -3,6 +3,7 @@ import {
   text,
   integer,
   real,
+  uniqueIndex,
   type AnySQLiteColumn,
 } from "drizzle-orm/sqlite-core";
 
@@ -24,6 +25,11 @@ export const users = sqliteTable("users", {
   kycStatus: text("kyc_status").default("not_started"), // not_started, pending, in_review, approved, rejected, abandoned, expired
   kycSessionId: text("kyc_session_id"),
   kycVerifiedAt: integer("kyc_verified_at", { mode: "timestamp" }),
+
+  // @better-auth/stripe: customer created on sign-up, and the per-user flag
+  // read by getCheckoutSessionParams to decide whether to grant a trial.
+  stripeCustomerId: text("stripe_customer_id"),
+  trialAllowed: integer("trial_allowed", { mode: "boolean" }).default(true),
 
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
@@ -49,6 +55,8 @@ export const accounts = sqliteTable("accounts", {
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  // better-auth >= 1.7 keys accounts by (issuer, accountId).
+  issuer: text("issuer").notNull().default(""),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
   accessToken: text("access_token"),
@@ -58,11 +66,17 @@ export const accounts = sqliteTable("accounts", {
   accessTokenExpiresAt: integer("access_token_expires_at", {
     mode: "timestamp",
   }),
+  refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+    mode: "timestamp",
+  }),
   scope: text("scope"),
   password: text("password"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
-});
+}, (table) => [
+  // better-auth's account identity key.
+  uniqueIndex("accounts_issuer_account_id_idx").on(table.issuer, table.accountId),
+]);
 
 // Verification table
 export const verifications = sqliteTable("verifications", {
@@ -84,6 +98,33 @@ export const walletAddresses = sqliteTable("wallet_addresses", {
   chainId: integer("chain_id").notNull(),
   isPrimary: integer("is_primary", { mode: "boolean" }).default(false),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+
+/**
+ * Subscriptions table owned by the @better-auth/stripe plugin. Field names must
+ * stay in sync with the plugin's schema — better-auth addresses columns by the
+ * Drizzle property name, so only the SQL column names are snake_cased here.
+ */
+export const subscriptions = sqliteTable("subscriptions", {
+  id: text("id").primaryKey(),
+  plan: text("plan").notNull(),
+  referenceId: text("reference_id").notNull(),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  status: text("status").default("incomplete"),
+  periodStart: integer("period_start", { mode: "timestamp" }),
+  periodEnd: integer("period_end", { mode: "timestamp" }),
+  trialStart: integer("trial_start", { mode: "timestamp" }),
+  trialEnd: integer("trial_end", { mode: "timestamp" }),
+  cancelAtPeriodEnd: integer("cancel_at_period_end", {
+    mode: "boolean",
+  }).default(false),
+  cancelAt: integer("cancel_at", { mode: "timestamp" }),
+  canceledAt: integer("canceled_at", { mode: "timestamp" }),
+  endedAt: integer("ended_at", { mode: "timestamp" }),
+  seats: integer("seats"),
+  billingInterval: text("billing_interval"),
+  stripeScheduleId: text("stripe_schedule_id"),
 });
 
 // User Settings (API Keys & Broker Credentials)

@@ -28,6 +28,7 @@ export default defineConfig({
         "axios", "csv-parse", "date-fns", "dotenv", "drizzle-orm",
         "ethers", "indicatorts", "langchain", "nanoid",
         "predictos", "sec-edgar-toolkit", "xgboost_node", "zod",
+        "yahoo-finance2", "node-fetch",
       ],
     },
     terserOptions: {

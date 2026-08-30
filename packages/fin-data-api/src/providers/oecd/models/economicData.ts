@@ -35,7 +35,7 @@ export class OECDEconomicDataFetcher
 
   async extractData(
     query: OECDEconomicDataQuery,
-    credentials?: Record<string, string>
+    _credentials?: Record<string, string>
   ): Promise<any[]> {
     const params: string[] = [];
 
@@ -86,7 +86,7 @@ export class OECDEconomicDataFetcher
     return results;
   }
 
-  transformData(query: OECDEconomicDataQuery, data: any[]): OECDEconomicDataData[] {
+  transformData(_query: OECDEconomicDataQuery, data: any[]): OECDEconomicDataData[] {
     return data.map((item) => OECDEconomicDataDataSchema.parse(item));
   }
 }

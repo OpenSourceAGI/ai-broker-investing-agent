@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import { CongressBillsFetcher } from '../../providers/congress_gov/models/congressBills';
 import { createOBBject, createError } from '../../types/base';
 
-const router = Router();
+const router: Router = Router();
 const fetcher = new CongressBillsFetcher();
 
 /**

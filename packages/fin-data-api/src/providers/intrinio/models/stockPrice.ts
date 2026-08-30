@@ -76,7 +76,7 @@ export class IntrinioStockPriceFetcher
     return response.stock_prices;
   }
 
-  transformData(query: IntrinioStockPriceQuery, data: any[]): IntrinioStockPriceData[] {
+  transformData(_query: IntrinioStockPriceQuery, data: any[]): IntrinioStockPriceData[] {
     return data.map((item) =>
       IntrinioStockPriceDataSchema.parse({
         date: item.date,

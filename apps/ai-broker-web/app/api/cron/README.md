@@ -1,26 +1,31 @@
-# Cloudflare Worker Cron Jobs
+# Cloudflare Cron Triggers
 
-This directory contains cron job endpoints that are triggered by Cloudflare Workers scheduled events and routed through `apps/ai-broker-web/worker/index.ts`.
+This directory contains cron job endpoints driven by Cloudflare Workers
+[cron triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/).
+
+A trigger does not call an HTTP route by itself: it invokes the Worker's
+`scheduled()` handler in [`worker/index.ts`](../../../worker/index.ts), which maps
+each schedule to the route below and dispatches it through the same fetch handler,
+carrying the `CRON_SECRET` bearer token these routes expect.
 
 ## Setup
 
-### 1. Environment Variables
-
-Set the shared cron secret as a Cloudflare Worker secret:
+### 1. Secret
 
 ```bash
-wrangler secret put CRON_SECRET
-```
-
-Generate a secure random string for `CRON_SECRET`:
-
-```bash
+# Generate a secure random string
 openssl rand -base64 32
+
+# Store it on the Worker
+npx wrangler secret put CRON_SECRET
 ```
 
-### 2. Cloudflare Configuration
+### 2. Schedules
 
-Cron schedules are configured in `apps/ai-broker-web/wrangler.jsonc` under `triggers.crons`. The Worker `scheduled` handler maps each cron expression to the matching API route and forwards `Authorization: Bearer <CRON_SECRET>`.
+Schedules live in [`wrangler.jsonc`](../../../wrangler.jsonc) under `triggers.crons`,
+and the schedule → route mapping lives in `CRON_ROUTES` in `worker/index.ts`. Both
+have to be updated together — a schedule with no mapped route logs a warning and
+does nothing.
 
 ## Available Cron Jobs
 
@@ -69,7 +74,7 @@ Cron schedules are configured in `apps/ai-broker-web/wrangler.jsonc` under `trig
 
 ## Testing Locally
 
-Run the vinext dev server and call cron routes with `curl`:
+Hit the route directly:
 
 ```bash
 # With authentication (requires valid CRON_SECRET)
@@ -79,17 +84,19 @@ curl -H "Authorization: Bearer your_cron_secret_here" http://localhost:3000/api/
 curl -H "Cookie: your_session_cookie" http://localhost:3000/api/cron/sync-markets
 ```
 
-You can also verify configured schedules with Wrangler:
-
-```bash
-wrangler dev --test-scheduled
-```
+The `scheduled()` handler adds nothing but the schedule → route lookup and the
+`CRON_SECRET` header, so exercising the route directly covers the work itself.
+(`wrangler dev --test-scheduled` does not apply here: the deployed bundle is built
+with `no_bundle`, so wrangler cannot inject its `/__scheduled` middleware — that
+path falls through to the app and 404s.) To confirm the mapping end to end, deploy
+and check `wrangler tail` for the `Cron <route> -> 200` line the handler logs.
 
 ## Monitoring
 
-View cron job logs with Cloudflare Workers observability:
-- **Cloudflare Dashboard:** Workers & Pages → `ai-broker-investing-agent` → Logs / Observability
-- **CLI tailing:** `wrangler tail ai-broker-investing-agent`
+- **Dashboard:** Workers & Pages → the Worker → Logs (Workers Logs is enabled via
+  `observability` in `wrangler.jsonc`); the Settings → Trigger Events tab lists
+  cron run history.
+- **Real-time logs:** `npx wrangler tail`
 
 ## Response Format
 
@@ -133,17 +140,31 @@ If a cron job fails:
 
 ## Cloudflare Worker Notes
 
-- Scheduled events run in the Worker runtime and are dispatched through the vinext App Router handler.
-- Keep each scheduled route within Cloudflare Worker CPU/runtime limits for your plan.
-- If a job needs additional bindings, add them to `wrangler.jsonc` and regenerate types with `npm run cf-typegen`.
+- **Schedules per Worker:** up to 5 cron triggers.
+- **Granularity:** schedules are evaluated in UTC and fire at most once per minute.
+- **CPU time:** a scheduled invocation gets up to 15 minutes of CPU time, well above
+  the 30s default for fetch handlers — but wall-clock work still has to fit the
+  Worker's limits, so long syncs should batch.
+- **Concurrency:** a trigger fires one invocation; overlapping runs are possible if a
+  previous run has not finished.
 
 ## Adding New Cron Jobs
 
-1. Create a new route handler in this directory (for example, `sync-example/route.ts`).
-2. Implement authentication using the existing `CRON_SECRET` pattern.
-3. Add the cron expression to `triggers.crons` in `apps/ai-broker-web/wrangler.jsonc`.
-4. Add the expression-to-route mapping in `apps/ai-broker-web/worker/index.ts`.
-5. Deploy with `npm run deploy`.
+1. Create a new route handler in this directory (e.g., `sync-example/route.ts`).
+2. Implement the authentication check using the CRON_SECRET pattern.
+3. Add the schedule to [`wrangler.jsonc`](../../../wrangler.jsonc):
+   ```jsonc
+   "triggers": {
+     "crons": ["0 0 * * *", "15 0 * * *", "0 * * * *"]
+   }
+   ```
+4. Map it to the route in `CRON_ROUTES` in [`worker/index.ts`](../../../worker/index.ts):
+   ```ts
+   const CRON_ROUTES: Record<string, string> = {
+     "0 * * * *": "/api/cron/sync-example",
+   };
+   ```
+5. `npm run deploy`
 
 ## Cron Schedule Format
 
