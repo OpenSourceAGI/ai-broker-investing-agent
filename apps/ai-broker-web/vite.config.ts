@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,50 @@ const require = createRequire(import.meta.url);
 const entitiesEscape = require.resolve("entities/escape");
 
 const investingSrc = path.resolve(monorepoRoot, "packages/investing/src");
+const fumadocsPlugin = await mdx(mdxConfig);
+
+/**
+ * Fumadocs emits JSON collection imports with query strings. In vinext/RSC
+ * builds those IDs can bypass Vite's standard JSON plugin, so load the raw
+ * JSON early and wrap any remaining JSON payload as an ES module after the
+ * Fumadocs transform. This mirrors the Cloudflare vinext template and keeps
+ * docs generation compatible with Workers builds.
+ */
+function fumadocsJsonLoad(): Plugin {
+  return {
+    name: "fumadocs-json-load",
+    enforce: "pre",
+    resolveId(id) {
+      if (id.match(/\.json\?.*collection=/)) return id;
+      return null;
+    },
+    load(id) {
+      if (!id.match(/\.json\?.*collection=/)) return null;
+      const filePath = id.split("?")[0];
+      try {
+        return { code: readFileSync(filePath, "utf8"), map: null };
+      } catch {
+        return { code: "{}", map: null };
+      }
+    },
+  };
+}
+
+function fumadocsJsonWrap(): Plugin {
+  return {
+    name: "fumadocs-json-wrap",
+    transform(code, id) {
+      if (!id.match(/\.json\?.*collection=/)) return null;
+      const trimmed = code.trim();
+      if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return null;
+      try {
+        return { code: `export default ${JSON.stringify(JSON.parse(trimmed))}`, map: null };
+      } catch {
+        return null;
+      }
+    },
+  };
+}
 
 /**
  * `investing/stocks` has a server entry (full ticker dataset) and a trimmed
@@ -40,10 +85,18 @@ function investingStocksEntry(): Plugin {
 }
 
 export default defineConfig({
+  // Polyfill CJS globals used by a few Node-oriented dependencies when they
+  // are bundled into the Cloudflare Workers runtime.
+  define: {
+    __filename: JSON.stringify("/"),
+    __dirname: JSON.stringify("/"),
+  },
   plugins: [
     investingStocksEntry(),
+    fumadocsJsonLoad(),
     // Generates `.source/*` from source.config.ts and compiles content/docs.
-    await mdx(mdxConfig),
+    fumadocsPlugin,
+    fumadocsJsonWrap(),
     vinext({
       // Page-level ISR served straight from the Cloudflare edge cache, so
       // there is no namespace to provision. Add

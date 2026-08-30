@@ -1,14 +1,14 @@
 /**
  * Cloudflare Workers entrypoint (`main` in wrangler.jsonc).
  *
- * vinext builds the request handler; this wrapper only adds cron trigger
- * routing (replacing vercel.json crons): each schedule in wrangler.jsonc
- * `triggers.crons` is mapped to a Next.js cron API route and dispatched
- * through the same handler with the CRON_SECRET bearer token the routes
- * already expect.
+ * The core request handler comes from vinext's App Router Worker entry. This
+ * wrapper follows the vinext Cloudflare template while preserving this app's
+ * scheduled cron routing: every schedule in wrangler.jsonc `triggers.crons` is
+ * mapped to a Next.js API route and dispatched through the same handler with
+ * the CRON_SECRET bearer token the routes already expect.
  */
 import { env as workerEnv } from "cloudflare:workers";
-import handler from "vinext/server/fetch-handler";
+import handler from "vinext/server/app-router-entry";
 
 /**
  * `packages/investing` runs both on Workers and in plain Node scripts, so it
@@ -23,7 +23,9 @@ const CRON_ROUTES: Record<string, string> = {
 };
 
 export default {
-  fetch: handler.fetch,
+  fetch(request: Request, env: CloudflareEnv, ctx: import("@cloudflare/workers-types").ExecutionContext) {
+    return handler.fetch(request, env, ctx);
+  },
 
   async scheduled(
     controller: { cron: string },
@@ -38,7 +40,7 @@ export default {
     const origin = env.NEXT_PUBLIC_APP_URL || "https://self.internal";
     const headers: Record<string, string> = {};
     if (env.CRON_SECRET) {
-      headers["authorization"] = `Bearer ${env.CRON_SECRET}`;
+      headers.authorization = `Bearer ${env.CRON_SECRET}`;
     }
     ctx.waitUntil(
       handler

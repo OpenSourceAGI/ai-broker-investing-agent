@@ -33,10 +33,10 @@ declare module "cloudflare:email" {
 
 /**
  * Resolved by the vinext Vite plugin to this project's App Router request
- * handler at build time; declared here so the `vinext/server/fetch-handler`
- * re-export type-checks in worker/index.ts.
+ * handler at build time; declared here so the `vinext/server/app-router-entry`
+ * import type-checks in worker/index.ts.
  */
-declare module "virtual:vinext-worker-entry" {
+declare module "vinext/server/app-router-entry" {
   const handler: {
     fetch(
       request: Request,

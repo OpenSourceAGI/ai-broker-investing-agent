@@ -1,33 +1,34 @@
-# Vercel Cron Jobs
+# Cloudflare Worker Cron Jobs
 
-This directory contains cron job endpoints that are automatically triggered by Vercel's cron scheduler.
+This directory contains cron job endpoints that are triggered by Cloudflare Workers scheduled events and routed through `apps/ai-broker-web/worker/index.ts`.
 
 ## Setup
 
 ### 1. Environment Variables
 
-Add the following to your Vercel project environment variables:
+Set the shared cron secret as a Cloudflare Worker secret:
 
 ```bash
-CRON_SECRET=your_random_secret_here
+wrangler secret put CRON_SECRET
 ```
 
-Generate a secure random string for the CRON_SECRET:
+Generate a secure random string for `CRON_SECRET`:
+
 ```bash
 openssl rand -base64 32
 ```
 
-### 2. Vercel Configuration
+### 2. Cloudflare Configuration
 
-The cron jobs are configured in [vercel.json](../../../vercel.json) at the project root.
+Cron schedules are configured in `apps/ai-broker-web/wrangler.jsonc` under `triggers.crons`. The Worker `scheduled` handler maps each cron expression to the matching API route and forwards `Authorization: Bearer <CRON_SECRET>`.
 
 ## Available Cron Jobs
 
 ### `/api/cron/sync-markets` - Polymarket Data Sync
 
-**Schedule:** Every 15 minutes (`*/15 * * * *`)
+**Schedule:** Daily at 00:00 UTC (`0 0 * * *`)
 
-**Purpose:** Incrementally syncs the top 1000 high volume Polymarket prediction markets
+**Purpose:** Incrementally syncs the top 1000 high volume Polymarket prediction markets.
 
 **What it does:**
 - Fetches the top 1000 markets sorted by 24h volume
@@ -38,38 +39,37 @@ The cron jobs are configured in [vercel.json](../../../vercel.json) at the proje
 
 **Features:**
 - Non-destructive: Updates existing markets without deleting
-- Batch processing: Processes price history (batches of 50) and holders (batches of 20)
+- Batch processing: Processes price history and holders in batches
 - Error resilient: Continues even if individual markets fail
 - Automatic categorization: Assigns categories (Politics, Sports, Crypto, etc.) and subcategories
-- Rate limit protection: 2-second delays between holder batches
+- Rate limit protection between holder batches
 
 ### `/api/cron/refresh-quotes` - Stock Quote Cache Refresh
 
-**Schedule:** Every 5 minutes (`*/5 * * * *`)
+**Schedule:** Daily at 00:15 UTC (`15 0 * * *`)
 
-**Purpose:** Refreshes stock quotes for ~35 popular symbols to keep cache fresh
+**Purpose:** Refreshes stock quotes for popular symbols to keep cache fresh.
 
 **What it does:**
 - Fetches real-time quotes for popular stocks (AAPL, MSFT, GOOGL, SPY, etc.)
 - Updates quote cache with fresh data
 - Ensures frequently accessed stocks have up-to-date prices
-- Cache TTL: 5 minutes
+- Bypasses stale cache to ensure latest prices
 
 **Features:**
-- Fast execution: ~2-5 seconds typical
-- Popular symbols: Tech giants, major ETFs, financials, and more
-- Force fresh data: Bypasses cache to ensure latest prices
-- Multiple sources: Uses unified quote service with fallback providers
+- Fast execution: typically a few seconds
+- Popular symbols: tech giants, major ETFs, financials, and more
+- Multiple sources: uses unified quote service with fallback providers
 
 ### `/api/cron/sync-polymarket` - Leaders and Categories
 
 **Schedule:** Not yet configured (manual trigger only)
 
-**Purpose:** Syncs Polymarket leaderboard and category data
+**Purpose:** Syncs Polymarket leaderboard and category data.
 
 ## Testing Locally
 
-You can test cron jobs locally using curl:
+Run the vinext dev server and call cron routes with `curl`:
 
 ```bash
 # With authentication (requires valid CRON_SECRET)
@@ -79,11 +79,17 @@ curl -H "Authorization: Bearer your_cron_secret_here" http://localhost:3000/api/
 curl -H "Cookie: your_session_cookie" http://localhost:3000/api/cron/sync-markets
 ```
 
+You can also verify configured schedules with Wrangler:
+
+```bash
+wrangler dev --test-scheduled
+```
+
 ## Monitoring
 
-View cron job logs in:
-- **Vercel Dashboard:** Go to your project → Deployments → Select deployment → Functions → Select function
-- **Real-time logs:** Use `vercel logs` CLI command
+View cron job logs with Cloudflare Workers observability:
+- **Cloudflare Dashboard:** Workers & Pages → `ai-broker-investing-agent` → Logs / Observability
+- **CLI tailing:** `wrangler tail ai-broker-investing-agent`
 
 ## Response Format
 
@@ -107,6 +113,7 @@ All cron jobs return a consistent JSON response:
 ## Error Handling
 
 If a cron job fails:
+
 ```json
 {
   "success": false,
@@ -119,41 +126,30 @@ If a cron job fails:
 ## Security
 
 - All cron endpoints require either:
-  - Valid `Authorization: Bearer <CRON_SECRET>` header (for automated jobs)
-  - Valid user session (for manual triggers)
-- Never commit CRON_SECRET to version control
-- Rotate CRON_SECRET regularly
+  - Valid `Authorization: Bearer <CRON_SECRET>` header for scheduled jobs
+  - Valid user session for manual triggers
+- Never commit `CRON_SECRET` to version control
+- Rotate `CRON_SECRET` regularly
 
-## Limitations
+## Cloudflare Worker Notes
 
-- **Vercel Free/Hobby:** Cron jobs are not available
-- **Vercel Pro:** Up to 2 cron jobs
-- **Vercel Enterprise:** Unlimited cron jobs
-- **Timeout:** Max execution time is 300 seconds (5 minutes) on Pro
-- **Concurrency:** Cron jobs don't run concurrently by default
+- Scheduled events run in the Worker runtime and are dispatched through the vinext App Router handler.
+- Keep each scheduled route within Cloudflare Worker CPU/runtime limits for your plan.
+- If a job needs additional bindings, add them to `wrangler.jsonc` and regenerate types with `npm run cf-typegen`.
 
 ## Adding New Cron Jobs
 
-1. Create a new route handler in this directory (e.g., `sync-example/route.ts`)
-2. Implement authentication check using CRON_SECRET pattern
-3. Add the endpoint to [vercel.json](../../../vercel.json):
-   ```json
-   {
-     "crons": [
-       {
-         "path": "/api/cron/sync-example",
-         "schedule": "0 * * * *"
-       }
-     ]
-   }
-   ```
-4. Deploy to Vercel
+1. Create a new route handler in this directory (for example, `sync-example/route.ts`).
+2. Implement authentication using the existing `CRON_SECRET` pattern.
+3. Add the cron expression to `triggers.crons` in `apps/ai-broker-web/wrangler.jsonc`.
+4. Add the expression-to-route mapping in `apps/ai-broker-web/worker/index.ts`.
+5. Deploy with `npm run deploy`.
 
 ## Cron Schedule Format
 
 The schedule uses standard cron syntax:
 
-```
+```text
 ┌───────────── minute (0 - 59)
 │ ┌───────────── hour (0 - 23)
 │ │ ┌───────────── day of month (1 - 31)
@@ -166,5 +162,5 @@ The schedule uses standard cron syntax:
 Examples:
 - `*/15 * * * *` - Every 15 minutes
 - `0 * * * *` - Every hour
-- `0 0 * * *` - Every day at midnight
+- `0 0 * * *` - Every day at midnight UTC
 - `0 */6 * * *` - Every 6 hours
