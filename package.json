@@ -31,7 +31,8 @@
   },
   "devDependencies": {
     "turbo": "^2.5.8",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.24.0"
   },
   "engines": {
     "node": ">=20"
