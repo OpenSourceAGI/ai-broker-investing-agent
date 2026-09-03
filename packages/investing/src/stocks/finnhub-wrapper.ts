@@ -2,6 +2,7 @@
 // Uses Finnhub as primary source with Alpaca API as fallback for historical data
 
 import { createAlpacaClient } from "../alpaca/client";
+import { yahooFinance } from "./yahoo-finance-wrapper";
 import type {
   HistoricalDataOptions,
   QuoteOptions,
@@ -25,6 +26,7 @@ import {
   toUnixTimestamp,
   finnhubFetch,
   mapIntervalToAlpacaTimeframe,
+  mapIntervalToYahoo,
   getAlpacaCredentials,
   formatDateRFC3339,
   formatDateYYYYMMDD,
@@ -148,14 +150,65 @@ export class FinnhubWrapper {
       );
     }
 
+    // Final fallback: Yahoo Finance requires no API key, so this keeps
+    // historical data working even when Finnhub/Alpaca aren't configured.
+    // Yahoo's historical() endpoint only supports daily/weekly/monthly bars.
+    const yahooInterval = mapIntervalToYahoo(interval);
+    if (yahooInterval) {
+      try {
+        console.log(`[Yahoo] Attempting to fetch historical data for ${symbol}...`);
+        const result = await yahooFinance.getHistorical(symbol, {
+          period1,
+          period2,
+          interval: yahooInterval,
+        });
+
+        if (result.success && result.data && result.data.length > 0) {
+          const quotes: FinnhubQuoteData[] = result.data.map((bar: any) => ({
+            date: new Date(bar.date),
+            open: bar.open,
+            high: bar.high,
+            low: bar.low,
+            close: bar.close,
+            volume: bar.volume,
+          }));
+
+          console.log(
+            `[Yahoo] Successfully fetched ${quotes.length} bars for ${symbol}`,
+          );
+
+          return {
+            success: true,
+            symbol,
+            source: "yahoo",
+            data: {
+              quotes,
+              meta: {
+                symbol,
+                exchangeName: "US",
+                regularMarketPrice: quotes[quotes.length - 1].close,
+              },
+            },
+            meta: {
+              symbol,
+              regularMarketPrice: quotes[quotes.length - 1].close,
+            },
+          };
+        }
+        console.log(`[Yahoo] Returned no data for ${symbol}`);
+      } catch (yahooError: any) {
+        console.log(`[Yahoo] API fallback failed for ${symbol}: ${yahooError.message}`);
+      }
+    }
+
     console.error(
-      `[Historical] Failed to fetch data for ${symbol} from both Finnhub and Alpaca`,
+      `[Historical] Failed to fetch data for ${symbol} from Finnhub, Alpaca, and Yahoo Finance`,
     );
 
     return {
       success: false,
       error:
-        "Failed to fetch historical data from both Finnhub and Alpaca. Please check API credentials are configured.",
+        "Failed to fetch historical data from Finnhub, Alpaca, and Yahoo Finance.",
     };
   }
 
