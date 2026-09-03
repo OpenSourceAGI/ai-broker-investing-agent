@@ -85,6 +85,25 @@ export function mapIntervalToAlpacaTimeframe(interval: string): string {
 }
 
 /**
+ * Map interval to Yahoo Finance's historical() interval format.
+ * Yahoo's historical endpoint only supports daily/weekly/monthly bars, so
+ * intraday intervals (1m/5m/15m/30m/60m) have no equivalent and return null.
+ */
+export function mapIntervalToYahoo(
+  interval?: string,
+): "1d" | "1wk" | "1mo" | null {
+  const mapping: Record<string, "1d" | "1wk" | "1mo"> = {
+    D: "1d",
+    W: "1wk",
+    M: "1mo",
+    "1d": "1d",
+    "1wk": "1wk",
+    "1mo": "1mo",
+  };
+  return mapping[interval || "1d"] || null;
+}
+
+/**
  * Get Alpaca API credentials from environment
  */
 export function getAlpacaCredentials(): {

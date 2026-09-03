@@ -1,8 +1,13 @@
 import { createAuthClient } from "better-auth/react";
 import { siweClient } from "better-auth/client/plugins";
 
+// Only pass an explicit baseURL when one is configured. Falling back to a
+// hardcoded "http://localhost:3000" breaks auth requests whenever the app is
+// served from anywhere else (preview URLs, deployed environments, or a dev
+// server on a different port) — better-auth's client defaults to the
+// current page origin when baseURL is omitted, which is what we want here.
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  baseURL: process.env.NEXT_PUBLIC_APP_URL,
   plugins: [siweClient()],
 });
 
