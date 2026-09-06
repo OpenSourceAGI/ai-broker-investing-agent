@@ -12,6 +12,7 @@
     "preview": "vinext build && vite preview",
     "deploy": "vinext-cloudflare deploy",
     "type-check": "tsc --noEmit",
+    "test": "vitest run",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
@@ -171,6 +172,7 @@
     "typescript": "^5.9.3",
     "vite": "^8.2.1",
     "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.2.7",
     "wait-on": "^9.0.3"
   },
   "private": true

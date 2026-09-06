@@ -16,6 +16,17 @@ interface CloudflareEnv {
   NEXT_PUBLIC_APP_URL?: string;
   EMAIL_FROM?: string;
   CRON_SECRET?: string;
+  /**
+   * D1 read-replication session mode — "auto" (default), "primary",
+   * "unconstrained" or "off". See lib/db/d1-session.ts. A plain Variable, so
+   * it can be changed in the dashboard without a redeploy.
+   */
+  D1_SESSION_MODE?: string;
+  /**
+   * When set, responses carry x-d1-served-by-region / -primary so you can see
+   * which D1 instance answered.
+   */
+  D1_SESSION_DEBUG?: string;
 }
 
 /** Worker bindings, available at module scope inside workerd. */

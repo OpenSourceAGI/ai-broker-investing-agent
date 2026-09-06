@@ -18,13 +18,24 @@ let _db: Database | null = null;
  * `cloudflare:workers` so this package still builds standalone (vite lib build)
  * and stays usable from plain Node scripts and browser bundles. The web app's
  * Worker entry (apps/ai-broker-web/worker/index.ts) publishes them.
+ *
+ * That entry also publishes `__D1_SESSION_DB__`: the same `DB` binding wrapped
+ * so its queries run inside the current request's D1 read-replication session
+ * (apps/ai-broker-web/lib/db/d1-session.ts). Preferring it keeps this package's
+ * queries on the same sequentially consistent view of the database as the web
+ * app's, instead of opening an unsessioned second read path. The wrapper picks
+ * the session per call, so caching the driver below stays correct.
  */
 function resolveDb(): Database {
   if (_db) return _db;
 
-  const env = (globalThis as { __CLOUDFLARE_ENV__?: { DB?: unknown } }).__CLOUDFLARE_ENV__;
-  if (env?.DB) {
-    _db = drizzleD1(env.DB as never, { schema: fullSchema }) as unknown as Database;
+  const globals = globalThis as {
+    __CLOUDFLARE_ENV__?: { DB?: unknown };
+    __D1_SESSION_DB__?: unknown;
+  };
+  const d1 = globals.__D1_SESSION_DB__ ?? globals.__CLOUDFLARE_ENV__?.DB;
+  if (d1) {
+    _db = drizzleD1(d1 as never, { schema: fullSchema }) as unknown as Database;
     return _db;
   }
 

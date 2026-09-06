@@ -9,6 +9,12 @@
  */
 import { env as workerEnv } from "cloudflare:workers";
 import handler from "vinext/server/app-router-entry";
+import {
+  applyD1Bookmark,
+  runWithD1Session,
+  runWithPrimaryD1Session,
+  sessionedD1,
+} from "../lib/db/d1-session";
 
 /**
  * `packages/investing` runs both on Workers and in plain Node scripts, so it
@@ -17,6 +23,17 @@ import handler from "vinext/server/app-router-entry";
  */
 (globalThis as Record<string, unknown>).__CLOUDFLARE_ENV__ = workerEnv;
 
+/**
+ * The same `DB` binding, wrapped so its queries run inside the current
+ * request's D1 read-replication session (lib/db/d1-session.ts). Published
+ * separately so `packages/investing` can prefer it over the raw binding and
+ * share this request's consistent view of the database. Left unset when there
+ * is no binding to wrap, so the fallbacks over there still fire.
+ */
+if (workerEnv?.DB) {
+  (globalThis as Record<string, unknown>).__D1_SESSION_DB__ = sessionedD1(workerEnv.DB);
+}
+
 const CRON_ROUTES: Record<string, string> = {
   "0 0 * * *": "/api/cron/sync-markets",
   "15 0 * * *": "/api/cron/refresh-quotes",
@@ -24,7 +41,15 @@ const CRON_ROUTES: Record<string, string> = {
 
 export default {
   fetch(request: Request, env: CloudflareEnv, ctx: import("@cloudflare/workers-types").ExecutionContext) {
-    return handler.fetch(request, env, ctx);
+    // The whole request runs inside one D1 read-replication session: reads can
+    // be answered by the replica nearest the request, while the session's
+    // bookmark keeps them sequentially consistent. The closing bookmark rides
+    // back on the response so the client's next request never sees an older
+    // version of the database than this one did.
+    return runWithD1Session(request, env.D1_SESSION_MODE, async () => {
+      const response = await handler.fetch(request, env, ctx);
+      return applyD1Bookmark(response, { debug: Boolean(env.D1_SESSION_DEBUG) });
+    });
   },
 
   async scheduled(
@@ -42,10 +67,14 @@ export default {
     if (env.CRON_SECRET) {
       headers.authorization = `Bearer ${env.CRON_SECRET}`;
     }
+    // Cron runs have no client bookmark to resume from and write, so their
+    // session starts on the primary.
     ctx.waitUntil(
-      handler
-        .fetch(new Request(`${origin}${route}`, { headers }), env, ctx)
-        .then((res: Response) => console.log(`Cron ${route} -> ${res.status}`)),
+      runWithPrimaryD1Session(() =>
+        handler
+          .fetch(new Request(`${origin}${route}`, { headers }), env, ctx)
+          .then((res: Response) => console.log(`Cron ${route} -> ${res.status}`)),
+      ),
     );
   },
 };
