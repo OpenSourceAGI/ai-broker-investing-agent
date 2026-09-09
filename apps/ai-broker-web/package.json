@@ -20,7 +20,8 @@
     "db:migrate:remote": "wrangler d1 migrations apply ai-broker-db --remote",
     "docs:generate": "fumadocs-mdx",
     "docs:generate:api": "bun lib/docs/generate-docs.ts",
-    "clean": "rm -rf dist .source .turbo .wrangler node_modules"
+    "clean": "rm -rf dist .source .turbo .wrangler node_modules",
+    "test": "vitest run"
   },
   "dependencies": {
     "@alpacahq/alpaca-trade-api": "^3.1.3",
@@ -153,6 +154,7 @@
     "@cloudflare/vite-plugin": "^1.51.1",
     "@cloudflare/workers-types": "^4.20250620.0",
     "@fumadocs/cli": "^1.2.4",
+    "@libsql/client": "^0.18.0",
     "@mdx-js/rollup": "^3.1.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.2.3",
@@ -170,6 +172,7 @@
     "typescript": "^5.9.3",
     "vite": "^8.2.1",
     "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.2.7",
     "wait-on": "^9.0.3"
   },
   "private": true
