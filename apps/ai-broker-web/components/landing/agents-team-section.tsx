@@ -7,6 +7,8 @@ import {
   TrendingUp,
 } from "lucide-react"
 
+import { VideoLightbox } from "@/components/landing/video-lightbox"
+
 const agents = [
   {
     icon: BarChart3,
@@ -50,7 +52,7 @@ export function AgentsTeamSection() {
   return (
     <section id="agents" className="relative border-t border-border py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-end">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr_auto] lg:items-end">
           <div>
             <div className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
               The Team
@@ -65,6 +67,12 @@ export function AgentsTeamSection() {
             Every trade is the output of a specialist chain — analyst, researcher, trader, risk,
             portfolio manager. No single black box. You see who said what, and why.
           </p>
+          <VideoLightbox
+            videoId="N5cHK6K50Ds"
+            title="How the agent team builds one thesis"
+            caption="See the agents at work"
+            className="w-full max-w-xs lg:w-64"
+          />
         </div>
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
