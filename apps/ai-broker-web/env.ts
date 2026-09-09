@@ -22,6 +22,10 @@ export const env = createEnv({
 
         // Auth
         BETTER_AUTH_SECRET: z.string().optional(),
+        // Comma-separated allowlist for /admin. With neither set, nobody is an
+        // admin — see lib/auth/admin.ts.
+        ADMIN_EMAIL: z.string().optional(),
+        ADMIN_EMAILS: z.string().optional(),
         GOOGLE_CLIENT_ID: z.string().optional(),
         GOOGLE_CLIENT_SECRET: z.string().optional(),
 
@@ -55,6 +59,8 @@ export const env = createEnv({
         CLOUDFLARE_D1_TOKEN: process.env.CLOUDFLARE_D1_TOKEN,
         CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
         BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+        ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+        ADMIN_EMAILS: process.env.ADMIN_EMAILS,
         GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
         GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
         STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
