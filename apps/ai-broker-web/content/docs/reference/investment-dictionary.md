@@ -1,5 +1,6 @@
 ---
 title: Investment Dictionary
+description: "Plain-language definitions for the investing terms used throughout these docs."
 icon: BookOpen
 ---
 

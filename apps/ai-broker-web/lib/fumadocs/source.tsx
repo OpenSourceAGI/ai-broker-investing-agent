@@ -1,4 +1,11 @@
-import { docs } from 'fumadocs-mdx:collections/server'
+/**
+ * @file source.tsx
+ * @description Fumadocs source loader configuration and page structure.
+ *
+ * `docs` is generated from `source.config.ts` by the fumadocs-mdx Vite plugin
+ * (see `vite.config.ts`, which aliases `fumadocs-mdx:collections/server` to
+ * `.source/server.ts`).
+ */
 import {
   type InferMetaType,
   type InferPageType,
@@ -6,6 +13,7 @@ import {
   loader,
 } from 'fumadocs-core/source'
 import { lucideIconsPlugin } from 'fumadocs-core/source/lucide-icons'
+import { docs } from 'fumadocs-mdx:collections/server'
 import { openapiPlugin } from 'fumadocs-openapi/server'
 
 export const source = loader({
@@ -14,6 +22,10 @@ export const source = loader({
   source: docs.toFumadocsSource(),
 })
 
+/**
+ * Renders sidebar entries that name a function (`foo()`) or a component
+ * (`<Foo />`) as inline code so API pages stand out from prose pages.
+ */
 function pageTreeCodeTitles(): LoaderPlugin {
   return {
     transformPageTree: {
@@ -31,6 +43,18 @@ function pageTreeCodeTitles(): LoaderPlugin {
       },
     },
   }
+}
+
+/**
+ * Plain-text rendering of a page, used by the `llms.txt` style routes and by
+ * the "Copy for LLM" button.
+ */
+export async function getLLMText(page: InferPageType<typeof source>) {
+  const processed = await page.data.getText('processed')
+
+  return `# ${page.data.title} (${page.url})
+
+${processed}`
 }
 
 export type Page = InferPageType<typeof source>

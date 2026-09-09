@@ -1,6 +1,6 @@
 import { tool } from '@langchain/core/tools'
 import { z } from 'zod'
-import { source } from '@/lib/docs/source'
+import { source } from '@/lib/fumadocs/source'
 
 export const getPageContent = tool(
   async ({ path }) => {

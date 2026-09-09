@@ -1,0 +1,127 @@
+---
+title: Investment Prediction Agent
+description: "AI-powered multi-agent trading system for stock and prediction-market analysis and automated trading decisions."
+icon: BrainCircuit
+---
+
+<p align="center">
+  <img width="400px" src="https://i.imgur.com/dE5Rfck.jpeg" alt="Auto Investment Broker" />
+</p>
+
+**Auto Investment Broker** combines specialized LLM agents to analyze markets,
+debate strategies, and execute trades. It pairs real-time data processing with a
+"Bull vs. Bear" debate engine and a dashboard that shows the reasoning behind
+every decision — not just the outcome.
+
+<Cards>
+  <Card title="Quick Start" href="/docs/getting-started">
+    Clone, install, and run the app against a local database.
+  </Card>
+  <Card title="Architecture" href="/docs/getting-started/architecture">
+    How the workspaces, the app, and the Worker fit together.
+  </Card>
+  <Card title="Deployment" href="/docs/deployment">
+    Ship to Cloudflare Workers, D1, and Email Workers.
+  </Card>
+  <Card title="Agents" href="/docs/agents/debate-agents-prompts">
+    Every agent in the debate system and the prompt it runs.
+  </Card>
+</Cards>
+
+## Key features
+
+- **Multi-agent architecture** — Fundamentals, News, Technical, and Risk Manager
+  agents, each with a defined mandate.
+- **"Bull vs. Bear" debates** — an automated argument over risk and reward
+  before every trade, not a single opaque score.
+- **Top trader leaderboards** — real-time tracking of top performers on
+  ZuluTrade and Polymarket, with copy-trading signals.
+- **Interactive dashboard** — per-agent reports, decision history, and technical
+  charts.
+- **Prediction-market correlation** — cross-platform arbitrage and correlation
+  between event markets and equities.
+
+## The documentation
+
+### Getting Started
+
+Setup, the shape of the codebase, and every configuration value.
+
+- [Quick Start](/docs/getting-started) — from a clone to a running dev server.
+- [Architecture](/docs/getting-started/architecture) — workspaces, runtime, and
+  bindings.
+- [Configuration](/docs/getting-started/configuration) — environment variables
+  and Worker secrets.
+
+### Deployment
+
+Everything needed to run this in production on Cloudflare.
+
+- [Deployment guide](/docs/deployment) — first deploy, Git-connected builds,
+  custom domains, rollbacks.
+- [Database](/docs/deployment/database) — D1, the Drizzle schema, migrations.
+- [Scheduled jobs](/docs/deployment/scheduled-jobs) — cron triggers and the sync
+  routes.
+- [Troubleshooting](/docs/deployment/troubleshooting) — the failures this stack
+  actually produces.
+
+### Trading
+
+The market logic: what to trade, and when.
+
+- [Algorithmic strategies](/docs/trading/trading-strategies)
+- [Technical indicators](/docs/trading/technical-indicators)
+- [Fundamentals indicators](/docs/trading/fundamentals)
+- [Time-series correlations](/docs/trading/timeseries-correlations)
+- [Investment brokers](/docs/trading/brokers)
+
+### Agents
+
+- [Debate agents system](/docs/agents/debate-agents-prompts) — every agent,
+  role, and prompt.
+- [Research paper](/docs/agents/ai-broker-research-paper) — the method behind
+  the debate and correlation engine.
+
+### Reference
+
+- [Workspace packages](/docs/reference/packages)
+- [Investment dictionary](/docs/reference/investment-dictionary)
+- [Risk disclosure](/docs/reference/risk-disclosure)
+
+## Agent teams
+
+| Team | Role |
+| :--- | :--- |
+| **Analyst Team** | Gathers data: fundamentals, social sentiment, news, and technical analysis. |
+| **Researcher Team** | Conducts "Bull vs. Bear" debates and assesses risk. |
+| **Trader Agent** | Synthesizes the reports into a proposed trade. |
+| **Portfolio Manager** | Final decision maker; manages risk and position sizing. |
+
+**Strategies**: momentum (trend following), mean reversion, breakout
+(volatility), and day-trading scalp.
+
+## Third-party APIs
+
+- **[Alpaca](https://alpaca.markets/)** — broker and trading as a service.
+- **[Finnhub](https://finnhub.io/dashboard)** — stock market data.
+- **[TradingView](https://www.tradingview.com/ideas/)** — PineScript automated
+  trading and [Lightweight Charts](https://www.tradingview.com/lightweight-charts/).
+- **[ZuluTrade](https://www.zulutrade.com/traders/list/75932)** — top traders
+  leaderboard.
+- **[Polymarket](https://polymarketanalytics.com/)** — event prediction
+  leaderboard and correlation with the stock market.
+- **[TradingAgents](https://github.com/TauricResearch/TradingAgents)** — LLM
+  research bot implementation ([paper](https://arxiv.org/pdf/2412.20138)).
+
+## Contributing
+
+Issues and pull requests are welcome on
+[GitHub](https://github.com/OpenSourceAGI/ai-broker-investing-agent). Start with
+[Quick Start](/docs/getting-started) and
+[Architecture](/docs/getting-started/architecture).
+
+<Callout type="warn">
+  Nothing in this project is financial advice. Automated trading can lose money
+  quickly. Read the [Risk Disclosure](/docs/reference/risk-disclosure) before
+  connecting a live brokerage account.
+</Callout>

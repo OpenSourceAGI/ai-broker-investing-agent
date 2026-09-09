@@ -1,0 +1,11 @@
+{
+  "title": "Trading",
+  "icon": "CandlestickChart",
+  "pages": [
+    "trading-strategies",
+    "technical-indicators",
+    "fundamentals",
+    "timeseries-correlations",
+    "brokers"
+  ]
+}

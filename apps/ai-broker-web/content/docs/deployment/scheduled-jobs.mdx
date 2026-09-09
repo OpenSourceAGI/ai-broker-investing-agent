@@ -1,0 +1,109 @@
+---
+title: Scheduled jobs
+description: "How Cloudflare cron triggers reach the /api/cron routes, and what each job does."
+icon: Timer
+---
+
+The market and quote syncs run on
+[Cloudflare cron triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/).
+
+## How a trigger reaches a route
+
+A cron trigger does **not** call an HTTP route by itself — it invokes the
+Worker's `scheduled()` handler. `worker/index.ts` maps each schedule to a route
+and dispatches it through the same fetch handler, adding the `CRON_SECRET`
+bearer token those routes require:
+
+```ts title="apps/ai-broker-web/worker/index.ts"
+const CRON_ROUTES: Record<string, string> = {
+  "0 0 * * *": "/api/cron/sync-markets",
+  "15 0 * * *": "/api/cron/refresh-quotes",
+};
+```
+
+<Callout type="warn">
+  The schedule list in `wrangler.jsonc` and the `CRON_ROUTES` map have to be
+  updated **together**. A schedule with no mapped route logs a warning and does
+  nothing.
+</Callout>
+
+## The jobs
+
+| Route | Schedule | What it does |
+| --- | --- | --- |
+| `/api/cron/sync-markets` | `0 0 * * *` — daily 00:00 UTC | Incrementally upserts the top 1000 Polymarket markets by 24h volume, plus their price history, top holders, and category assignments. |
+| `/api/cron/refresh-quotes` | `15 0 * * *` — daily 00:15 UTC | Refreshes cached quotes for popular symbols so frequently viewed tickers stay warm. |
+| `/api/cron/sync-polymarket` | Not scheduled | Polymarket leaderboard and category sync. Manual trigger only. |
+| `/api/cron/sync-zulu` | Not scheduled | ZuluTrade copy-trading leaderboard sync. Manual trigger only. |
+
+Syncs are non-destructive: they update existing rows rather than deleting, batch
+their work, and continue past individual failures.
+
+## Setup
+
+```bash
+openssl rand -base64 32
+cd apps/ai-broker-web && bunx wrangler secret put CRON_SECRET
+```
+
+The routes accept either a valid `Authorization: Bearer <CRON_SECRET>` header —
+what the scheduled handler sends — or a logged-in user session, which is what
+makes a manual trigger from the browser work.
+
+## Testing
+
+Call the route directly; the `scheduled()` handler adds nothing but the lookup
+and the header:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  http://localhost:3000/api/cron/sync-markets
+```
+
+<Callout type="info">
+  `wrangler dev --test-scheduled` does not work here. The deployed bundle is
+  built with `no_bundle`, so Wrangler cannot inject its `/__scheduled`
+  middleware and that path falls through to the app as a 404. To confirm the
+  mapping end to end, deploy and watch `wrangler tail` for the
+  `Cron <route> -> 200` line the handler logs.
+</Callout>
+
+## Response shape
+
+```json
+{
+  "success": true,
+  "markets": 1000,
+  "pricePoints": 45000,
+  "duration": "85.42s",
+  "cronJob": true,
+  "timestamp": "2026-01-24T12:00:00.000Z"
+}
+```
+
+A failure returns `success: false` with an `error` string and the same
+`cronJob` / `timestamp` fields.
+
+## Monitoring
+
+- **Dashboard** — Workers & Pages → the Worker → Logs. Workers Logs is enabled
+  through `observability` in `wrangler.jsonc`; Settings → Trigger Events lists
+  cron run history.
+- **Live** — `bunx wrangler tail`.
+
+## Adding a job
+
+1. Add the route under `app/api/cron/<name>/route.ts`, reusing the `CRON_SECRET`
+   authentication check from an existing job.
+2. Add the schedule to `triggers.crons` in `wrangler.jsonc`.
+3. Map it in `CRON_ROUTES` in `worker/index.ts`.
+4. `bun run deploy`.
+
+## Platform limits
+
+| Limit | Value |
+| --- | --- |
+| Cron triggers per Worker | 5 |
+| Granularity | Evaluated in UTC, fires at most once per minute |
+| CPU time per scheduled invocation | Up to 15 minutes (versus 30s for `fetch`) |
+| Overlap | A slow run can overlap the next trigger — batch long syncs |

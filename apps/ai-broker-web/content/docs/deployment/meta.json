@@ -1,0 +1,5 @@
+{
+  "title": "Deployment",
+  "icon": "CloudUpload",
+  "pages": ["index", "database", "scheduled-jobs", "troubleshooting"]
+}

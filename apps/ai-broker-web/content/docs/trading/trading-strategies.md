@@ -1,5 +1,6 @@
 ---
 title: Algorithmic Strategies
+description: "A reference manual of algorithmic trading strategies and the IndicatorTS functions behind them."
 icon: Bot
 ---
 # 📊 Complete Technical Indicators & Trading Strategies Guide

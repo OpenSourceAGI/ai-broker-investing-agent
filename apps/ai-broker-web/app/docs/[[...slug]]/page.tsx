@@ -1,155 +1,77 @@
-import Link from 'fumadocs-core/link'
-import { getPageTreePeers } from 'fumadocs-core/page-tree'
-import { PathUtils } from 'fumadocs-core/source'
-import * as Twoslash from 'fumadocs-twoslash/ui'
-import { createGenerator } from 'fumadocs-typescript'
-import { AutoTypeTable } from 'fumadocs-typescript/ui'
-import { Card, Cards } from 'fumadocs-ui/components/card'
-import { TypeTable } from 'fumadocs-ui/components/type-table'
-import { DocsPage } from 'fumadocs-ui/page'
+/**
+ * @file page.tsx
+ * @description Dynamic documentation page component that renders MDX content.
+ */
+import {
+  DocsBody,
+  DocsDescription,
+  DocsPage,
+  DocsTitle,
+} from 'fumadocs-ui/page'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { ReactElement } from 'react'
-import { CopyMarkdownButton, OpenInLLMButton } from '@/components/fumadocs/page-actions'
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card'
-import { createMetadata, getPageImage } from '@/lib/metadata'
-import { source } from '@/lib/docs/source'
+import { AskAIDropdown } from '@/components/fumadocs/ai/ask-ai-dropdown'
+import { LLMCopyButton } from '@/components/fumadocs/ai/llm-copy-button'
+import { Breadcrumb } from '@/components/fumadocs/layout/breadcrumb'
+import { docsConfig } from '@/lib/fumadocs/customize-docs'
+import { source } from '@/lib/fumadocs/source'
 import { getMDXComponents } from '@/mdx-components'
-
-const generator = createGenerator()
 
 export const revalidate = false
 
-export default async function Page(
-  props: PageProps<'/docs/[[...slug]]'>
-): Promise<ReactElement> {
+export default async function Page(props: {
+  params: Promise<{ slug?: string[] }>
+}) {
   const params = await props.params
   const page = source.getPage(params.slug)
 
-  if (!page) return notFound()
+  if (!page) {
+    notFound()
+  }
 
-  const { body: Mdx, toc, lastModified } = await page.data.load()
+  const { body: MDX, toc } = await page.data.load()
+
+  // Raw Markdown for the copy button and the "Ask AI" links. Served by
+  // `app/docs/llms.mdx/[[...slug]]/route.ts`.
+  const markdownUrl = ['/docs/llms.mdx', ...page.slugs].join('/')
 
   return (
-    <DocsPage
-      toc={toc}
-      tableOfContent={{
-        style: 'clerk',
-      }}
-    >
-      <div className='relative flex flex-col items-start gap-2 sm:flex-row sm:items-center'>
-        <h1 className='break-all font-semibold text-[1.75em]'>
-          {page.data.title}
-        </h1>
-
-        <div className='ml-auto flex hidden shrink-0 flex-row items-center justify-end gap-2 sm:flex'>
-          <CopyMarkdownButton markdownUrl={`${page.url}.mdx`} />
-          <OpenInLLMButton markdownUrl={`${page.url}.mdx`} />
+    <DocsPage toc={toc} full={page.data.full}>
+      <Breadcrumb tree={source.pageTree} />
+      <DocsTitle>{page.data.title}</DocsTitle>
+      <DocsDescription>{page.data.description}</DocsDescription>
+      <DocsBody>
+        <div className='flex flex-row items-center gap-2 border-b pt-2 pb-6'>
+          <LLMCopyButton markdownUrl={markdownUrl} />
+          <AskAIDropdown
+            markdownUrl={markdownUrl}
+            githubUrl={
+              docsConfig.githubDocs
+                ? `${docsConfig.githubDocs}/${page.path}`
+                : undefined
+            }
+          />
         </div>
-      </div>
-      <p className='mb-2 text-fd-muted-foreground text-lg'>
-        {page.data.description}
-      </p>
-      <div className='flex items-center gap-2 pb-6 sm:hidden'>
-        <CopyMarkdownButton markdownUrl={`${page.url}.mdx`} />
-        <OpenInLLMButton markdownUrl={`${page.url}.mdx`} />
-      </div>
-      <div className='prose flex-1 text-fd-foreground/90'>
-        <Mdx
-          components={getMDXComponents({
-            ...Twoslash,
-            a: ({ href, ...props }) => {
-              const found = source.getPageByHref(href ?? '', {
-                dir: PathUtils.dirname(page.path),
-              })
 
-              if (!found) return <Link href={href} {...props} />
-
-              return (
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <Link
-                      href={
-                        found.hash
-                          ? `${found.page.url}#${found.hash}`
-                          : found.page.url
-                      }
-                      {...props}
-                    />
-                  </HoverCardTrigger>
-                  <HoverCardContent className='text-sm'>
-                    <p className='font-medium'>{found.page.data.title}</p>
-                    <p className='text-fd-muted-foreground'>
-                      {found.page.data.description}
-                    </p>
-                  </HoverCardContent>
-                </HoverCard>
-              )
-            },
-            TypeTable,
-            AutoTypeTable: (props) => (
-              <AutoTypeTable generator={generator} {...props} />
-            ),
-            DocsCategory: ({ url }) => {
-              return <DocsCategory url={url ?? page.url} />
-            },
-          })}
-        />
-        {page.data.index ? <DocsCategory url={page.url} /> : null}
-      </div>
-      {/* {lastModified?.toLocaleDateString && <PageLastUpdate date={lastModified} />} */}
+        <MDX components={getMDXComponents()} />
+      </DocsBody>
     </DocsPage>
   )
 }
 
-function DocsCategory({ url }: { url: string }) {
-  return (
-    <Cards>
-      {getPageTreePeers(source.pageTree, url).map((peer) => (
-        <Card key={peer.url} title={peer.name} href={peer.url}>
-          {peer.description}
-        </Card>
-      ))}
-    </Cards>
-  )
-}
-
-export async function generateMetadata(
-  props: PageProps<'/docs/[[...slug]]'>
-): Promise<Metadata> {
-  const { slug = [] } = await props.params
-  const page = source.getPage(slug)
-  if (!page)
-    return createMetadata({
-      title: 'Not Found',
-    })
-
-  const description =
-    page.data.description ?? 'The library for building documentation sites'
-
-  const image = {
-    url: getPageImage(page).url,
-    width: 1200,
-    height: 630,
-  }
-
-  return createMetadata({
-    title: page.data.title,
-    description,
-    openGraph: {
-      url: `/docs/${page.slugs.join('/')}`,
-      images: [image],
-    },
-    twitter: {
-      images: [image],
-    },
-  })
-}
-
 export function generateStaticParams() {
   return source.generateParams()
+}
+
+export async function generateMetadata(props: {
+  params: Promise<{ slug?: string[] }>
+}): Promise<Metadata> {
+  const params = await props.params
+  const page = source.getPage(params.slug)
+  if (!page) notFound()
+
+  return {
+    title: page.data.title,
+    description: page.data.description ?? docsConfig.description,
+  }
 }
