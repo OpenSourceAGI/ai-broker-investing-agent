@@ -1,5 +1,6 @@
 ---
 title: Risk Disclosure
+description: "Investment risk disclosures for automated and algorithmic trading."
 icon: ShieldAlert
 ---
 

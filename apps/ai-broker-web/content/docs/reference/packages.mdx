@@ -1,0 +1,102 @@
+---
+title: Workspace Packages
+description: "What each package in the monorepo owns, and when to reach for it."
+icon: Package
+---
+
+The repository is a Turborepo workspace. `apps/ai-broker-web` is the only
+deployed artifact; everything under `packages/` is shared library code behind
+it.
+
+<Cards>
+  <Card title="investing" href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/investing">
+    Trading agents, market data, and prediction markets.
+  </Card>
+  <Card title="predictos" href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/predictos">
+    Prediction-market analysis and cross-platform arbitrage.
+  </Card>
+  <Card title="fin-data-api" href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/fin-data-api">
+    A TypeScript financial data API across many providers.
+  </Card>
+  <Card title="ai-broker-api-client" href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/ai-broker-api-client">
+    The generated, typed client for the public API.
+  </Card>
+</Cards>
+
+## `investing`
+
+The trading brain. Consumed straight from TypeScript source and compiled with
+the app, so a change here needs no separate build during development.
+
+| Directory | Responsibility |
+| --- | --- |
+| `trading-agents/` | Analyst, researcher, trader, and risk-manager agents. |
+| `debate-research/` | The "Bull vs. Bear" debate engine. |
+| `algo-stategies/` | Algorithmic entry and exit signal generation. |
+| `correlate/` | Cross-asset and time-series correlation. |
+| `live-data/` | Real-time market data ingestion. |
+| `stocks/`, `stock-names-data/` | The ticker dataset. Has separate server and client entry points — the full dataset never reaches the browser bundle. |
+| `alpaca/` | Alpaca broker integration. |
+| `tradingview/` | TradingView charting and PineScript integration. |
+| `leaders/` | Copy-trading leaderboards. |
+| `prediction/`, `predictos/` | Prediction-market data and analysis. |
+| `llm/` | Model provider plumbing. |
+| `qwksearch/`, `trending-topics/` | News and research retrieval. |
+| `db/` | Shared data access over the D1 binding. |
+
+<Callout type="info">
+  `investing/stocks` resolves to a different file per environment — a trimmed
+  client entry in the browser, the full dataset on the server. That is handled
+  by the `investingStocksEntry()` plugin in `apps/ai-broker-web/vite.config.ts`,
+  not by a `resolve.alias`, because aliases cannot vary per environment.
+</Callout>
+
+## `predictos`
+
+Prediction-market multi-agent analysis, data clients, and cross-platform
+arbitrage. Adapted from PredictionXBT/PredictOS and refactored from
+Deno/Supabase edge functions into Node/TypeScript ESM.
+
+| Module | Responsibility |
+| --- | --- |
+| `agents/`, `ai/` | Multi-agent analysis over prediction markets. |
+| `clients/`, `data/` | Platform data clients. |
+| `arbitrage.ts` | Cross-platform arbitrage detection. |
+| `events.ts`, `types.ts` | Shared event and type definitions. |
+
+Like `investing`, it is transpiled with the app rather than pre-built.
+
+## `fin-data-api`
+
+A TypeScript financial data API with OpenAPI/Scalar documentation, converted
+from the OpenBB Finance APIs. Wraps a broad set of providers — Alpha Vantage,
+FMP, FRED, Intrinio, Polygon, SEC, Tiingo, and more — behind one typed surface.
+
+## `ai-broker-api-client`
+
+The generated client for the public API, published to npm as
+`ai-broker-api-client`. It is produced from the OpenAPI spec with
+[`@hey-api/openapi-ts`](https://heyapi.dev):
+
+```bash
+cd packages/ai-broker-api-client
+bun run build:api    # regenerates from https://autoinvestment.broker/api
+```
+
+Regenerate it after changing any route under `app/api/**` that the spec covers.
+
+## `mcp-server`
+
+A [Model Context Protocol](https://modelcontextprotocol.io) server generated
+from the same OpenAPI spec, exposing the API as tools an AI assistant can call.
+
+## Working across packages
+
+```bash
+bunx turbo run build --filter=investing      # one package
+bunx turbo run test  --filter=predictos
+bunx turbo run build --filter=ai-broker-web  # the app and its dependencies
+```
+
+Turborepo's `build` task declares `dependsOn: ["^build"]`, so a filtered build of
+the app builds the packages it needs first.

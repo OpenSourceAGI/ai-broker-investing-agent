@@ -1,0 +1,121 @@
+---
+title: Architecture
+description: "How the Turborepo workspaces, the vinext app, and the Cloudflare Worker fit together."
+icon: Network
+---
+
+The repository is a [Turborepo](https://turborepo.com) workspace with one
+deployable app and a set of shared packages behind it.
+
+## Repository layout
+
+```plaintext
+ai-broker-investing-agent/
+├── apps/
+│   └── ai-broker-web/          # The deployed app: UI, API routes, docs, D1 schema
+├── packages/
+│   ├── investing/              # Trading agents, market data, prediction markets
+│   ├── predictos/              # Prediction-market analysis & cross-platform arbitrage
+│   ├── ai-broker-api-client/   # Generated typed client for the public API
+│   ├── fin-data-api/           # Financial data API service
+│   └── mcp-server/             # MCP server generated from the OpenAPI spec
+├── devdocs/                    # Internal engineering notes
+├── third-party-trading-bots/   # Vendored reference bots (not built or deployed)
+├── turbo.json                  # Task graph & caching
+└── tsconfig.base.json          # Shared compiler options
+```
+
+Only `apps/ai-broker-web` is deployed. `packages/investing` and
+`packages/predictos` are consumed straight from TypeScript source and compiled
+with the app (`transpilePackages` in `vite.config.ts`), so a change in either is
+picked up without a separate build step in development.
+
+## Inside the app
+
+```plaintext
+apps/ai-broker-web/
+├── app/                 # Next.js App Router: pages and API routes
+│   ├── api/             # ~40 route groups — markets, agents, auth, cron, admin…
+│   ├── docs/            # This documentation site (Fumadocs)
+│   ├── dashboard/ portfolio/ markets/ predict/ stock/ leaders/ debate/
+│   └── admin/           # ADMIN_EMAILS-gated user and database controls
+├── components/          # UI components (shadcn/ui + Radix)
+├── content/docs/        # The MDX sources for these docs
+├── lib/
+│   ├── db/schema.ts     # Drizzle schema — the source of truth for migrations
+│   ├── auth/            # better-auth configuration
+│   ├── fumadocs/        # Docs source loader and configuration
+│   └── ai/              # Prompts, providers, and agent tools
+├── migrations/          # Generated D1 migrations, applied by Wrangler
+├── worker/index.ts      # Cloudflare Worker entry (fetch + scheduled handlers)
+├── vite.config.ts       # The build — there is no next.config
+└── wrangler.jsonc       # Bindings, cron triggers, and Worker settings
+```
+
+## The runtime
+
+The app targets **Cloudflare Workers only**. It is built with
+[vinext](https://github.com/cloudflare/vinext) — the Next.js API surface
+reimplemented as a Vite plugin — rather than by `next build`.
+
+<Callout type="warn">
+  There is no `next.config`. The Next.js options live inside the `vinext()` call
+  in `vite.config.ts`, which is the single source of truth for the build.
+</Callout>
+
+Three consequences shape most of the server code:
+
+- **No filesystem.** Bundled JSON is read through an `import`, never `fs`.
+- **No long-lived TCP.** The database is reached through the `DB` binding, not a
+  TCP client. There is no Postgres, libsql/Turso, or local SQLite fallback.
+- **A size limit.** The Worker is uploaded compressed and must stay under
+  Cloudflare's 10 MB limit (3 MB on the free plan). The server bundle is
+  currently around 7 MB gzipped, so large new dependencies need checking.
+
+## Request flow
+
+`worker/index.ts` is the Worker entry declared as `main` in `wrangler.jsonc`. It
+does two things:
+
+1. **`fetch`** — delegates straight to vinext's App Router handler, which serves
+   both pages and `app/api/**` routes.
+2. **`scheduled`** — maps each cron expression in `triggers.crons` to an API
+   route and dispatches it through the same handler, carrying the `CRON_SECRET`
+   bearer token those routes expect. See
+   [Scheduled jobs](/docs/deployment/scheduled-jobs).
+
+It also assigns the Worker environment to `globalThis.__CLOUDFLARE_ENV__`, so
+`packages/investing` — which runs both on Workers and in plain Node scripts —
+can read the D1 binding without importing `cloudflare:workers`.
+
+## Bindings
+
+Declared in `apps/ai-broker-web/wrangler.jsonc` and read in server code with
+`import { env } from "cloudflare:workers"`:
+
+| Binding | Service | Used for |
+| --- | --- | --- |
+| `DB` | D1 (`ai-broker-db`) | Every persistent read and write. |
+| `SEND_EMAIL` | Email Workers | Verification, password reset, invitations. |
+| `ASSETS` | Workers Assets | The client bundle from `dist/client`. |
+
+Page-level ISR is served from the Cloudflare edge cache — `cache: { cdn: cdnAdapter() }`
+in `vite.config.ts`, paired with `"cache": { "enabled": true }` in
+`wrangler.jsonc` — so there is no cache namespace to provision.
+
+## The agent layer
+
+The trading logic lives in `packages/investing`, not in the app:
+
+| Directory | Responsibility |
+| --- | --- |
+| `trading-agents/` | The analyst, researcher, trader, and risk agents. |
+| `debate-research/` | The "Bull vs. Bear" debate engine. |
+| `algo-stategies/` | Algorithmic entry and exit signals. |
+| `correlate/` | Cross-asset and time-series correlation. |
+| `live-data/`, `stocks/` | Market data ingestion and the ticker dataset. |
+| `alpaca/`, `tradingview/` | Broker and charting integrations. |
+| `leaders/`, `prediction/`, `predictos/` | Copy-trading leaderboards and prediction markets. |
+
+The app calls into these through `app/api/**` routes, which is also what the
+public OpenAPI spec and the generated `ai-broker-api-client` describe.

@@ -1,5 +1,6 @@
 ---
 title: Fundamentals Indicators
+description: "Fundamental indicators that decide what to trade, and how they pair with technicals for timing."
 icon: Briefcase
 ---
 

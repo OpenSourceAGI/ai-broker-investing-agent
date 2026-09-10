@@ -1,0 +1,125 @@
+---
+title: Troubleshooting
+description: "The failures this stack actually produces on Cloudflare Workers, and how to fix them."
+icon: LifeBuoy
+---
+
+Most deploy failures here fall into a handful of shapes. Each is a consequence
+of the Workers runtime rather than a bug.
+
+## "Missing entry-point to Worker script or to assets directory"
+
+**When:** a Git-connected [Workers Build](https://developers.cloudflare.com/workers/ci-cd/builds/)
+whose root directory is the repository root.
+
+Workers Builds runs the deploy command from the repository root, which has no
+Wrangler configuration of its own. `bun run build` ends with
+`node scripts/write-root-deploy-config.mjs`, which mirrors the
+`.wrangler/deploy/config.json` redirect written inside `apps/ai-broker-web` up to
+the root so `wrangler deploy` can resolve the built Worker.
+
+**Fix:** make sure the build command is the root `build` script — not a
+`--filter`ed Turbo task that skips the redirect step — and that the deploy
+command runs after it in the same job.
+
+## The build succeeds but the deploy is rejected for size
+
+The Worker is uploaded compressed and must stay under Cloudflare's 10 MB limit
+(3 MB on the free plan). Measure before blaming the platform:
+
+```bash
+bun run build
+find apps/ai-broker-web/dist/server -name '*.js' -not -path '*/ssr/*' \
+  | xargs cat | gzip -9 | wc -c
+```
+
+The server bundle sits around 7 MB gzipped, so the usual cause is a newly added
+dependency or a bundled dataset. Move large static data behind an API call or a
+D1 table rather than importing it.
+
+## `fs`, `path`, or a Node built-in fails at runtime
+
+Workers has no filesystem. Reading bundled JSON must go through an `import`,
+never `fs`. `nodejs_compat` is enabled and covers a lot, but not the filesystem.
+
+**Fix:** `import data from "@/content/…json"` — the bundler inlines it.
+
+## The database "connects" locally and fails on Workers
+
+Workers has no long-lived TCP, so a Postgres/libsql client cannot work there
+even when it works in a script. Server code has to reach data through the `DB`
+binding.
+
+**Fix:** use the Drizzle client over the D1 binding. See
+[Database](/docs/deployment/database).
+
+## `env.DB is undefined`
+
+The binding is missing from `wrangler.jsonc`, or the code is running outside the
+Worker (a script, a test). `packages/investing` reads
+`globalThis.__CLOUDFLARE_ENV__`, which `worker/index.ts` assigns — that global is
+unset in a plain Node process.
+
+**Fix:** run the code through the Worker, or set the Cloudflare REST API
+variables so the `d1-http` path is used instead.
+
+## Sign-in redirects to the wrong origin, or email links are stale
+
+`NEXT_PUBLIC_APP_URL` is used for OAuth callbacks, links in outbound email, and
+the internal request the cron handler dispatches.
+
+**Fix:** update it in the `vars` block of `wrangler.jsonc`, redeploy, and update
+the redirect URIs in the Google OAuth console to match.
+
+## No email arrives
+
+Cloudflare Email Workers is the only mail path. Without the `SEND_EMAIL`
+binding, messages are logged rather than sent — flows complete but nothing is
+delivered.
+
+**Fix:** enable [Email Routing](https://developers.cloudflare.com/email-routing/)
+on the zone, verify the `EMAIL_FROM` domain, and add destination rules for the
+recipients.
+
+## `/admin` returns 404 or forbidden for everyone
+
+`ADMIN_EMAILS` is unset. With neither `ADMIN_EMAILS` nor `ADMIN_EMAIL` set,
+nobody is an admin — including the first registered user.
+
+**Fix:** `bunx wrangler secret put ADMIN_EMAILS` with a comma-separated
+allowlist, then redeploy.
+
+## A cron trigger fires but nothing happens
+
+`wrangler tail` shows `No cron route mapped for schedule "..."`. The schedule was
+added to `wrangler.jsonc` but not to `CRON_ROUTES` in `worker/index.ts`.
+
+**Fix:** add the mapping and redeploy. See
+[Scheduled jobs](/docs/deployment/scheduled-jobs).
+
+## `wrangler dev --test-scheduled` 404s
+
+Expected. The deployed bundle is built with `no_bundle`, so Wrangler cannot
+inject its `/__scheduled` middleware and the path falls through to the app.
+
+**Fix:** call the cron route directly with the `CRON_SECRET` bearer token, or
+deploy and watch `wrangler tail` for the `Cron <route> -> 200` line.
+
+## Docs pages 404 after moving a file
+
+The docs URL is derived from the path under `content/docs`, so moving a page
+changes its URL. Section order comes from the `pages` array in each folder's
+`meta.json`.
+
+**Fix:** update the folder's `meta.json`, and run `bun run docs:generate` if the
+dev server does not pick the change up.
+
+## Still stuck
+
+- `bunx wrangler tail` — live logs from the deployed Worker.
+- `bun run preview` — the production Worker running locally, which reproduces
+  most runtime-only failures.
+- `bun run type-check` — the fastest way to catch an import that only resolves
+  inside `workerd`.
+- [GitHub Discussions](https://github.com/OpenSourceAGI/ai-broker-investing-agent/discussions)
+  and [Discord](https://discord.gg/SJdBqBz3tV).

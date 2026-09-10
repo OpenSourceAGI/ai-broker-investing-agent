@@ -19,7 +19,7 @@
     "db:migrate:local": "wrangler d1 migrations apply ai-broker-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply ai-broker-db --remote",
     "docs:generate": "fumadocs-mdx",
-    "docs:generate:api": "bun lib/docs/generate-docs.ts",
+    "docs:generate:api": "bun lib/fumadocs/generate-api-docs.ts",
     "clean": "rm -rf dist .source .turbo .wrangler node_modules",
     "test": "vitest run"
   },

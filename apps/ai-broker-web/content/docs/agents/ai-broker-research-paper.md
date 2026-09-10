@@ -1,5 +1,6 @@
 ---
 title: AI Broker Research Paper
+description: "Automated Investment Broker: research agents debate, correlate, and copy prediction-market elite forecasters."
 icon: File
 ---
 # **Automated Investment Broker:**
