@@ -14,6 +14,14 @@ export default defineConfig({
     teardownTimeout: 10000,
     isolate: true,
     pool: "forks",
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      reportsDirectory: "./coverage",
+      include: ["src/**/*.ts"],
+      exclude: ["src/**/__tests__/**", "src/**/*.d.ts", "src/**/*.gen.ts"],
+      all: true,
+    },
   },
   resolve: {
     alias: {

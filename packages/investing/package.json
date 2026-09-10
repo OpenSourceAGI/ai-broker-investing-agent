@@ -66,7 +66,8 @@
     "import:stategies": "bun lib/algo-stategies/tv-scraper.ts --pages=10",
     "import:stocks": "bun lib/stocks/import-stock-names.ts",
     "sync:high-volume-markets": "tsx scripts/sync-high-volume-markets.ts",
-    "sync:trade-history": "tsx scripts/sync-trade-history.ts"
+    "sync:trade-history": "tsx scripts/sync-trade-history.ts",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "investing",
@@ -109,6 +110,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
+    "@vitest/coverage-v8": "^3.2.7",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
     "vite-plugin-dts": "^4.5.4",

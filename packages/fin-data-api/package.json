@@ -10,7 +10,8 @@
     "start": "node dist/index.js",
     "test": "jest",
     "lint": "eslint src --ext .ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=lcov"
   },
   "keywords": [
     "finance",

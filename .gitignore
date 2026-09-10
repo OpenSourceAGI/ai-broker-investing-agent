@@ -11,6 +11,8 @@ docs/dist
 docs/.next
 # testing
 /coverage
+**/coverage/
+*.lcov
 *lock*
 .claude/
 # turborepo

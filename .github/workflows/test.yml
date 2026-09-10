@@ -1,0 +1,53 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: Test and upload coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Codecov compares against the base commit, which it can only resolve
+          # with the full history.
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+
+      - name: Install dependencies
+        # No --frozen-lockfile: lockfiles are not committed in this repo.
+        run: bun install
+
+      - name: Run tests with coverage
+        # Runs every workspace's suite, then merges the per-workspace LCOV
+        # reports into coverage/lcov.info with repo-root-relative paths.
+        run: bun run test:coverage
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: OpenSourceAGI/ai-broker-investing-agent
+          files: ./coverage/lcov.info
+          disable_search: true
+          # Codecov being down should not block a merge; the check is
+          # informational (see codecov.yml).
+          fail_ci_if_error: false
+          verbose: true

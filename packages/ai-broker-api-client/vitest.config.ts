@@ -7,5 +7,15 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['test/**/*.test.{js,ts}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      // Everything under src/ except the hand-written entry point is emitted by
+      // `openapi-ts`, so measuring it says nothing about how well this package
+      // is tested.
+      include: ['src/index.ts'],
+      all: true,
+    },
   },
 });
