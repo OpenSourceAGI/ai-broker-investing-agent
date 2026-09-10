@@ -1,5 +1,6 @@
 ---
 title: Debate Agents System 
+description: "Every agent in the multi-agent debate system, its role, and the prompt it runs."
 icon: Users
 ---
 # Multi-Agent Debate System - Agent Prompts

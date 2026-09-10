@@ -39,6 +39,22 @@
 - **Interactive Dashboard**: Modern UI with specific agent reports, history tracking, and technical charts.
 - **"Bull vs. Bear" Debates**: Automated debates to assess risk and reward before every trade.
 
+## 📚 Documentation
+
+Full documentation lives at **[docs.autoinvestment.broker](https://docs.autoinvestment.broker/)**
+and its MDX source is in [`apps/ai-broker-web/content/docs`](apps/ai-broker-web/content/docs).
+
+| Section | What's in it |
+| :--- | :--- |
+| **[Getting Started](https://docs.autoinvestment.broker/docs/getting-started)** | [Quick Start](https://docs.autoinvestment.broker/docs/getting-started) · [Architecture](https://docs.autoinvestment.broker/docs/getting-started/architecture) · [Configuration](https://docs.autoinvestment.broker/docs/getting-started/configuration) |
+| **[Deployment](https://docs.autoinvestment.broker/docs/deployment)** | [Deployment guide](https://docs.autoinvestment.broker/docs/deployment) · [Database](https://docs.autoinvestment.broker/docs/deployment/database) · [Scheduled jobs](https://docs.autoinvestment.broker/docs/deployment/scheduled-jobs) · [Troubleshooting](https://docs.autoinvestment.broker/docs/deployment/troubleshooting) |
+| **[Trading](https://docs.autoinvestment.broker/docs/trading/trading-strategies)** | [Algorithmic strategies](https://docs.autoinvestment.broker/docs/trading/trading-strategies) · [Technical indicators](https://docs.autoinvestment.broker/docs/trading/technical-indicators) · [Fundamentals](https://docs.autoinvestment.broker/docs/trading/fundamentals) · [Correlations](https://docs.autoinvestment.broker/docs/trading/timeseries-correlations) · [Brokers](https://docs.autoinvestment.broker/docs/trading/brokers) |
+| **[Agents](https://docs.autoinvestment.broker/docs/agents/debate-agents-prompts)** | [Debate agents & prompts](https://docs.autoinvestment.broker/docs/agents/debate-agents-prompts) · [Research paper](https://docs.autoinvestment.broker/docs/agents/ai-broker-research-paper) |
+| **[Reference](https://docs.autoinvestment.broker/docs/reference/packages)** | [Workspace packages](https://docs.autoinvestment.broker/docs/reference/packages) · [Investment dictionary](https://docs.autoinvestment.broker/docs/reference/investment-dictionary) · [Risk disclosure](https://docs.autoinvestment.broker/docs/reference/risk-disclosure) |
+
+Engineering notes that are not part of the published docs live in
+[`devdocs/`](devdocs/README.md).
+
 ## 📦 Monorepo Layout
 
 The repo is a [Turborepo](https://turborepo.com) workspace. Every command below can be run
@@ -74,6 +90,19 @@ npx turbo run build --filter=ai-broker-web
 npx turbo run test --filter=investing
 ```
 
+Each workspace documents itself:
+
+| Workspace | README |
+| :--- | :--- |
+| The app | [`apps/ai-broker-web`](apps/ai-broker-web/README.md) |
+| Trading agents & market data | [`packages/investing`](packages/investing/README.md) |
+| Prediction markets & arbitrage | [`packages/predictos`](packages/predictos/README.md) |
+| Financial data API | [`packages/fin-data-api`](packages/fin-data-api/README.md) |
+| Generated API client | [`packages/ai-broker-api-client`](packages/ai-broker-api-client/README.md) |
+| MCP server | [`packages/mcp-server`](packages/mcp-server/README.md) |
+| Cron routes | [`apps/ai-broker-web/app/api/cron`](apps/ai-broker-web/app/api/cron/README.md) |
+| Engineering notes | [`devdocs`](devdocs/README.md) |
+
 ## 🤖 AI Agents & Strategies
 
 | Agent/Team                  | Role                                                                        |
@@ -103,6 +132,10 @@ npx turbo run test --filter=investing
 - **Portfolio Manager**: Final authority on all trading decisions
 
 ## ☁️ Deploy to Cloudflare Workers
+
+> The full guide — creating the D1 database, secrets, Git-connected builds,
+> custom domains, rollbacks, and a deployment checklist — is at
+> **[docs.autoinvestment.broker/docs/deployment](https://docs.autoinvestment.broker/docs/deployment)**.
 
 The app runs on Cloudflare Workers via [vinext](https://github.com/cloudflare/vinext) — the Next.js API surface reimplemented as a Vite plugin — with D1 as the database, better-auth for authentication, and Email Workers for transactional email (verification, password reset, invitations).
 

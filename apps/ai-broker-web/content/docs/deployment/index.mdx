@@ -1,0 +1,211 @@
+---
+title: Deployment
+description: "Ship the app to Cloudflare Workers — first deploy, Git-connected builds, custom domains, and rollbacks."
+icon: CloudUpload
+---
+
+The app targets **Cloudflare Workers only**: D1 for the database, Email Workers
+for outbound mail, and Workers + Assets for the app itself. There is no Vercel,
+Node server, or Docker target.
+
+## Before you start
+
+| Requirement | Why |
+| --- | --- |
+| A Cloudflare account | Workers, D1, and Email Routing all live there. |
+| `wrangler` authenticated | `bunx wrangler login`, or a `CLOUDFLARE_API_TOKEN` in CI. |
+| A domain on Cloudflare | Needed for a custom route and for Email Routing. `workers.dev` works for testing. |
+
+## 1. Create the D1 database
+
+`wrangler.jsonc` ships with the `database_id` of the project's own D1 instance.
+For your own deployment, create a fresh one and swap the id in:
+
+```bash
+bunx wrangler d1 create ai-broker-db
+```
+
+```jsonc title="apps/ai-broker-web/wrangler.jsonc"
+"d1_databases": [
+  {
+    "binding": "DB",
+    "database_name": "ai-broker-db",
+    "database_id": "<the id printed above>",
+    "migrations_dir": "migrations"
+  }
+]
+```
+
+Then apply the migrations:
+
+```bash
+bun run db:migrate:remote
+```
+
+[Database](/docs/deployment/database) covers the full schema and migration
+workflow.
+
+## 2. Set the secrets
+
+Non-secret values belong in the `vars` block of `wrangler.jsonc`. Everything
+else is a Worker secret — `wrangler.jsonc` is committed, so nothing sensitive
+can go in it.
+
+```bash
+cd apps/ai-broker-web
+
+bunx wrangler secret put BETTER_AUTH_SECRET     # openssl rand -base64 32
+bunx wrangler secret put ADMIN_EMAILS           # comma-separated allowlist
+bunx wrangler secret put CRON_SECRET            # openssl rand -base64 32
+
+# Optional, per feature
+bunx wrangler secret put GOOGLE_CLIENT_ID
+bunx wrangler secret put GOOGLE_CLIENT_SECRET
+bunx wrangler secret put STRIPE_SECRET_KEY
+bunx wrangler secret put STRIPE_WEBHOOK_SECRET
+bunx wrangler secret put GROQ_API_KEY
+```
+
+<Callout type="warn">
+  Without `ADMIN_EMAILS` nobody can reach `/admin` — including the first user to
+  register. That is deliberate: a forgotten allowlist yields no admin rather
+  than an open one. Set it before you need it.
+</Callout>
+
+See [Configuration](/docs/getting-started/configuration) for what each one
+enables.
+
+## 3. Point `NEXT_PUBLIC_APP_URL` at your origin
+
+```jsonc title="apps/ai-broker-web/wrangler.jsonc"
+"vars": {
+  "NEXT_PUBLIC_APP_URL": "https://your-domain.example",
+  "EMAIL_FROM": "noreply@your-domain.example"
+}
+```
+
+This origin is used for OAuth callbacks, links in outbound email, and the
+internal request the cron handler dispatches — a stale value breaks all three.
+
+## 4. Preview locally, then deploy
+
+```bash
+bun run preview   # builds and serves the production Worker on your machine
+bun run deploy    # builds the packages, then deploys
+```
+
+`bun run deploy` runs `turbo run deploy`, which builds the workspace packages
+first and then runs `vinext-cloudflare deploy` inside `apps/ai-broker-web`.
+
+Watch the first requests land:
+
+```bash
+bunx wrangler tail
+```
+
+## 5. Enable Email Routing
+
+Cloudflare Email Workers is the only mail path — verification, password reset,
+and team invitations all go through the `SEND_EMAIL` binding. It requires
+[Email Routing](https://developers.cloudflare.com/email-routing/) enabled on the
+zone, with `EMAIL_FROM` on a verified domain and destination rules configured
+for the recipients.
+
+Until that is done, messages are logged rather than sent, so flows complete
+locally but no mail arrives.
+
+## Git-connected deploys
+
+[Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) runs
+both the build and the deploy command **from the repository root**, which has no
+Wrangler configuration of its own.
+
+That is why `bun run build` ends with `node scripts/write-root-deploy-config.mjs`:
+it mirrors the `.wrangler/deploy/config.json` redirect that
+`@cloudflare/vite-plugin` writes inside `apps/ai-broker-web` up to the repository
+root, so `wrangler deploy` and `wrangler versions upload` resolve the built
+Worker instead of failing with *"Missing entry-point to Worker script or to
+assets directory"*.
+
+Recommended Workers Builds settings:
+
+| Setting | Value |
+| --- | --- |
+| Root directory | `/` (the repository root) |
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` |
+
+<Callout type="info">
+  Pointing the root directory at `apps/ai-broker-web` is the alternative, and it
+  removes the need for the redirect file — but the workspace packages the app
+  depends on are then no longer built. Prefer the repository root.
+</Callout>
+
+## Custom domain
+
+Add a route in the Cloudflare dashboard under **Workers & Pages → your Worker →
+Settings → Domains & Routes**, or declare it in `wrangler.jsonc`:
+
+```jsonc
+"routes": [
+  { "pattern": "your-domain.example", "custom_domain": true }
+]
+```
+
+Then update `NEXT_PUBLIC_APP_URL` and redeploy so callbacks and email links
+follow.
+
+## Rollbacks
+
+Every deploy creates a version. To go back:
+
+```bash
+bunx wrangler deployments list
+bunx wrangler rollback [version-id]
+```
+
+<Callout type="warn">
+  A rollback reverts **code only**. Applied D1 migrations stay applied, so a
+  rollback across a destructive migration will leave the older code facing a
+  newer schema. Keep migrations additive — see
+  [Database](/docs/deployment/database).
+</Callout>
+
+## Watching the bundle size
+
+The Worker is uploaded compressed and must stay under Cloudflare's 10 MB limit
+(3 MB on the free plan). The server bundle currently sits around 7 MB gzipped,
+so a large new dependency or bundled dataset is worth measuring before it lands:
+
+```bash
+bun run build
+find apps/ai-broker-web/dist/server -name '*.js' -not -path '*/ssr/*' \
+  | xargs cat | gzip -9 | wc -c
+```
+
+## Deployment checklist
+
+- [ ] D1 database created and `database_id` updated in `wrangler.jsonc`
+- [ ] `bun run db:migrate:remote` applied cleanly
+- [ ] `BETTER_AUTH_SECRET`, `CRON_SECRET`, and `ADMIN_EMAILS` set as secrets
+- [ ] `NEXT_PUBLIC_APP_URL` and `EMAIL_FROM` point at the real origin
+- [ ] Email Routing enabled and the sender domain verified
+- [ ] OAuth redirect URIs updated for the new origin
+- [ ] Stripe webhook endpoint repointed, if billing is enabled
+- [ ] `bun run preview` passes locally
+- [ ] `bunx wrangler tail` shows clean requests after the deploy
+- [ ] Cron triggers listed under Settings → Trigger Events
+
+## Next
+
+<Cards>
+  <Card title="Database" href="/docs/deployment/database">
+    D1, the Drizzle schema, and the migration workflow.
+  </Card>
+  <Card title="Scheduled jobs" href="/docs/deployment/scheduled-jobs">
+    Cron triggers and the sync routes they drive.
+  </Card>
+  <Card title="Troubleshooting" href="/docs/deployment/troubleshooting">
+    The failures this stack actually produces, and their fixes.
+  </Card>
+</Cards>

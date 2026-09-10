@@ -1,5 +1,6 @@
 ---
 title: Time-Series Correlations
+description: "The data factors most strongly correlated with stock performance, grouped by category."
 icon: GitBranch
 ---
 

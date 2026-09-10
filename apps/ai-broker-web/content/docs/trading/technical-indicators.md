@@ -1,5 +1,6 @@
 ---
 title: Technical Indicators
+description: "Trend, momentum, volatility, and volume indicators — what each measures and how it is used for timing."
 icon: Activity
 ---
 ## 📍 Table of Contents

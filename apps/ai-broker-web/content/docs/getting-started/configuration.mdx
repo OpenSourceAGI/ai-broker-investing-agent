@@ -1,0 +1,116 @@
+---
+title: Configuration
+description: "Every environment variable and Worker secret, what it enables, and where to set it."
+icon: Settings
+---
+
+Configuration is validated in `apps/ai-broker-web/env.ts` with
+[`@t3-oss/env-nextjs`](https://env.t3.gg/) and Zod.
+
+<Callout type="info">
+  **Every variable is optional.** Builds and preview environments never fail
+  validation on a missing key — call sites keep their own runtime guards, so an
+  unset key disables one feature rather than breaking the app. Set
+  `SKIP_ENV_VALIDATION=1` to bypass validation entirely.
+</Callout>
+
+## Where values live
+
+| Context | Where to set it |
+| --- | --- |
+| **Local development** | `apps/ai-broker-web/.env`. vinext reads `.env*` files next to the app, following Next.js precedence. |
+| **Deployed, non-secret** | The `vars` block in `apps/ai-broker-web/wrangler.jsonc`. |
+| **Deployed, secret** | `wrangler secret put <NAME>` — never in `wrangler.jsonc`, which is committed. |
+| **`drizzle-kit` / scripts** | `apps/ai-broker-web/.env`, falling back to a root `.env`. |
+
+## Cloudflare
+
+Only needed **outside** the Worker — maintenance scripts, CI, and `drizzle-kit`,
+which reach D1 over its REST API. On Workers the `DB` binding covers this and
+none of these are read.
+
+| Variable | Notes |
+| --- | --- |
+| `CLOUDFLARE_ACCOUNT_ID` | Account that owns the D1 database. |
+| `CLOUDFLARE_DATABASE_ID` | Defaults to the `ai-broker-db` id in `drizzle.config.ts`. |
+| `CLOUDFLARE_D1_TOKEN` | API token with D1 edit permission. |
+| `CLOUDFLARE_API_TOKEN` | Fallback for `CLOUDFLARE_D1_TOKEN`; also used by `wrangler deploy` in CI. |
+
+## Authentication
+
+Handled by [better-auth](https://better-auth.com).
+
+| Variable | Notes |
+| --- | --- |
+| `BETTER_AUTH_SECRET` | Signs sessions. Generate with `openssl rand -base64 32`. **Required in production.** |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth. Omit both to leave email/password as the only sign-in method. |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | The same client id, exposed to the browser for the Google sign-in button. |
+
+## Admin access
+
+| Variable | Notes |
+| --- | --- |
+| `ADMIN_EMAILS` | Comma-separated allowlist of addresses that may reach `/admin`. |
+| `ADMIN_EMAIL` | Single-address form, honoured for backwards compatibility. |
+
+<Callout type="warn">
+  With neither set, **nobody** is an admin — not even the first registered user.
+  A deployment that forgets this simply has no admin area rather than an open
+  one, which is the safe failure. Set it with `wrangler secret put ADMIN_EMAILS`.
+</Callout>
+
+## Model providers
+
+At least one is needed for the debate agents and research analysts to run.
+
+| Variable | Provider |
+| --- | --- |
+| `GROQ_API_KEY` | [Groq](https://console.groq.com) — the default for the debate agents. |
+| `OPENAI_API_KEY` | [OpenAI](https://platform.openai.com). |
+| `GOOGLE_API_KEY` | [Google Generative AI](https://aistudio.google.com). |
+
+## Billing
+
+| Variable | Notes |
+| --- | --- |
+| `STRIPE_SECRET_KEY` | Stripe API key. Subscriptions are disabled without it. |
+| `STRIPE_WEBHOOK_SECRET` | Verifies the signature on `/api/webhooks` deliveries. |
+
+## Email
+
+Outbound mail goes through **Cloudflare Email Workers** and nothing else — there
+is no third-party email provider.
+
+| Variable | Notes |
+| --- | --- |
+| `EMAIL_FROM` | Sender address. Must be on a verified domain with Email Routing enabled. |
+
+<Callout type="info">
+  Without the `SEND_EMAIL` binding, messages are logged instead of sent, so
+  local sign-up and invitation flows still complete end to end.
+</Callout>
+
+## Scheduled jobs
+
+| Variable | Notes |
+| --- | --- |
+| `CRON_SECRET` | Bearer token the `/api/cron/*` routes require. The Worker's `scheduled()` handler sends it automatically. |
+
+## App URLs
+
+| Variable | Notes |
+| --- | --- |
+| `NEXT_PUBLIC_APP_URL` | Absolute origin, e.g. `https://autoinvestment.broker`. Used for OAuth callbacks, email links, and cron dispatch. |
+| `NEXT_PUBLIC_APP_DOMAIN` | Bare domain, used for cookie scoping. |
+| `NODE_ENV` | `development` \| `test` \| `production`. Defaults to `development`. |
+
+## Regenerating binding types
+
+After changing bindings in `wrangler.jsonc`, refresh the generated
+`CloudflareEnv` interface:
+
+```bash
+bun run cf-typegen
+```
+
+This rewrites `apps/ai-broker-web/cloudflare-env.d.ts`.

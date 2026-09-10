@@ -1,5 +1,10 @@
 {
   "pages": [
-    "..."
+    "index",
+    "getting-started",
+    "deployment",
+    "trading",
+    "agents",
+    "reference"
   ]
 }
