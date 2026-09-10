@@ -10,6 +10,8 @@
 <br />
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/graphs/contributors" alt="Activity"><img src="https://img.shields.io/github/commit-activity/m/OpenSourceAGI/ai-broker-investing-agent" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/commits/main/"><img src="https://img.shields.io/github/last-commit/OpenSourceAGI/ai-broker-investing-agent.svg" alt="GitHub last commit" /></a>
+    <a href="https://app.codecov.io/gh/OpenSourceAGI/ai-broker-investing-agent"><img src="https://codecov.io/gh/OpenSourceAGI/ai-broker-investing-agent/branch/main/graph/badge.svg" alt="Coverage" /></a>
+    <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/actions/workflows/test.yml"><img src="https://github.com/OpenSourceAGI/ai-broker-investing-agent/actions/workflows/test.yml/badge.svg" alt="Tests" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/discussions"><img alt="GitHub Discussions" src="https://img.shields.io/github/discussions/OpenSourceAGI/ai-broker-investing-agent" /></a>
     <a href="https://codespaces.new/OpenSourceAGI/ai-broker-investing-agent"><img src="https://github.com/codespaces/badge.svg" height="20" alt="Open in GitHub Codespaces" /></a>
 <br />
@@ -84,11 +86,26 @@ npm install                   # installs every workspace
 npm run dev                   # turbo run dev
 npm run build                 # turbo run build (packages first, then the app)
 npm run test                  # turbo run test
+npm run test:coverage         # turbo run test:coverage, then merge into coverage/lcov.info
 
 # Scope a command to a single workspace
 npx turbo run build --filter=ai-broker-web
 npx turbo run test --filter=investing
 ```
+
+### Coverage
+
+`npm run test:coverage` runs each workspace's suite with coverage on (Vitest for the app,
+`investing`, `predictos` and the API client; Jest for `fin-data-api`) and merges the
+per-workspace LCOV reports into `coverage/lcov.info` with repository-root-relative paths.
+
+CI runs the same command on every pull request in
+[`.github/workflows/test.yml`](.github/workflows/test.yml) and uploads that single report to
+[Codecov](https://app.codecov.io/gh/OpenSourceAGI/ai-broker-investing-agent). The upload needs a
+`CODECOV_TOKEN` repository or organization secret. Thresholds, the per-workspace component
+breakdown, and the paths excluded from coverage (vendored bots, generated SDKs, migrations) live
+in [`codecov.yml`](codecov.yml); the project and patch checks are informational, so a coverage dip
+never blocks a merge on its own.
 
 Each workspace documents itself:
 

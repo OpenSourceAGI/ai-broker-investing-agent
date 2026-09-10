@@ -65,6 +65,11 @@
         "coverage/**"
       ]
     },
+    "test:coverage": {
+      "outputs": [
+        "coverage/**"
+      ]
+    },
     "lint": {
       "dependsOn": [
         "^build"

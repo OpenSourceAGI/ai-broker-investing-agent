@@ -16,7 +16,8 @@
     "ship": "npx standard-version --release-as patch; npm publish",
     "build:api": "API_URL=https://autoinvestment.broker/api openapi-ts && vite build",
     "test:api": "vitest run",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "files": [
     "dist"
@@ -25,6 +26,7 @@
     "@hey-api/client-fetch": "^0.13.1",
     "@hey-api/openapi-ts": "^0.88.0",
     "@hey-api/vite-plugin": "^0.2.0",
+    "@vitest/coverage-v8": "^3.2.7",
     "terser": "^5.44.1",
     "vite": "^7.3.6",
     "vite-plugin-dts": "^4.5.4",

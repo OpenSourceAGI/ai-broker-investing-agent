@@ -1,0 +1,72 @@
+# Codecov configuration — https://docs.codecov.com/docs/codecovyml-reference
+codecov:
+  notify:
+    # One upload per commit, at the end of the Tests workflow — hold the status
+    # until that run finishes so Codecov never reports on a partial commit.
+    wait_for_ci: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "40...90"
+  status:
+    project:
+      default:
+        # The suite is young: hold the line against regressions rather than
+        # demanding an absolute number the repo does not meet yet.
+        target: auto
+        threshold: 1%
+        informational: true
+    patch:
+      default:
+        target: 70%
+        threshold: 5%
+        informational: true
+
+# Per-workspace breakdown in the Codecov UI without needing one upload per
+# package in CI.
+component_management:
+  individual_components:
+    - component_id: web
+      name: apps/ai-broker-web
+      paths:
+        - apps/ai-broker-web/**
+    - component_id: investing
+      name: packages/investing
+      paths:
+        - packages/investing/**
+    - component_id: predictos
+      name: packages/predictos
+      paths:
+        - packages/predictos/**
+    - component_id: fin_data_api
+      name: packages/fin-data-api
+      paths:
+        - packages/fin-data-api/**
+    - component_id: api_client
+      name: packages/ai-broker-api-client
+      paths:
+        - packages/ai-broker-api-client/**
+
+comment:
+  layout: "condensed_header, diff, components, condensed_files, condensed_footer"
+  behavior: default
+
+ignore:
+  # Vendored upstream bots kept for reference — not our code to test.
+  - "third-party-trading-bots/**"
+  # Generated: openapi-ts SDKs, drizzle migrations, wrangler/vinext types.
+  - "**/*.gen.ts"
+  - "**/*.d.ts"
+  - "packages/ai-broker-api-client/src/client/**"
+  - "packages/ai-broker-api-client/src/core/**"
+  - "**/drizzle/**"
+  - "**/migrations/**"
+  - "**/.source/**"
+  - "**/dist/**"
+  - "scripts/**"
+  - "devdocs/**"
+  - "**/*.test.ts"
+  - "**/*.test.js"
+  - "**/__tests__/**"
+  - "**/test/**"

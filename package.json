@@ -17,6 +17,7 @@
     "preview": "turbo run preview",
     "deploy": "turbo run deploy",
     "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage && node scripts/merge-coverage.mjs",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "cf-typegen": "turbo run cf-typegen",

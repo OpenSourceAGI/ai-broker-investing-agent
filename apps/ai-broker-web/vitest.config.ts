@@ -12,6 +12,17 @@ export default defineConfig({
     restoreMocks: true,
     unstubEnvs: true,
     unstubGlobals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      // Only the server-side modules the vitest suite can actually reach.
+      // Pages and client components are exercised by e2e, not here, so
+      // including them would report a coverage number nothing measures.
+      include: ['lib/**/*.ts', 'app/api/**/*.ts'],
+      exclude: ['**/__tests__/**', '**/*.d.ts', '**/*.gen.ts'],
+      all: true,
+    },
   },
   resolve: {
     // An array rather than a map: vite matches aliases in order, and a bare
