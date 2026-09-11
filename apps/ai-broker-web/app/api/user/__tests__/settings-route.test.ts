@@ -20,7 +20,7 @@ const mockGetSession = auth.api.getSession as unknown as ReturnType<typeof vi.fn
 /** Point the mocked `db` module at a fresh fake for this test. */
 function setupDb(options: Parameters<typeof createFakeDb>[0] = {}) {
   const fake = createFakeDb(options)
-  Object.assign(db as Record<string, unknown>, fake)
+  Object.assign(db as unknown as Record<string, unknown>, fake)
   return fake
 }
 
@@ -143,7 +143,7 @@ describe('GET /api/user/settings — payload', () => {
   })
 
   it('answers 500 when the lookup throws', async () => {
-    Object.assign(db as Record<string, unknown>, {
+    Object.assign(db as unknown as Record<string, unknown>, {
       query: {
         userSettings: {
           findFirst: () => Promise.reject(new Error('D1 unavailable')),

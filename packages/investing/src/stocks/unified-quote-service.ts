@@ -620,11 +620,25 @@ export class UnifiedQuoteService {
 export const unifiedQuoteService = new UnifiedQuoteService();
 
 // Export convenience functions
-export async function getQuote(symbol: string, options: { useCache?: boolean } = {}): Promise<QuoteServiceResponse> {
+/**
+ * Options accepted by the quote helpers.
+ *
+ * `cacheTTL` belongs in the type: the methods behind these wrappers have always
+ * taken it and callers have always passed it, but omitting it here made every
+ * such call a type error.
+ */
+export interface GetQuoteOptions {
+  /** Read from the quote cache before calling a provider. Defaults to true. */
+  useCache?: boolean;
+  /** Maximum age in ms for a cached quote to count as fresh. */
+  cacheTTL?: number;
+}
+
+export async function getQuote(symbol: string, options: GetQuoteOptions = {}): Promise<QuoteServiceResponse> {
   return unifiedQuoteService.getQuote(symbol, options);
 }
 
-export async function getQuotes(symbols: string[], options: { useCache?: boolean } = {}): Promise<QuotesServiceResponse> {
+export async function getQuotes(symbols: string[], options: GetQuoteOptions = {}): Promise<QuotesServiceResponse> {
   return unifiedQuoteService.getQuotes(symbols, options);
 }
 
