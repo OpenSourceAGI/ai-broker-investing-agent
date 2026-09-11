@@ -14,6 +14,8 @@ import type { NormalizedQuote } from "./unified-quote-service";
 
 // Cache TTL in milliseconds
 const FUNDAMENTALS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+/** Default freshness window for a cached quote when the caller names none. */
+export const QUOTE_CACHE_TTL = 60 * 1000; // 1 minute
 
 export interface CachedQuote {
   symbol: string;
@@ -49,9 +51,16 @@ export class QuoteCacheService {
   }
 
   /**
-   * Get cached quote if available
+   * Get cached quote if available and still fresh.
+   *
+   * @param symbol - Ticker to look up; matched case-insensitively.
+   * @param cacheTTL - Maximum age in milliseconds. Defaults to
+   *   {@link QUOTE_CACHE_TTL}. A row older than this — or one with no
+   *   timestamp, which is how rows written before the column existed read back
+   *   — is treated as a miss so the caller refetches. Pass `Infinity` to accept
+   *   a cached quote at any age.
    */
-  async getCachedQuote(symbol: string): Promise<CachedQuote | null> {
+  async getCachedQuote(symbol: string, cacheTTL: number = QUOTE_CACHE_TTL): Promise<CachedQuote | null> {
     try {
       const cached = await db
         .select()
@@ -64,6 +73,13 @@ export class QuoteCacheService {
       }
 
       const quote = cached[0];
+
+      if (Number.isFinite(cacheTTL)) {
+        const updatedAt = quote.updatedAt ? new Date(quote.updatedAt).getTime() : null;
+        if (updatedAt === null || Number.isNaN(updatedAt) || Date.now() - updatedAt > cacheTTL) {
+          return null;
+        }
+      }
 
       return {
         symbol: quote.symbol,
@@ -100,6 +116,7 @@ export class QuoteCacheService {
         low: this.roundPrice(quote.low),
         previousClose: this.roundPrice(quote.previousClose),
         volume: quote.volume,
+        updatedAt: new Date(),
       };
 
       await db
@@ -116,6 +133,7 @@ export class QuoteCacheService {
             low: roundedData.low,
             previousClose: roundedData.previousClose,
             volume: roundedData.volume,
+            updatedAt: roundedData.updatedAt,
           },
         });
     } catch (error: any) {
@@ -229,15 +247,20 @@ export class QuoteCacheService {
         filtered = filtered.filter((r) => r.date <= endDate);
       }
 
-      return filtered.map((r) => ({
-        date: r.date,
-        open: r.open,
-        high: r.high,
-        low: r.low,
-        close: r.close,
-        volume: r.volume || undefined,
-        adjustedClose: r.adjustedClose || undefined,
-      }));
+      // Sort oldest-first. Row order from the database is not guaranteed, and
+      // callers treat the first and last elements as the period bounds and feed
+      // the series straight to a chart, both of which need chronological order.
+      return filtered
+        .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+        .map((r) => ({
+          date: r.date,
+          open: r.open,
+          high: r.high,
+          low: r.low,
+          close: r.close,
+          volume: r.volume || undefined,
+          adjustedClose: r.adjustedClose || undefined,
+        }));
     } catch (error: any) {
       console.error(`[QuoteCache] Error reading historical quotes for ${symbol}:`, error.message);
       return [];
