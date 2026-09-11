@@ -4,6 +4,11 @@
   "description": "Reusable investment utilities, trading agents, and financial data tools",
   "license": "rights.institute/prosper",
   "author": "vtempest",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenSourceAGI/ai-broker-investing-agent.git",
+    "directory": "packages/investing"
+  },
   "type": "module",
   "exports": {
     ".": {
