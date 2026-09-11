@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { useSession } from "@/lib/auth/client"
 
 export interface TickerConfig {
   showIcon: boolean
@@ -52,12 +53,26 @@ export function UIConfigProvider({ children }: { children: React.ReactNode }) {
   const [config, setConfig] = useState<UIConfig>(defaultUIConfig)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const { data: session, isPending: sessionPending } = useSession()
 
-  // Fetch config on mount
+  // Fetch the saved config once we know who is asking. Settings are per-user,
+  // so requesting them while signed out can only 401 — every anonymous page
+  // load used to spend a request to be told that. Signed-out visitors keep the
+  // defaults below.
   useEffect(() => {
+    if (sessionPending) return
+
+    if (!session?.user) {
+      setConfig(defaultUIConfig)
+      setLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+
     const fetchConfig = async () => {
       try {
-        const response = await fetch("/api/user/settings")
+        const response = await fetch("/api/user/settings", { signal: controller.signal })
         if (response.ok) {
           const data = await response.json()
           if (data.uiConfig) {
@@ -75,14 +90,16 @@ export function UIConfigProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (error) {
+        if ((error as Error)?.name === "AbortError") return
         console.error("Failed to fetch UI config:", error)
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
 
     fetchConfig()
-  }, [])
+    return () => controller.abort()
+  }, [session?.user?.id, sessionPending])
 
   const updateConfig = useCallback((newConfig: Partial<UIConfig>) => {
     setConfig((prev) => ({

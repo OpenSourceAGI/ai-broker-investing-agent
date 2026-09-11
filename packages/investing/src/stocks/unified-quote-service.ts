@@ -87,8 +87,17 @@ export class UnifiedQuoteService {
    * @param symbol - Stock symbol to fetch
    * @param options - Options object with useCache flag (default: true) and cacheTTL in milliseconds
    */
-  async getQuote(symbol: string, options: { useCache?: boolean; cacheTTL?: number } = {}): Promise<QuoteServiceResponse> {
+  async getQuote(rawSymbol: string, options: { useCache?: boolean; cacheTTL?: number } = {}): Promise<QuoteServiceResponse> {
     const { useCache = true, cacheTTL } = options;
+
+    // Normalize once, up front. The cache keys on the upper-cased symbol, so a
+    // request for "goog" would otherwise miss the entry written by "GOOG" and
+    // refetch on every call.
+    const symbol = typeof rawSymbol === 'string' ? rawSymbol.trim().toUpperCase() : '';
+    if (!symbol) {
+      return { success: false, error: 'A stock symbol is required' };
+    }
+
     console.log(`[UnifiedQuote] Fetching quote for ${symbol} (useCache: ${useCache}${cacheTTL ? `, cacheTTL: ${cacheTTL}ms` : ''})`);
 
     // Check cache first (unless bypassed)
@@ -116,12 +125,16 @@ export class UnifiedQuoteService {
         `alpaca timeout after 10s for ${symbol}`
       );
 
-      if (alpacaResult) {
+      // A response with no usable ask/bid is not a quote. Accepting it produced
+      // a $0 price that was reported as success and written to the cache, so
+      // every later reader saw a real stock priced at zero.
+      const alpacaPrice = Number((alpacaResult as any)?.ap ?? (alpacaResult as any)?.bp ?? 0);
+      if (alpacaResult && Number.isFinite(alpacaPrice) && alpacaPrice > 0) {
         // Alpaca returns quote data directly
         const quote = alpacaResult as any;
         const normalized: NormalizedQuote = {
           symbol,
-          price: quote.ap || quote.bp || 0, // ask price or bid price
+          price: alpacaPrice, // ask price or bid price
           change: null,
           changePercent: null,
           open: null,
@@ -157,11 +170,16 @@ export class UnifiedQuoteService {
         `yfinance timeout after 10s for ${symbol}`
       );
 
-      if (yfinanceResult.success && yfinanceResult.data) {
+      const yfPrice = Number(
+        (yfinanceResult.data as any)?.regularMarketPrice ??
+          (yfinanceResult.data as any)?.currentPrice ??
+          0,
+      );
+      if (yfinanceResult.success && yfinanceResult.data && Number.isFinite(yfPrice) && yfPrice > 0) {
         const data = yfinanceResult.data as any;
         const normalized: NormalizedQuote = {
           symbol,
-          price: data.regularMarketPrice || data.currentPrice || 0,
+          price: yfPrice,
           change: data.regularMarketChange || null,
           changePercent: data.regularMarketChangePercent || null,
           open: data.regularMarketOpen || data.open || null,

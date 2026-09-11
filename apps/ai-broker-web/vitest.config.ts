@@ -30,6 +30,11 @@ export default defineConfig({
     alias: [
       { find: /^@\/packages\//, replacement: `${resolve(rootDir, '../../packages')}/` },
       { find: /^@\//, replacement: `${resolve(rootDir, '.')}/` },
+      // The workspace packages publish from `dist/`, which only exists after a
+      // build. Point their subpath exports at the TypeScript sources so route
+      // tests run against the same code the app imports without a build step.
+      { find: /^investing\/(.*)$/, replacement: `${resolve(rootDir, '../../packages/investing/src')}/$1/index.ts` },
+      { find: /^investing$/, replacement: `${resolve(rootDir, '../../packages/investing/src')}/index.ts` },
     ],
   },
 })

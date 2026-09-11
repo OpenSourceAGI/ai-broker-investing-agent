@@ -19,6 +19,7 @@ import { ArrowLeft, Loader2, TrendingUp, TrendingDown, DollarSign, Activity, Bar
 import Link from "next/link"
 import { useSession } from "@/lib/auth/client"
 import { DynamicStockChart } from "@/components/investing/charts/dynamic-stock-chart"
+import { useDebouncedSymbol } from "@/lib/stocks/use-debounced-symbol"
 import { TradeModal } from "@/components/investing/trading/trade-modal"
 
 // Helper function to get stock logo URLs
@@ -144,7 +145,11 @@ function ExternalLinkItem({ link, symbol }: { link: ExternalLink; symbol: string
   )
 }
 
-export function QuoteView({ symbol, showBackButton = true, tradeSignals = [] }: QuoteViewProps) {
+export function QuoteView({ symbol: inputSymbol, showBackButton = true, tradeSignals = [] }: QuoteViewProps) {
+  // The parent feeds this straight from a search box, so it changes on every
+  // keystroke. Settle it before fetching: otherwise typing "GOOGL" sends a
+  // quote plus three historical requests for each of GOO, GOOG and GOOGL.
+  const symbol = useDebouncedSymbol(inputSymbol)
   const router = useRouter()
   const { data: session } = useSession()
   const [data, setData] = useState<QuoteData | null>(null)
@@ -289,31 +294,44 @@ export function QuoteView({ symbol, showBackButton = true, tradeSignals = [] }: 
   }, [symbol, session])
 
   useEffect(() => {
-    if (!symbol) return
+    if (!symbol) {
+      setLoading(false)
+      return
+    }
+
+    // Abort the previous symbol's request when the symbol changes again, so a
+    // slow response for an earlier ticker cannot overwrite the current one.
+    const controller = new AbortController()
 
     const fetchQuote = async () => {
       try {
         setLoading(true)
         setError("") // Clear any previous errors
 
-        const res = await fetch(`/api/stocks/quote/${symbol}`)
+        const res = await fetch(`/api/stocks/quote/${encodeURIComponent(symbol)}`, {
+          signal: controller.signal,
+        })
         const json = await res.json()
+        if (controller.signal.aborted) return
 
         if (json.success && json.data) {
           setData(json.data)
           setError("") // Clear error on success
         } else {
+          setData(null)
           setError(json.error || "Failed to fetch quote data")
         }
       } catch (err) {
+        if ((err as Error)?.name === "AbortError") return
         console.error(err)
         setError("An error occurred while fetching data")
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
 
     fetchQuote()
+    return () => controller.abort()
   }, [symbol])
 
 
@@ -342,23 +360,30 @@ export function QuoteView({ symbol, showBackButton = true, tradeSignals = [] }: 
   useEffect(() => {
     if (!symbol) return
 
+    const controller = new AbortController()
+
     const fetchPerformanceData = async () => {
       try {
-        // Try to fetch 5 years of data first
-        let res = await fetch(`/api/stocks/historical/${symbol}?range=5y&interval=1d`)
-        let json = await res.json()
+        const hasRows = (payload: any) =>
+          payload?.success && Array.isArray(payload.data) && payload.data.length > 0
 
-        // If 5y fails, try 2y as fallback
-        if (!json.success || !json.data || !Array.isArray(json.data) || json.data.length === 0) {
-          res = await fetch(`/api/stocks/historical/${symbol}?range=2y&interval=1d`)
-          json = await res.json()
+        const fetchRange = async (range: string) => {
+          const res = await fetch(
+            `/api/stocks/historical/${encodeURIComponent(symbol)}?range=${range}&interval=1d`,
+            { signal: controller.signal },
+          )
+          return res.json()
         }
 
-        // If 2y fails, try 1y as final fallback
-        if (!json.success || !json.data || !Array.isArray(json.data) || json.data.length === 0) {
-          res = await fetch(`/api/stocks/historical/${symbol}?range=1y&interval=1d`)
-          json = await res.json()
+        // Shorter ranges are a fallback for symbols whose history does not go
+        // back five years. A 400/404 means the symbol itself is no good, so
+        // stop there rather than asking twice more for the same missing stock.
+        let json = await fetchRange("5y")
+        for (const range of ["2y", "1y"]) {
+          if (hasRows(json) || json?.code === "INVALID_SYMBOL" || json?.code === "SYMBOL_NOT_FOUND") break
+          json = await fetchRange(range)
         }
+        if (controller.signal.aborted) return
 
         if (json.success && json.data && Array.isArray(json.data)) {
           const history = json.data
@@ -405,12 +430,14 @@ export function QuoteView({ symbol, showBackButton = true, tradeSignals = [] }: 
           })
         }
       } catch (err) {
+        if ((err as Error)?.name === "AbortError") return
         // Silently handle errors - performance metrics are non-critical
         console.error("Performance data fetch error:", err)
       }
     }
 
     fetchPerformanceData()
+    return () => controller.abort()
   }, [symbol])
 
   const toggleWatchlist = async () => {
