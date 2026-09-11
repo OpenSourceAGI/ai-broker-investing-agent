@@ -13,6 +13,9 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "ai-broker-investing-agent",
+  // Wrangler deletes plaintext Variables set in the Cloudflare dashboard on every
+  // deploy unless keep_vars is set. Secrets are never deleted either way.
+  "keep_vars": true,
   // Wraps vinext's fetch handler to add cron trigger routing.
   "main": "./worker/index.ts",
   "compatibility_date": "2026-07-01",
