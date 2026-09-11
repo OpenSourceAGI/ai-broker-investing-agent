@@ -1,6 +1,6 @@
 {
   "name": "predictos",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "PredictOS 'Super Intelligence' core (prediction-market multi-agent analysis, data clients, and cross-platform arbitrage) adapted from PredictionXBT/PredictOS, refactored from Deno/Supabase edge functions into Node/TypeScript ESM.",
   "license": "MIT",
   "author": "PredictionXBT (original); adapted for the investing package",
