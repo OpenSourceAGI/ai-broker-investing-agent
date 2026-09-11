@@ -107,6 +107,7 @@
     "jszip": "^3.10.1",
     "katex": "^0.16.28",
     "langchain": "^1.2.21",
+    "legal-terms-privacy-policy": "^0.1.0",
     "lightweight-charts": "^5.1.0",
     "lightweight-charts-react-components": "^1.4.0",
     "lucide-react": "^0.563.0",
