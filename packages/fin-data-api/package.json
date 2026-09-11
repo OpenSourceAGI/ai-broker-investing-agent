@@ -1,6 +1,7 @@
 {
   "name": "fin-data-api",
   "version": "1.0.0",
+  "private": true,
   "description": "TypeScript Financial Data API with OpenAPI/Scalar documentation - converted from OpenBB Finance APIs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

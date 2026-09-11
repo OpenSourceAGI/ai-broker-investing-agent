@@ -4,6 +4,11 @@
   "description": "PredictOS 'Super Intelligence' core (prediction-market multi-agent analysis, data clients, and cross-platform arbitrage) adapted from PredictionXBT/PredictOS, refactored from Deno/Supabase edge functions into Node/TypeScript ESM.",
   "license": "MIT",
   "author": "PredictionXBT (original); adapted for the investing package",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenSourceAGI/ai-broker-investing-agent.git",
+    "directory": "packages/predictos"
+  },
   "type": "module",
   "exports": {
     ".": {

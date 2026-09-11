@@ -1,6 +1,7 @@
 {
   "name": "ai-broker-api-client",
   "version": "0.0.11",
+  "private": true,
   "description": "AI Broker API Client",
   "type": "module",
   "main": "./dist/api-client.js",
