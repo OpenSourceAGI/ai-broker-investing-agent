@@ -14,7 +14,6 @@ docs/.next
 **/coverage/
 *.lcov
 *lock*
-.claude/
 # turborepo
 .turbo/
 **/.turbo/
@@ -47,7 +46,6 @@ yarn-error.log*
 # cloudflare
 .wrangler/
 **/.wrangler/
-.claude
 .vscode
 
 # typescript
@@ -69,3 +67,10 @@ local.db
 drizzle/
 .source/
 **/.source/
+
+.claude/*
+# Agent docs for Claude Code — checked in on purpose (see CLAUDE.md)
+!.claude/architecture
+!.claude/settings.json
+.claude/settings.local.json
+CLAUDE.local.md
