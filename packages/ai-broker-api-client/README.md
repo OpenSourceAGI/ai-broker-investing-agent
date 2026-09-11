@@ -5,6 +5,7 @@ API, generated from the project's OpenAPI specification with
 [`@hey-api/openapi-ts`](https://heyapi.dev).
 
 [![npm](https://img.shields.io/npm/v/ai-broker-api-client)](https://npmjs.org/package/ai-broker-api-client)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/ai-broker-api-client)
 
 ## Install
 
