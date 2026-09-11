@@ -6,6 +6,9 @@ import { quoteCacheService } from "@/packages/investing/src/stocks/quote-cache-s
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/** Upper bound on symbols per batch request. */
+const MAX_SYMBOLS_PER_REQUEST = 50;
+
 /**
  * Calculate weekly change from historical data (last 5 trading days)
  */
@@ -153,7 +156,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const symbols = symbolsParam.split(",").map((s) => s.trim().toUpperCase());
+    // Each symbol costs a quote plus, unless skipped, three historical fetches,
+    // all issued per symbol. Without a ceiling one request could fan out into
+    // thousands of upstream calls and time out.
+    const requestedSymbols = symbolsParam
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean);
+
+    const uniqueSymbols = [...new Set(requestedSymbols)];
+
+    if (uniqueSymbols.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "symbols parameter is required" },
+        { status: 400 },
+      );
+    }
+
+    if (uniqueSymbols.length > MAX_SYMBOLS_PER_REQUEST) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Too many symbols: ${uniqueSymbols.length}. The maximum is ${MAX_SYMBOLS_PER_REQUEST} per request.`,
+          code: "TOO_MANY_SYMBOLS",
+        },
+        { status: 400 },
+      );
+    }
+
+    const symbols = uniqueSymbols;
 
     // Use unified quote service with fallback
     const result = await getQuotes(symbols, { useCache, cacheTTL });

@@ -505,4 +505,18 @@ async function main() {
     }
 }
 
-main();
+// This module is a build-time data generator: it scrapes NASDAQ/NYSE/AMEX, the
+// SEC and TradingView, then writes JSON to disk with `fs`. Calling `main()` on
+// import meant merely importing anything from this package fired those requests
+// — on every cold start of every API route that pulls in the stocks barrel, and
+// fatally so on Cloudflare Workers, where neither top-level network calls nor
+// `fs` are available. Run it only when invoked directly as a script.
+const isDirectInvocation =
+  typeof process !== 'undefined' &&
+  Array.isArray(process.argv) &&
+  process.argv[1] !== undefined &&
+  /import-stock-names(\.[cm]?[jt]s)?$/.test(process.argv[1]);
+
+if (isDirectInvocation) {
+  main();
+}

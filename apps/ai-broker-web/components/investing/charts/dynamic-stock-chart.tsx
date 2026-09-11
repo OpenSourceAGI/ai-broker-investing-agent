@@ -5,7 +5,7 @@ import { Chart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries, Time
 import { Button } from "@/components/ui/button"
 import { rsi, macd, atr, stochasticOscillator, cci, obv } from "indicatorts"
 import { TagInput, Tag } from "@/components/ui/tag-input"
-import { Loader2, CandlestickChart, TrendingUp } from "lucide-react"
+import { Loader2, CandlestickChart, TrendingUp, ChevronDown, ChevronRight } from "lucide-react"
 import { setStateInURL } from "@/lib/utils"
 import { type IChartApi, type Time, type LogicalRange } from "lightweight-charts"
 import grab from 'grab-url';
@@ -47,6 +47,12 @@ const INDICATOR_SUGGESTIONS: Tag[] = [
 
 type ChartType = "candlestick" | "line" | "area"
 
+/**
+ * Table rows at or below this height are the separators lightweight-charts
+ * draws between panes, not panes themselves.
+ */
+const SEPARATOR_MAX_HEIGHT = 10
+
 export function DynamicStockChart({
   symbol,
   initialRange = "1y",
@@ -55,6 +61,12 @@ export function DynamicStockChart({
 }: DynamicStockChartProps) {
   const [activeTags, setActiveTags] = useState<Tag[]>([])
   const [showVolume, setShowVolume] = useState(true)
+  // Ids of the panes below the price chart the user has folded away.
+  const [collapsedPanes, setCollapsedPanes] = useState<Set<string>>(new Set())
+  // Pixel offset and height of each rendered pane, read back from the chart so
+  // the labels sit on the pane they name instead of being guessed from the
+  // stretch factors.
+  const [paneLayout, setPaneLayout] = useState<{ top: number; height: number }[]>([])
   const [chartType, setChartType] = useState<ChartType>("candlestick")
   const [selectedRange, setSelectedRange] = useState(initialRange)
   const [secondaryData, setSecondaryData] = useState<Record<string, ChartData[]>>({})
@@ -67,6 +79,7 @@ export function DynamicStockChart({
   const lineSeriesRef = useRef<any>(null)
   const areaSeriesRef = useRef<any>(null)
   const chartRef = useRef<any>(null)
+  const chartWrapperRef = useRef<HTMLDivElement>(null)
   const lastSymbol = useRef<string>(symbol)
 
   // Fetch initial data on mount or symbol change
@@ -261,6 +274,74 @@ export function DynamicStockChart({
     }
   }, [loadingMore, symbol, chartData]);
 
+  /**
+   * Pick the bar size that suits a visible window of `spanDays`.
+   *
+   * Zooming does not change the data underneath it, so a chart loaded at daily
+   * bars stays daily however far in you go — past a few weeks the candles are
+   * just stretched apart with nothing between them. Matching the interval to
+   * the span means zooming in actually resolves more detail.
+   */
+  const intervalForSpan = (spanDays: number): string => {
+    if (spanDays <= 2) return "5m"
+    if (spanDays <= 10) return "15m"
+    if (spanDays <= 60) return "1h"
+    if (spanDays <= 365 * 3) return "1d"
+    return "1wk"
+  }
+
+  /** Bar size currently loaded; starts at the caller's choice. */
+  const loadedInterval = useRef<string>(interval)
+  const zoomFetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const zoomFetchController = useRef<AbortController | null>(null)
+
+  /**
+   * Reload the visible window at `nextInterval`. Requests the exact window on
+   * screen rather than a named range, so the bars returned are the ones being
+   * looked at.
+   */
+  const refetchForZoom = useCallback(async (fromSec: number, toSec: number, nextInterval: string) => {
+    zoomFetchController.current?.abort()
+    const controller = new AbortController()
+    zoomFetchController.current = controller
+
+    setLoadingMore(true)
+    try {
+      const res = await fetch(
+        `/api/stocks/historical/${encodeURIComponent(symbol)}?interval=${nextInterval}&period1=${Math.floor(fromSec)}&period2=${Math.ceil(toSec)}`,
+        { signal: controller.signal }
+      )
+      const json = await res.json()
+      if (controller.signal.aborted) return
+
+      const dataArray = Array.isArray(json.data?.data) ? json.data.data :
+        Array.isArray(json.data) ? json.data : null
+
+      if (json.success && dataArray && dataArray.length > 0) {
+        const rebased: ChartData[] = dataArray.map((d: any) => ({
+          date: d.date || d.time,
+          open: d.open,
+          high: d.high,
+          low: d.low,
+          close: d.close,
+          volume: d.volume
+        })).filter((d: ChartData) => d.open && d.close)
+
+        if (rebased.length > 0) {
+          loadedInterval.current = nextInterval
+          // Replacing the series re-runs the indicator memos against the new
+          // bars, so RSI/MACD/etc. are recomputed at the zoomed resolution.
+          setChartData(rebased.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()))
+        }
+      }
+    } catch (e) {
+      if ((e as Error)?.name === "AbortError") return
+      console.error("[DynamicStockChart] Zoom refetch failed", e)
+    } finally {
+      if (!controller.signal.aborted) setLoadingMore(false)
+    }
+  }, [symbol])
+
   // Handler for visible range changes
   const onVisibleRangeChange = (range: LogicalRange | null) => {
     if (!range || !candlestickSeriesRef.current || chartData.length === 0) return;
@@ -276,7 +357,36 @@ export function DynamicStockChart({
         fetchMoreData(firstTime);
       }
     }
+
+    // Re-resolve the data to the zoom level, once the zooming settles. Wheel
+    // events fire continuously, so without the delay this would issue a request
+    // per notch.
+    const firstIndex = Math.max(0, Math.floor(range.from))
+    const lastIndex = Math.min(chartData.length - 1, Math.ceil(range.to))
+    if (lastIndex <= firstIndex) return
+
+    const fromSec = new Date(chartData[firstIndex].date).getTime() / 1000
+    const toSec = new Date(chartData[lastIndex].date).getTime() / 1000
+    const spanDays = (toSec - fromSec) / 86400
+    if (!Number.isFinite(spanDays) || spanDays <= 0) return
+
+    const nextInterval = intervalForSpan(spanDays)
+    if (nextInterval === loadedInterval.current) return
+
+    if (zoomFetchTimer.current) clearTimeout(zoomFetchTimer.current)
+    zoomFetchTimer.current = setTimeout(() => {
+      refetchForZoom(fromSec, toSec, nextInterval)
+    }, 400)
   };
+
+  // Drop any pending zoom work when the symbol or requested range changes.
+  useEffect(() => {
+    loadedInterval.current = interval
+    return () => {
+      if (zoomFetchTimer.current) clearTimeout(zoomFetchTimer.current)
+      zoomFetchController.current?.abort()
+    }
+  }, [symbol, selectedRange, interval])
 
   const times = useMemo(() => chartData.map(d => Math.floor(new Date(d.date).getTime() / 1000) as Time), [chartData])
 
@@ -412,6 +522,89 @@ export function DynamicStockChart({
       })
   }, [activeTags, secondaryData, symbol])
 
+  /**
+   * Bumped whenever the chart should re-fit to its content: a new symbol,
+   * range, indicator set or chart type. Deliberately not bumped when a zoom
+   * refetch swaps the bars, so the zoom survives.
+   */
+  const [fitKey, setFitKey] = useState(0)
+
+  useEffect(() => {
+    setFitKey(key => key + 1)
+  }, [symbol, selectedRange, interval, activeTags.length, showVolume, chartType, collapsedPanes.size])
+
+  /**
+   * The panes stacked under the price chart, in render order: volume first when
+   * shown, then one per active indicator. Each carries the label drawn on it
+   * and whether the user has folded it away.
+   */
+  const bottomPanes = useMemo(() => {
+    const panes: { id: string; label: string }[] = []
+    if (showVolume) panes.push({ id: "volume", label: "Volume" })
+    for (const indicator of indicatorSeries as any[]) {
+      panes.push({ id: indicator.id, label: indicator.name })
+    }
+    return panes
+  }, [showVolume, indicatorSeries])
+
+  const visiblePanes = useMemo(
+    () => bottomPanes.filter(pane => !collapsedPanes.has(pane.id)),
+    [bottomPanes, collapsedPanes]
+  )
+
+  const togglePane = useCallback((id: string) => {
+    setCollapsedPanes(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+
+  /**
+   * Measure where each pane actually sits, so a label can be drawn on it.
+   *
+   * The heights are read from the chart's own layout rather than derived from
+   * the stretch factors: the time axis and the one-pixel separators between
+   * panes take space the ratios do not account for, so computed positions drift
+   * further down the stack. lightweight-charts lays the panes out as table rows
+   * — the tall ones are panes, the 1px ones separators — and the last tall row
+   * is the time axis, which is not a pane and is dropped.
+   */
+  const measurePanes = useCallback(() => {
+    const wrapper = chartWrapperRef.current
+    const table = wrapper?.querySelector("table")
+    if (!wrapper || !table) return
+
+    const wrapperTop = wrapper.getBoundingClientRect().top
+    const rows = Array.from(table.querySelectorAll("tr"))
+      .map(row => row.getBoundingClientRect())
+      .filter(rect => rect.height > SEPARATOR_MAX_HEIGHT)
+
+    setPaneLayout(
+      rows.slice(0, -1).map(rect => ({ top: rect.top - wrapperTop, height: rect.height }))
+    )
+  }, [])
+
+  useEffect(() => {
+    if (chartData.length === 0) return
+
+    // The chart lays out after this render, and settles over a frame or two
+    // while it sizes its canvases, so measure again shortly after.
+    const frame = requestAnimationFrame(measurePanes)
+    const settle = setTimeout(measurePanes, 250)
+
+    const wrapper = chartWrapperRef.current
+    const observer = wrapper ? new ResizeObserver(measurePanes) : null
+    if (wrapper && observer) observer.observe(wrapper)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(settle)
+      observer?.disconnect()
+    }
+  }, [measurePanes, chartData.length, visiblePanes.length, chartType])
+
   const chartOptions = {
     layout: {
       background: { color: "transparent" },
@@ -517,11 +710,11 @@ export function DynamicStockChart({
       )}
 
       {/* Chart */}
-      <div className="relative border rounded-lg overflow-hidden bg-card">
+      <div ref={chartWrapperRef} className="relative border rounded-lg overflow-hidden bg-card">
         {chartData.length > 0 ? (
           <Chart
             ref={chartRef}
-            key={`chart-${showVolume}-${activeTags.length}-${chartType}`}
+            key={`chart-${showVolume}-${activeTags.length}-${chartType}-${visiblePanes.length}`}
             options={chartOptions}
           >
 
@@ -563,38 +756,50 @@ export function DynamicStockChart({
               ))}
             </Pane>
 
-            {showVolume && (
-              <Pane stretchFactor={1}>
-                <HistogramSeries
-                  data={volumeData}
-                  options={{ priceFormat: { type: "volume" } }}
-                />
-              </Pane>
-            )}
+            {/* Panes under the price chart, in the order `bottomPanes` lists
+                them so the measured layout lines up with the labels. */}
+            {visiblePanes.map(pane => {
+              if (pane.id === "volume") {
+                return (
+                  <Pane key="volume" stretchFactor={1}>
+                    <HistogramSeries
+                      data={volumeData}
+                      options={{ priceFormat: { type: "volume" } }}
+                    />
+                  </Pane>
+                )
+              }
 
-            {indicatorSeries.map((indicator: any) => (
-              <Pane key={indicator.id} stretchFactor={1}>
-                {indicator.type === "macd" ? (
-                  <>
-                    <LineSeries data={indicator.data.macd} options={{ color: "#2196F3", lineWidth: 1 }} />
-                    <LineSeries data={indicator.data.signal} options={{ color: "#FF9800", lineWidth: 1 }} />
-                    <HistogramSeries data={indicator.data.histogram} />
-                  </>
-                ) : indicator.type === "stochastic" ? (
-                  <>
-                    <LineSeries data={indicator.data.k} options={{ color: "#2196F3", lineWidth: 1 }} />
-                    <LineSeries data={indicator.data.d} options={{ color: "#FF9800", lineWidth: 1 }} />
-                  </>
-                ) : (
-                  <LineSeries data={indicator.data} options={indicator.options as any} />
-                )}
-              </Pane>
-            ))}
+              const indicator = (indicatorSeries as any[]).find(i => i.id === pane.id)
+              if (!indicator) return null
+
+              return (
+                <Pane key={indicator.id} stretchFactor={1}>
+                  {indicator.type === "macd" ? (
+                    <>
+                      <LineSeries data={indicator.data.macd} options={{ color: "#2196F3", lineWidth: 1 }} />
+                      <LineSeries data={indicator.data.signal} options={{ color: "#FF9800", lineWidth: 1 }} />
+                      <HistogramSeries data={indicator.data.histogram} />
+                    </>
+                  ) : indicator.type === "stochastic" ? (
+                    <>
+                      <LineSeries data={indicator.data.k} options={{ color: "#2196F3", lineWidth: 1 }} />
+                      <LineSeries data={indicator.data.d} options={{ color: "#FF9800", lineWidth: 1 }} />
+                    </>
+                  ) : (
+                    <LineSeries data={indicator.data} options={indicator.options as any} />
+                  )}
+                </Pane>
+              )
+            })}
 
             <TimeScale
               onVisibleLogicalRangeChange={onVisibleRangeChange}
             >
-              <TimeScaleFitContentTrigger deps={[chartData.length > 0 ? chartData[0].date : 0, activeTags.length, showVolume, chartType]} />
+              {/* Re-fit only on a deliberate change of what is charted. Keying
+                  this on the data itself would refit after a zoom refetch and
+                  throw away the zoom the user just made. */}
+              <TimeScaleFitContentTrigger deps={[fitKey]} />
             </TimeScale>
           </Chart>
         ) : (
@@ -602,7 +807,50 @@ export function DynamicStockChart({
             {!loadingData && "No data available"}
           </div>
         )}
+
+        {/* One label per pane, positioned over the pane it names. Pane 0 is the
+            price chart and is never collapsible, so the labels below start at
+            the second measured pane. */}
+        {chartData.length > 0 && visiblePanes.map((pane, index) => {
+          const position = paneLayout[index + 1]
+          if (!position) return null
+
+          return (
+            <button
+              key={pane.id}
+              type="button"
+              onClick={() => togglePane(pane.id)}
+              style={{ top: position.top + 2 }}
+              className="absolute left-2 z-20 flex items-center gap-1 rounded bg-background/75 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
+              title={`Collapse ${pane.label}`}
+            >
+              <ChevronDown className="h-3 w-3" />
+              {pane.label}
+            </button>
+          )
+        })}
       </div>
+
+      {/* Folded-away panes, kept visible so they can be brought back. */}
+      {collapsedPanes.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 px-1">
+          <span className="text-xs text-muted-foreground">Hidden:</span>
+          {bottomPanes
+            .filter(pane => collapsedPanes.has(pane.id))
+            .map(pane => (
+              <button
+                key={pane.id}
+                type="button"
+                onClick={() => togglePane(pane.id)}
+                className="flex items-center gap-1 rounded border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                title={`Show ${pane.label}`}
+              >
+                <ChevronRight className="h-3 w-3" />
+                {pane.label}
+              </button>
+            ))}
+        </div>
+      )}
 
       {/* Top Row: Tag Input + Basic Controls */}
       <div className="flex flex-col md:flex-row gap-4 justify-between">
