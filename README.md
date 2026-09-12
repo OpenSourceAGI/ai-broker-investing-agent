@@ -8,10 +8,10 @@
     <a href="https://autoinvestment.broker"><img height="20px" src="https://img.shields.io/badge/App-blueviolet?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website" /></a>
     <a href="https://docs.autoinvestment.broker/"><img src="https://img.shields.io/badge/Docs-blue?logo=ReadTheDocs&logoColor=white" alt="Documentation" /></a>
     <a href="https://autoinvestment.broker/api/docs"><img src="https://img.shields.io/badge/API-blue?logo=fastapi&logoColor=white" alt="API" /></a>
+    <a href="https://stats.uptimerobot.com/lwSHnzMtDL/803967180"><img src="https://img.shields.io/badge/Uptime--Status-brightgreen?logo=uptimerobot&logoColor=white" alt="Uptime Status" /></a>
     <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/OpenSourceAGI/ai-broker-investing-agent"><img height="24px" src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" /></a>
-    <a href="https://stackblitz.com/github/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/investing"><img height="20px" src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt="Open in StackBlitz" /></a>
-    <a href="https://codespaces.new/OpenSourceAGI/ai-broker-investing-agent"><img height="20px" src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces" /></a>
     <br />
+    <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/stargazers"><img src="https://img.shields.io/github/stars/OpenSourceAGI/ai-broker-investing-agent" alt="GitHub Stars" /></a>
     <a href="https://www.npmjs.com/package/investing"><img src="https://img.shields.io/npm/dm/investing.svg" alt="NPM Monthly Downloads" /></a>
     <a href="https://www.npmjs.com/package/investing"><img src="https://img.shields.io/npm/v/investing.svg" alt="npm version" /></a>
     <a href="https://www.npmjs.com/package/investing"><img src="https://img.shields.io/npm/dt/investing.svg" alt="NPM Total Downloads" /></a>
@@ -19,11 +19,9 @@
     <a href="https://packagephobia.com/result?p=investing"><img src="https://packagephobia.com/badge?p=investing" alt="Install size" /></a>
     <a href="https://codecov.io/gh/OpenSourceAGI/ai-broker-investing-agent"><img src="https://codecov.io/gh/OpenSourceAGI/ai-broker-investing-agent/graph/badge.svg" alt="Coverage" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/actions/workflows/test.yml"><img src="https://github.com/OpenSourceAGI/ai-broker-investing-agent/actions/workflows/test.yml/badge.svg?branch=main" alt="CI status" /></a>
-    <a href="https://stats.uptimerobot.com/lwSHnzMtDL/803967180"><img src="https://img.shields.io/badge/Uptime--Status-brightgreen?logo=uptimerobot&logoColor=white" alt="Uptime Status" /></a>
     <br />
-    <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/stargazers"><img src="https://img.shields.io/github/stars/OpenSourceAGI/ai-broker-investing-agent" alt="GitHub Stars" /></a>
-    <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/forks"><img src="https://img.shields.io/github/forks/OpenSourceAGI/ai-broker-investing-agent" alt="GitHub Forks" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/graphs/contributors"><img src="https://img.shields.io/github/contributors/OpenSourceAGI/ai-broker-investing-agent" alt="Contributors" /></a>
+    <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/forks"><img src="https://img.shields.io/github/forks/OpenSourceAGI/ai-broker-investing-agent" alt="GitHub Forks" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/issues"><img src="https://img.shields.io/github/issues/OpenSourceAGI/ai-broker-investing-agent?logo=github" alt="GitHub Issues" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/pulls"><img src="https://img.shields.io/github/issues-pr/OpenSourceAGI/ai-broker-investing-agent?logo=github&label=PRs" alt="Open Pull Requests" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/pulls?q=is%3Apr+is%3Aclosed"><img src="https://img.shields.io/github/issues-pr-closed/OpenSourceAGI/ai-broker-investing-agent?logo=github&label=PRs%20merged&color=8957e5" alt="Merged Pull Requests" /></a>
@@ -31,9 +29,11 @@
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/graphs/contributors"><img src="https://img.shields.io/github/commit-activity/m/OpenSourceAGI/ai-broker-investing-agent" alt="Commit activity" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/commits/main/"><img src="https://img.shields.io/github/last-commit/OpenSourceAGI/ai-broker-investing-agent.svg" alt="GitHub last commit" /></a>
     <a href="https://discord.gg/SJdBqBz3tV"><img src="https://img.shields.io/discord/1110227955554209923.svg?label=Chat&logo=Discord&colorB=7289da&style=flat" alt="Join Discord" /></a>
+    <br />
+    <a href="https://stackblitz.com/github/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/investing"><img height="20px" src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt="Open in StackBlitz" /></a>
+    <a href="https://codespaces.new/OpenSourceAGI/ai-broker-investing-agent"><img height="20px" src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces" /></a>
     <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request"><img src="https://img.shields.io/badge/PRs--welcome-brightgreen" alt="PRs Welcome" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/blob/main/LICENSE.md"><img src="https://img.shields.io/github/license/OpenSourceAGI/ai-broker-investing-agent" alt="License" /></a>
-    <br />
     <img src="https://img.shields.io/badge/Claude-D97757?logo=claude&logoColor=white" alt="Claude" /> <img src="https://img.shields.io/badge/Bun-14151A?logo=bun&logoColor=white" alt="Bun" /> <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /> <img src="https://img.shields.io/badge/Next.js-black?logo=nextdotjs&logoColor=white" alt="Next.js" /> <img src="https://img.shields.io/badge/React-20232A?logo=react&logoColor=white" alt="React" /> <img src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflareworkers&logoColor=white" alt="Cloudflare Workers" /> <img src="https://img.shields.io/badge/Tailwind%20CSS-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" /> <img src="https://img.shields.io/badge/shadcn%2Fui-000000?logo=shadcnui&logoColor=white" alt="shadcn/ui" /> <img src="https://img.shields.io/badge/Drizzle%20ORM-C5F74F?logo=drizzle&logoColor=white" alt="Drizzle ORM" /> <img src="https://img.shields.io/badge/better--auth-000000" alt="better-auth" /> <img src="https://img.shields.io/badge/Stripe-635BFF?logo=stripe&logoColor=white" alt="Stripe" /> <img src="https://img.shields.io/badge/Zod-3E67B1?logo=zod&logoColor=white" alt="Zod" /> <img src="https://img.shields.io/badge/Fumadocs-000000" alt="Fumadocs" /> <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" alt="Vite" /> <img src="https://img.shields.io/badge/Turborepo-EF4444?logo=turborepo&logoColor=white" alt="Turborepo" /> <img src="https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white" alt="Vitest" /> <img src="https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=white" alt="Jest" />
 </p>
 <!-- template-git-repo:badges:end -->
