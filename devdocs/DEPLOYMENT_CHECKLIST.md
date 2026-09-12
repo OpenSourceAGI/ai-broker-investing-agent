@@ -50,7 +50,7 @@ compile the workspace packages as well as the app:
 
 There is no Wrangler configuration at the repository root, so Wrangler used to
 fail there with `Missing entry-point to Worker script or to assets directory`.
-`bun run build` now finishes by running `scripts/write-root-deploy-config.mjs`,
+`bun run build` now finishes by running `.github/scripts/write-root-deploy-config.mjs`,
 which copies the [generated configuration
 redirect](https://developers.cloudflare.com/workers/wrangler/configuration/#generated-wrangler-configuration)
 that `@cloudflare/vite-plugin` emits at

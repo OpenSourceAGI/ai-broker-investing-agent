@@ -8,7 +8,7 @@ PredictionXBT (MIT, © 2025), refactored from Deno/Supabase edge functions into
 Node/TypeScript ESM. **Keep the upstream attribution and license intact** in
 `README.md` and the source headers.
 
-Read [`../../.claude/architecture/trading.md`](../../.claude/architecture/trading.md)
+Read [`../../architecture/trading.md`](../../architecture/trading.md)
 before changing anything on an order path.
 
 ## Public surface

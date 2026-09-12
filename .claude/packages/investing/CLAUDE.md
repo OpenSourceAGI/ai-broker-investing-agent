@@ -3,7 +3,7 @@
 Published to npm. The heart of the repo: everything that decides *what to
 trade*. The app renders this package; it does not reimplement it.
 
-Read [`../../.claude/architecture/trading.md`](../../.claude/architecture/trading.md)
+Read [`../../architecture/trading.md`](../../architecture/trading.md)
 before changing anything that proposes, sizes, or executes a position.
 
 ## Public surface
@@ -62,8 +62,8 @@ bun run build             # rebuild before the app can see your change
 
 Data-import and sync scripts (`import:leaders`, `import:stocks`,
 `sync:high-volume-markets`, `sync:trade-history`) talk to live venues and D1.
-Read [`devdocs/sync-scripts.md`](../../devdocs/sync-scripts.md) and
-[`devdocs/HIGH_VOLUME_SYNC_GUIDE.md`](../../devdocs/HIGH_VOLUME_SYNC_GUIDE.md)
+Read [`devdocs/sync-scripts.md`](../../../devdocs/sync-scripts.md) and
+[`devdocs/HIGH_VOLUME_SYNC_GUIDE.md`](../../../devdocs/HIGH_VOLUME_SYNC_GUIDE.md)
 before running one; they are not idempotent no-ops.
 
 ## Rules
