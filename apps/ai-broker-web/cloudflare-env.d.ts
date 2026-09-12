@@ -16,6 +16,12 @@ interface CloudflareEnv {
   NEXT_PUBLIC_APP_URL?: string;
   EMAIL_FROM?: string;
   CRON_SECRET?: string;
+  /** Cloudflare Turnstile — see lib/turnstile. Unset disables the first-load gate. */
+  TURNSTILE_SITE_KEY?: string;
+  TURNSTILE_SECRET_KEY?: string;
+  TURNSTILE_ENABLED?: string;
+  TURNSTILE_TTL_SECONDS?: string;
+  TURNSTILE_COOKIE_DOMAIN?: string;
 }
 
 /** Worker bindings, available at module scope inside workerd. */

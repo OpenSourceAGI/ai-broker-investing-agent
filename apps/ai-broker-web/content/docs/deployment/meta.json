@@ -1,5 +1,5 @@
 {
   "title": "Deployment",
   "icon": "CloudUpload",
-  "pages": ["index", "database", "scheduled-jobs", "troubleshooting"]
+  "pages": ["index", "database", "scheduled-jobs", "troubleshooting", "turnstile-bot-gate"]
 }
