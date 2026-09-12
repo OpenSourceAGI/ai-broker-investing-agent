@@ -14,7 +14,7 @@ whose root directory is the repository root.
 
 Workers Builds runs the deploy command from the repository root, which has no
 Wrangler configuration of its own. `bun run build` ends with
-`node scripts/write-root-deploy-config.mjs`, which mirrors the
+`node .github/scripts/write-root-deploy-config.mjs`, which mirrors the
 `.wrangler/deploy/config.json` redirect written inside `apps/ai-broker-web` up to
 the root so `wrangler deploy` can resolve the built Worker.
 

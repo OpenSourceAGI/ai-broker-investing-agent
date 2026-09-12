@@ -76,7 +76,7 @@ cd packages/investing && bun run test
 ## Coverage
 
 `bun run test:coverage` runs every workspace's suite with coverage on, then
-`scripts/merge-coverage.mjs` merges the per-workspace LCOV reports into a single
+`.github/scripts/merge-coverage.mjs` merges the per-workspace LCOV reports into a single
 `coverage/lcov.info` with repo-root-relative paths. CI uploads exactly that one
 file to Codecov. Thresholds and the per-workspace component breakdown live in
 [`codecov.yml`](../../codecov.yml); project and patch checks are **informational**,

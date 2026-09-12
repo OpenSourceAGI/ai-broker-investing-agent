@@ -13,7 +13,7 @@
  *
  *   Cannot find module 'predictos' or its corresponding type declarations.
  *
- * Usage: node scripts/workspace-build-order.mjs [rootDir]
+ * Usage: node .github/scripts/workspace-build-order.mjs [rootDir]
  *   rootDir defaults to `packages`. Prints one directory per line, with a
  *   trailing slash, e.g. `packages/investing/`.
  */

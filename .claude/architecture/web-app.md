@@ -113,7 +113,7 @@ keys go the same way. Never commit any of them.
 ## Deploy
 
 ```bash
-bun run build     # turbo build; then scripts/write-root-deploy-config.mjs
+bun run build     # turbo build; then .github/scripts/write-root-deploy-config.mjs
 bun run deploy    # vinext-cloudflare deploy
 bun run cf-typegen  # regenerate cloudflare-env.d.ts after changing bindings
 ```

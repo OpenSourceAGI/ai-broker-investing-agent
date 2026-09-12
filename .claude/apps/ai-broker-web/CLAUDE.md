@@ -2,7 +2,7 @@
 
 The only deployed artifact: Next.js (App Router) built with **vinext** and run
 on **Cloudflare Workers**. Full notes in
-[`../../.claude/architecture/web-app.md`](../../.claude/architecture/web-app.md).
+[`../../architecture/web-app.md`](../../architecture/web-app.md).
 
 ## Keep route handlers thin
 

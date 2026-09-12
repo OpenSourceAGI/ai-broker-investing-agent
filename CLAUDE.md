@@ -77,8 +77,8 @@ Database and deploy commands live in
 - Run `bun run build` if you changed anything a sibling workspace imports.
 - Add or update a test for every behaviour change — especially anything that
   sizes a position, sets a threshold, or decides a trade.
-- Update the workspace's `README.md` and its `CLAUDE.md` when behaviour or
-  public API changes.
+- Update the workspace's `README.md` and its note under
+  [`.claude/`](.claude/) when behaviour or public API changes.
 - Commit style is **gitmoji + conventional commits**:
   `✨ feat(scope): what changed`. See
   [`architecture/conventions.md`](.claude/architecture/conventions.md).
@@ -93,3 +93,19 @@ Database and deploy commands live in
 | [web-app.md](.claude/architecture/web-app.md) | The deployed Cloudflare app: Worker, D1, auth, crons, deploy, migrations |
 | [trading.md](.claude/architecture/trading.md) | Agents, strategies, brokers, prediction markets, and the rules around risk |
 | [conventions.md](.claude/architecture/conventions.md) | Code style, commits, PRs, CI, publishing, security |
+
+## Per-workspace notes
+
+Each app and package has its own note. They live under `.claude/` mirroring the
+workspace path — `packages/investing` is documented in
+`.claude/packages/investing/CLAUDE.md` — so every agent instruction in the repo
+sits in one tree rather than beside the source.
+
+| Workspace | Note |
+| --- | --- |
+| `apps/ai-broker-web` | [.claude/apps/ai-broker-web/CLAUDE.md](.claude/apps/ai-broker-web/CLAUDE.md) |
+| `packages/ai-broker-api-client` | [.claude/packages/ai-broker-api-client/CLAUDE.md](.claude/packages/ai-broker-api-client/CLAUDE.md) |
+| `packages/fin-data-api` | [.claude/packages/fin-data-api/CLAUDE.md](.claude/packages/fin-data-api/CLAUDE.md) |
+| `packages/investing` | [.claude/packages/investing/CLAUDE.md](.claude/packages/investing/CLAUDE.md) |
+| `packages/mcp-server` | [.claude/packages/mcp-server/CLAUDE.md](.claude/packages/mcp-server/CLAUDE.md) |
+| `packages/predictos` | [.claude/packages/predictos/CLAUDE.md](.claude/packages/predictos/CLAUDE.md) |

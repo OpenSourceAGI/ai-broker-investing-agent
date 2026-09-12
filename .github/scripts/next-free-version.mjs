@@ -23,7 +23,7 @@
  * ones — the exact numbers `latest` cannot see. The union of the two is the
  * taken set.
  *
- * Usage: node scripts/next-free-version.mjs <package-name> <local-version>
+ * Usage: node .github/scripts/next-free-version.mjs <package-name> <local-version>
  *   Prints the next free version, always strictly above <local-version>. If
  *   the registry says nothing about the package (a first publish, or an
  *   unreachable registry) that is just <local-version> plus a patch.
@@ -161,7 +161,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
   const [name, local] = process.argv.slice(2);
 
   if (!name || !local) {
-    console.error('Usage: node scripts/next-free-version.mjs <package-name> <local-version>');
+    console.error('Usage: node .github/scripts/next-free-version.mjs <package-name> <local-version>');
     process.exit(2);
   }
 

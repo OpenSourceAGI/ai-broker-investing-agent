@@ -120,7 +120,7 @@ locally but no mail arrives.
 both the build and the deploy command **from the repository root**, which has no
 Wrangler configuration of its own.
 
-That is why `bun run build` ends with `node scripts/write-root-deploy-config.mjs`:
+That is why `bun run build` ends with `node .github/scripts/write-root-deploy-config.mjs`:
 it mirrors the `.wrangler/deploy/config.json` redirect that
 `@cloudflare/vite-plugin` writes inside `apps/ai-broker-web` up to the repository
 root, so `wrangler deploy` and `wrangler versions upload` resolve the built
