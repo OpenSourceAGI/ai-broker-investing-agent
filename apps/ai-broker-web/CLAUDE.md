@@ -27,6 +27,12 @@ rule inside a route handler, it is in the wrong file.
 - **Vitest runs under Node — it does not prove the Worker works.** Use
   `bun run preview` (local miniflare D1) before shipping anything touching the
   Worker entrypoint, bindings, or crons.
+- **The Turnstile gate runs first in `worker/index.ts`** (`lib/turnstile`). It
+  only ever interrupts a desktop browser's first HTML page view, and it is a
+  no-op until `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` are set. Adding a
+  path that must answer machines — a webhook, a feed, a health check — outside
+  `/api/*` means adding it to the exempt list in
+  `lib/turnstile/request-filter.ts`.
 
 ## Layout
 

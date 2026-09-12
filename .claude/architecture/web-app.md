@@ -77,6 +77,27 @@ better-auth (`lib/auth/`), email/password plus Google OAuth, sessions in D1.
 (`lib/auth/admin.ts`). Operational notes on cookies and the OAuth callback
 origin are in [`devdocs/AUTH_CONFIGURATION.md`](../../devdocs/AUTH_CONFIGURATION.md).
 
+## Turnstile first-load gate
+
+`worker/index.ts` calls `handleTurnstileGate` (`apps/ai-broker-web/lib/turnstile/`) before
+anything else. A desktop browser's **first** HTML page view is answered with a
+Cloudflare Turnstile check; the Worker validates the token server-side against
+`siteverify` and sets an HMAC-signed pass cookie (7 days by default), so nobody
+is challenged twice.
+
+Never challenged: phones (`Sec-CH-UA-Mobile`, falling back to the user-agent),
+search-engine and link-preview crawlers, `/api/*`, `/_next/*`, `/_vinext/*`,
+static assets, RSC payload fetches (`RSC: 1`, `?_rsc=`), `robots.txt` /
+`sitemap.xml` / manifests / health checks, and every non-`GET` request. A new
+machine-facing path outside `/api/*` has to be added to
+`lib/turnstile/request-filter.ts`.
+
+The gate is **off until configured and fails open**: with `TURNSTILE_SITE_KEY` /
+`TURNSTILE_SECRET_KEY` unset it returns `null` for every request, which is what
+keeps local dev, previews and CI unchallenged. `TURNSTILE_ENABLED=false` turns
+it off with the keys still in place. Full write-up:
+[content/docs → Deployment → Turnstile first-load gate](../../apps/ai-broker-web/content/docs/deployment/turnstile-bot-gate.mdx).
+
 ## Environment
 
 `env.ts` validates with zod, and **everything is optional** so builds and
