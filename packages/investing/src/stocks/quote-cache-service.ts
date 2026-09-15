@@ -115,7 +115,7 @@ export class QuoteCacheService {
         high: this.roundPrice(quote.high),
         low: this.roundPrice(quote.low),
         previousClose: this.roundPrice(quote.previousClose),
-        volume: quote.volume,
+        volume: quote.volume ?? null,
         updatedAt: new Date(),
       };
 
@@ -174,18 +174,26 @@ export class QuoteCacheService {
           }
           return true;
         })
-        .map((quote) => ({
-          id: `${symbolUpper}-${quote.date}`,
-          symbol: symbolUpper,
-          date: quote.date,
-          open: this.roundPrice(quote.open) || 0,
-          high: this.roundPrice(quote.high) || 0,
-          low: this.roundPrice(quote.low) || 0,
-          close: this.roundPrice(quote.close) || 0,
-          volume: quote.volume || null,
-          adjustedClose: this.roundPrice(quote.adjustedClose) || null,
-          createdAt: now,
-        }));
+        .map((quote) => {
+          // Normalize date to YYYY-MM-DD string. Upstream providers (Finnhub,
+          // Alpaca, Yahoo) return Date objects or various string formats;
+          // the schema and the composite primary key both expect a plain date string.
+          const parsedDate = quote.date instanceof Date ? quote.date : new Date(quote.date);
+          const dateStr = parsedDate.toISOString().split("T")[0];
+
+          return {
+            id: `${symbolUpper}-${dateStr}`,
+            symbol: symbolUpper,
+            date: dateStr,
+            open: this.roundPrice(quote.open) || 0,
+            high: this.roundPrice(quote.high) || 0,
+            low: this.roundPrice(quote.low) || 0,
+            close: this.roundPrice(quote.close) || 0,
+            volume: quote.volume || null,
+            adjustedClose: this.roundPrice(quote.adjustedClose),
+            createdAt: now,
+          };
+        });
 
       if (values.length === 0) {
         return;

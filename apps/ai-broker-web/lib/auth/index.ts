@@ -216,6 +216,16 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 60, // 60 days
     updateAge: 60 * 60 * 24 * 3, // 1 day
   },
+  hooks: {
+    createUser: {
+      before: async (user) => {
+        if (!user.name) {
+          user.name = user.email?.split("@")[0] || "User";
+        }
+        return user;
+      },
+    },
+  },
 });
 
 export type Session = typeof auth.$Infer.Session.session
