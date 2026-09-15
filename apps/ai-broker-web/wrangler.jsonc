@@ -52,10 +52,6 @@
   "triggers": {
     "crons": ["0 0 * * *", "15 0 * * *"]
   },
-  "vars": {
-    "NEXT_PUBLIC_APP_URL": "https://autoinvestment.broker",
-    "EMAIL_FROM": "noreply@autoinvestment.broker"
-  },
   "observability": {
     "enabled": true
   }
