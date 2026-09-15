@@ -14,7 +14,7 @@ describe('Seeking Alpha Provider', () => {
 
   describe('Query Schema', () => {
     it('should validate correct query', () => {
-      const query = { date: '2023-01-01' };
+      const query = { start_date: '2023-01-01', end_date: '2023-01-04' };
       expect(() => SACalendarEarningsQuerySchema.parse(query)).not.toThrow();
     });
   });
@@ -22,10 +22,10 @@ describe('Seeking Alpha Provider', () => {
   describe('Data Schema', () => {
     it('should validate correct data', () => {
       const data = {
-        date: '2023-01-01',
+        report_date: '2023-01-01',
         symbol: 'AAPL',
-        company: 'Apple Inc.',
-        earnings_time: 'AMC',
+        name: 'Apple Inc.',
+        reporting_time: 'AMC',
       };
       expect(() => SACalendarEarningsDataSchema.parse(data)).not.toThrow();
     });
@@ -39,8 +39,9 @@ describe('Seeking Alpha Provider', () => {
     });
 
     it('should transform query', () => {
-      const query = fetcher.transformQuery({ date: '2023-01-01' });
-      expect(query.date).toBe('2023-01-01');
+      const query = fetcher.transformQuery({ start_date: '2023-01-01' });
+      expect(query.start_date).toBe('2023-01-01');
+      expect(query.country).toBe('us');
     });
   });
 });

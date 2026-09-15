@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/client"
 
 import { StrategiesTab } from "@/components/investing/tabs/strategies-tab"
 import { Card } from "@/components/ui/card"

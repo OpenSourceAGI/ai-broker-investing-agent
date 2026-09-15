@@ -3,13 +3,19 @@
  * `vinext build` (via @cloudflare/vite-plugin) and deployed with
  * `vinext-cloudflare deploy`.
  *
+ * Cloudflare is the only platform this app targets: D1 for the database,
+ * Email Workers for outbound mail, Workers + Assets for the app itself.
+ *
  * Secrets (set with `wrangler secret put <NAME>`):
  *   BETTER_AUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET,
- *   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, CRON_SECRET, RESEND_API_KEY (optional fallback)
+ *   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, CRON_SECRET
  */
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "ai-broker-investing-agent",
+  // Wrangler deletes plaintext Variables set in the Cloudflare dashboard on every
+  // deploy unless keep_vars is set. Secrets are never deleted either way.
+  "keep_vars": true,
   // Wraps vinext's fetch handler to add cron trigger routing.
   "main": "./worker/index.ts",
   "compatibility_date": "2026-07-01",
@@ -33,8 +39,8 @@
       "migrations_dir": "migrations"
     }
   ],
-  // Cloudflare Email Workers: outbound email for auth (verification, password
-  // reset) and team invitations. Requires Email Routing to be enabled on the
+  // Cloudflare Email Workers: the only outbound email path — auth (verification,
+  // password reset) and team invitations. Requires Email Routing enabled on the
   // zone and the sender address configured under a verified domain.
   "send_email": [
     {
@@ -45,10 +51,6 @@
   // scheduled handler in worker/index.ts.
   "triggers": {
     "crons": ["0 0 * * *", "15 0 * * *"]
-  },
-  "vars": {
-    "NEXT_PUBLIC_APP_URL": "https://autoinvestment.broker",
-    "EMAIL_FROM": "noreply@autoinvestment.broker"
   },
   "observability": {
     "enabled": true

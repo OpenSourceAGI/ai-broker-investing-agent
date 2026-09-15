@@ -28,6 +28,9 @@ describe('BLS Provider', () => {
       const data = {
         date: '2023-01-01',
         value: 300.5,
+        series_id: 'CUUR0000SA0',
+        year: '2023',
+        period: 'M01',
       };
       expect(() => BLSSeriesDataSchema.parse(data)).not.toThrow();
     });

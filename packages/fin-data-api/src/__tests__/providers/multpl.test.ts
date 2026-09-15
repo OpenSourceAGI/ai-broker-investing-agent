@@ -14,12 +14,12 @@ describe('Multpl Provider', () => {
 
   describe('Query Schema', () => {
     it('should validate correct query', () => {
-      const query = { series: 'pe-ratio' };
+      const query = { series_name: 'pe_ratio_month' };
       expect(() => MultplSP500MultiplesQuerySchema.parse(query)).not.toThrow();
     });
 
-    it('should require series', () => {
-      expect(() => MultplSP500MultiplesQuerySchema.parse({})).toThrow();
+    it('should default series_name when omitted', () => {
+      expect(MultplSP500MultiplesQuerySchema.parse({}).series_name).toBe('shiller_pe_month');
     });
   });
 
@@ -28,6 +28,7 @@ describe('Multpl Provider', () => {
       const data = {
         date: '2023-01-01',
         value: 20.5,
+        name: 'shiller_pe_month',
       };
       expect(() => MultplSP500MultiplesDataSchema.parse(data)).not.toThrow();
     });
@@ -41,8 +42,8 @@ describe('Multpl Provider', () => {
     });
 
     it('should transform query', () => {
-      const query = fetcher.transformQuery({ series: 'pe-ratio' });
-      expect(query.series).toBe('pe-ratio');
+      const query = fetcher.transformQuery({ series_name: 'pe_ratio_month' });
+      expect(query.series_name).toBe('pe_ratio_month');
     });
   });
 });

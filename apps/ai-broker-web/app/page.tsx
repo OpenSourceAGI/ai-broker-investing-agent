@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/landing/hero-section"
 import { TickerTape } from "@/components/landing/ticker-tape"
 import { FeatureStorySection } from "@/components/landing/feature-story-section"
 import { AgentsTeamSection } from "@/components/landing/agents-team-section"
+import { VideoShowcaseSection } from "@/components/landing/video-showcase-section"
 import { PlatformBentoSection } from "@/components/landing/platform-bento-section"
 import { PredictionMarketsPreview } from "@/components/landing/prediction-markets-preview"
 import { BrokersGridSection } from "@/components/landing/brokers-grid-section"
@@ -31,6 +32,7 @@ export default function LandingPage() {
       />
 
       <AgentsTeamSection />
+      <VideoShowcaseSection />
       <PlatformBentoSection />
       <PredictionMarketsPreview />
       <BrokersGridSection />

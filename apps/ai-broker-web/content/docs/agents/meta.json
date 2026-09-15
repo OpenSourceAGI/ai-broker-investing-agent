@@ -1,0 +1,5 @@
+{
+  "title": "Agents",
+  "icon": "Users",
+  "pages": ["debate-agents-prompts", "ai-broker-research-paper"]
+}

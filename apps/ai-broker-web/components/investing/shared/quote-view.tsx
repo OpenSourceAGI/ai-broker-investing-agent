@@ -17,8 +17,9 @@ import {
 // @ts-ignore
 import { ArrowLeft, Loader2, TrendingUp, TrendingDown, DollarSign, Activity, BarChart3, Star, ExternalLink } from "lucide-react"
 import Link from "next/link"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/client"
 import { DynamicStockChart } from "@/components/investing/charts/dynamic-stock-chart"
+import { useDebouncedSymbol } from "@/lib/stocks/use-debounced-symbol"
 import { TradeModal } from "@/components/investing/trading/trade-modal"
 
 // Helper function to get stock logo URLs
@@ -87,7 +88,68 @@ interface QuoteViewProps {
   tradeSignals?: TradeSignal[]
 }
 
-export function QuoteView({ symbol, showBackButton = true, tradeSignals = [] }: QuoteViewProps) {
+/**
+ * Off-site destinations for a ticker. Research also carries what used to be the
+ * separate Social and Filings groups — one entry each is not worth its own
+ * section header.
+ */
+type ExternalLink = { name: string; host: string; href: (symbol: string) => string }
+
+const EXTERNAL_LINKS: { brokers: ExternalLink[]; research: ExternalLink[] } = {
+  brokers: [
+    { name: "Robinhood", host: "robinhood.com", href: (s) => `https://robinhood.com/stocks/${s}` },
+    { name: "Webull", host: "webull.com", href: (s) => `https://app.webull.com/stocks/${s}` },
+    {
+      name: "Fidelity",
+      host: "fidelity.com",
+      href: (s) =>
+        `https://digital.fidelity.com/prgw/digital/research/quote/dashboard/summary?symbol=${s}`,
+    },
+  ],
+  research: [
+    { name: "Yahoo Finance", host: "finance.yahoo.com", href: (s) => `https://finance.yahoo.com/quote/${s}` },
+    { name: "TradingView", host: "tradingview.com", href: (s) => `https://www.tradingview.com/symbols/${s}` },
+    { name: "Google Finance", host: "google.com", href: (s) => `https://www.google.com/finance/quote/${s}` },
+    { name: "MarketWatch", host: "marketwatch.com", href: (s) => `https://www.marketwatch.com/investing/stock/${s}` },
+    { name: "Finviz", host: "finviz.com", href: (s) => `https://finviz.com/quote.ashx?t=${s}` },
+    { name: "Stocktwits", host: "stocktwits.com", href: (s) => `https://stocktwits.com/symbol/${s}` },
+    {
+      name: "SEC EDGAR",
+      host: "sec.gov",
+      href: (s) =>
+        `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=${s}&type=&dateb=&owner=exclude&count=40`,
+    },
+  ],
+}
+
+/** Google's public favicon service — no key, and it falls back to a generic globe. */
+const faviconUrl = (host: string) =>
+  `https://www.google.com/s2/favicons?domain=${host}&sz=64`
+
+function ExternalLinkItem({ link, symbol }: { link: ExternalLink; symbol: string }) {
+  return (
+    <DropdownMenuItem asChild>
+      <a href={link.href(symbol)} target="_blank" rel="noopener noreferrer">
+        <img
+          src={faviconUrl(link.host)}
+          alt=""
+          aria-hidden="true"
+          width={16}
+          height={16}
+          loading="lazy"
+          className="mr-2 h-4 w-4 rounded-sm"
+        />
+        {link.name}
+      </a>
+    </DropdownMenuItem>
+  )
+}
+
+export function QuoteView({ symbol: inputSymbol, showBackButton = true, tradeSignals = [] }: QuoteViewProps) {
+  // The parent feeds this straight from a search box, so it changes on every
+  // keystroke. Settle it before fetching: otherwise typing "GOOGL" sends a
+  // quote plus three historical requests for each of GOO, GOOG and GOOGL.
+  const symbol = useDebouncedSymbol(inputSymbol)
   const router = useRouter()
   const { data: session } = useSession()
   const [data, setData] = useState<QuoteData | null>(null)
@@ -232,31 +294,44 @@ export function QuoteView({ symbol, showBackButton = true, tradeSignals = [] }: 
   }, [symbol, session])
 
   useEffect(() => {
-    if (!symbol) return
+    if (!symbol) {
+      setLoading(false)
+      return
+    }
+
+    // Abort the previous symbol's request when the symbol changes again, so a
+    // slow response for an earlier ticker cannot overwrite the current one.
+    const controller = new AbortController()
 
     const fetchQuote = async () => {
       try {
         setLoading(true)
         setError("") // Clear any previous errors
 
-        const res = await fetch(`/api/stocks/quote/${symbol}`)
+        const res = await fetch(`/api/stocks/quote/${encodeURIComponent(symbol)}`, {
+          signal: controller.signal,
+        })
         const json = await res.json()
+        if (controller.signal.aborted) return
 
         if (json.success && json.data) {
           setData(json.data)
           setError("") // Clear error on success
         } else {
+          setData(null)
           setError(json.error || "Failed to fetch quote data")
         }
       } catch (err) {
+        if ((err as Error)?.name === "AbortError") return
         console.error(err)
         setError("An error occurred while fetching data")
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
 
     fetchQuote()
+    return () => controller.abort()
   }, [symbol])
 
 
@@ -285,23 +360,30 @@ export function QuoteView({ symbol, showBackButton = true, tradeSignals = [] }: 
   useEffect(() => {
     if (!symbol) return
 
+    const controller = new AbortController()
+
     const fetchPerformanceData = async () => {
       try {
-        // Try to fetch 5 years of data first
-        let res = await fetch(`/api/stocks/historical/${symbol}?range=5y&interval=1d`)
-        let json = await res.json()
+        const hasRows = (payload: any) =>
+          payload?.success && Array.isArray(payload.data) && payload.data.length > 0
 
-        // If 5y fails, try 2y as fallback
-        if (!json.success || !json.data || !Array.isArray(json.data) || json.data.length === 0) {
-          res = await fetch(`/api/stocks/historical/${symbol}?range=2y&interval=1d`)
-          json = await res.json()
+        const fetchRange = async (range: string) => {
+          const res = await fetch(
+            `/api/stocks/historical/${encodeURIComponent(symbol)}?range=${range}&interval=1d`,
+            { signal: controller.signal },
+          )
+          return res.json()
         }
 
-        // If 2y fails, try 1y as final fallback
-        if (!json.success || !json.data || !Array.isArray(json.data) || json.data.length === 0) {
-          res = await fetch(`/api/stocks/historical/${symbol}?range=1y&interval=1d`)
-          json = await res.json()
+        // Shorter ranges are a fallback for symbols whose history does not go
+        // back five years. A 400/404 means the symbol itself is no good, so
+        // stop there rather than asking twice more for the same missing stock.
+        let json = await fetchRange("5y")
+        for (const range of ["2y", "1y"]) {
+          if (hasRows(json) || json?.code === "INVALID_SYMBOL" || json?.code === "SYMBOL_NOT_FOUND") break
+          json = await fetchRange(range)
         }
+        if (controller.signal.aborted) return
 
         if (json.success && json.data && Array.isArray(json.data)) {
           const history = json.data
@@ -348,12 +430,14 @@ export function QuoteView({ symbol, showBackButton = true, tradeSignals = [] }: 
           })
         }
       } catch (err) {
+        if ((err as Error)?.name === "AbortError") return
         // Silently handle errors - performance metrics are non-critical
         console.error("Performance data fetch error:", err)
       }
     }
 
     fetchPerformanceData()
+    return () => controller.abort()
   }, [symbol])
 
   const toggleWatchlist = async () => {
@@ -503,62 +587,14 @@ export function QuoteView({ symbol, showBackButton = true, tradeSignals = [] }: 
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Brokers</DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://robinhood.com/stocks/${symbol}`} target="_blank" rel="noopener noreferrer">
-                      Robinhood
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://app.webull.com/stocks/${symbol}`} target="_blank" rel="noopener noreferrer">
-                      Webull
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://digital.fidelity.com/prgw/digital/research/quote/dashboard/summary?symbol=${symbol}`} target="_blank" rel="noopener noreferrer">
-                      Fidelity
-                    </a>
-                  </DropdownMenuItem>
+                  {EXTERNAL_LINKS.brokers.map((link) => (
+                    <ExternalLinkItem key={link.name} link={link} symbol={symbol} />
+                  ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Research</DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://finance.yahoo.com/quote/${symbol}`} target="_blank" rel="noopener noreferrer">
-                      Yahoo Finance
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://www.tradingview.com/symbols/${symbol}`} target="_blank" rel="noopener noreferrer">
-                      TradingView
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://www.google.com/finance/quote/${symbol}`} target="_blank" rel="noopener noreferrer">
-                      Google Finance
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://www.marketwatch.com/investing/stock/${symbol}`} target="_blank" rel="noopener noreferrer">
-                      MarketWatch
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://finviz.com/quote.ashx?t=${symbol}`} target="_blank" rel="noopener noreferrer">
-                      Finviz
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Social</DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://stocktwits.com/symbol/${symbol}`} target="_blank" rel="noopener noreferrer">
-                      Stocktwits
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Filings</DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <a href={`https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=${symbol}&type=&dateb=&owner=exclude&count=40`} target="_blank" rel="noopener noreferrer">
-                      SEC EDGAR
-                    </a>
-                  </DropdownMenuItem>
+                  {EXTERNAL_LINKS.research.map((link) => (
+                    <ExternalLinkItem key={link.name} link={link} symbol={symbol} />
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
               {session?.user && (

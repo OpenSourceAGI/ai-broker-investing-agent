@@ -23,12 +23,12 @@ describe('Stockgrid Provider', () => {
     it('should validate correct data', () => {
       const data = {
         timestamp: '2023-01-01T10:00:00Z',
-        ticker: 'AAPL',
+        symbol: 'AAPL',
         strike: 150.0,
         expiration: '2023-12-31',
-        call_put: 'CALL',
+        option_type: 'CALL',
         premium: 500000,
-        size: 100,
+        volume: 100,
       };
       expect(() => StockgridOptionsFlowDataSchema.parse(data)).not.toThrow();
     });

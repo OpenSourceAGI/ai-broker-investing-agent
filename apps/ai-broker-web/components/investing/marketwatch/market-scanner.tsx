@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { StockList } from "@/components/investing/shared/stock-list"
 import { FinancialTable } from "@/components/ui/financial-markets-table"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/client"
 
 import { mockIndexes, mostTrending, highestBreakout, fallbackGlobalMarketIndices } from "./mock-data"
 import { useWatchlists } from "./use-watchlists"

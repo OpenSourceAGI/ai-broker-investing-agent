@@ -1,7 +1,7 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import type { Plan } from "@/lib/payments/plans"
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/client"
 import { updateExistingSubscription } from "@/lib/payments/actions"
 import { toast } from "sonner"
 import { useState } from "react"

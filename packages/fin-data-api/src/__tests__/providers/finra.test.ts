@@ -26,9 +26,11 @@ describe('FINRA Provider', () => {
   describe('Data Schema', () => {
     it('should validate correct data', () => {
       const data = {
-        date: '2023-01-01',
+        settlement_date: '2023-01-01',
         symbol: 'AAPL',
         short_interest: 100000000,
+        avg_daily_volume: 50000000,
+        days_to_cover: 2.0,
       };
       expect(() => FINRAShortInterestDataSchema.parse(data)).not.toThrow();
     });

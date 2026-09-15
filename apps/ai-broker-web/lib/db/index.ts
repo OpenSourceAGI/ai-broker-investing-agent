@@ -1,36 +1,51 @@
-import { createClient } from "@libsql/client";
-import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { drizzle as drizzleD1 } from "drizzle-orm/d1";
+import { drizzle as drizzleProxy } from "drizzle-orm/sqlite-proxy";
 import { env } from "cloudflare:workers";
 import * as schema from "./schema";
 import * as relations from "./relations";
+import {
+  createD1HttpDriver,
+  getD1HttpCredentials,
+} from "../../../../packages/investing/src/db/d1-http";
 
 const fullSchema = { ...schema, ...relations };
 
-export type Database = ReturnType<typeof drizzleLibsql<typeof fullSchema>>;
+export type Database = ReturnType<typeof drizzleD1<typeof fullSchema>>;
 
 let _db: Database | null = null;
 
 /**
- * Resolve the database for the current runtime:
+ * Resolve the Cloudflare D1 connection for the current runtime:
  * - Cloudflare Workers (including `vinext dev`, which runs the server
  *   environment in workerd): the D1 binding `DB` from wrangler.jsonc, through
  *   drizzle-orm/d1.
- * - Anywhere else (build, scripts): libsql against DATABASE_URL or a local file.
+ * - Anywhere else (build steps, maintenance scripts): the same D1 database
+ *   over its REST API, through drizzle-orm/sqlite-proxy.
+ *
+ * Cloudflare D1 is the only supported database — there is no libsql/Turso,
+ * Postgres, or local sqlite fallback.
  */
 function resolveDb(): Database {
   if (_db) return _db;
 
   if (env?.DB) {
-    _db = drizzleD1(env.DB as never, { schema: fullSchema }) as unknown as Database;
+    _db = drizzleD1(env.DB as never, { schema: fullSchema });
     return _db;
   }
 
-  const client = createClient({
-    url: process.env.DATABASE_URL || "file:./local.db",
-    authToken: process.env.DATABASE_AUTH_TOKEN,
-  });
-  _db = drizzleLibsql(client, { schema: fullSchema });
+  const credentials = getD1HttpCredentials();
+  if (!credentials) {
+    throw new Error(
+      "No Cloudflare D1 connection available. On Workers this needs the `DB` " +
+        "binding from wrangler.jsonc; elsewhere set CLOUDFLARE_ACCOUNT_ID and " +
+        "CLOUDFLARE_D1_TOKEN (and optionally CLOUDFLARE_DATABASE_ID) to reach " +
+        "D1 over its REST API.",
+    );
+  }
+
+  _db = drizzleProxy(createD1HttpDriver(credentials), {
+    schema: fullSchema,
+  }) as unknown as Database;
   return _db;
 }
 

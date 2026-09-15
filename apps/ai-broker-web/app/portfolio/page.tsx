@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/client"
 
 import { OverviewTab } from "@/components/investing/tabs/overview-tab"
 import { RiskPortfolioTab } from "@/components/investing/tabs/risk-portfolio-tab"

@@ -15,20 +15,29 @@ import type { AgentState, InvestDebateState } from '../types'
 // Test configuration
 const TEST_STOCK = process.env.TEST_STOCK || 'AAPL'
 const TEST_DATE = process.env.TEST_DATE || new Date().toISOString().split('T')[0]
+const LLM_PROVIDER = process.env.LLM_PROVIDER || 'openai'
+const DEEP_THINK_MODEL = process.env.DEEP_THINK_MODEL || 'gpt-4'
 
-describe('Debate Agents - Complete Stock Analysis', () => {
+// The full analysis below drives real LLM calls. Without a provider key every
+// agent request fails with 401, so run it only when a key is configured.
+const hasLLMKey = Boolean(process.env[`${LLM_PROVIDER.toUpperCase()}_API_KEY`])
+
+describe.runIf(hasLLMKey)('Debate Agents - Complete Stock Analysis', () => {
   let llmClient: UnifiedLLMClient
   let memory: FinancialSituationMemory
   let initialState: AgentState
 
   beforeAll(() => {
     // Initialize LLM client with environment variables
-    llmClient = new UnifiedLLMClient({
-      llmProvider: process.env.LLM_PROVIDER || 'openai',
-      deepThinkLLM: process.env.DEEP_THINK_MODEL || 'gpt-4',
-      quickThinkLLM: process.env.QUICK_THINK_MODEL || 'gpt-3.5-turbo',
-      temperature: 0.7,
-    })
+    llmClient = new UnifiedLLMClient(
+      {
+        llmProvider: LLM_PROVIDER,
+        deepThinkLLM: DEEP_THINK_MODEL,
+        quickThinkLLM: process.env.QUICK_THINK_MODEL || 'gpt-3.5-turbo',
+        temperature: 0.7,
+      },
+      DEEP_THINK_MODEL
+    )
 
     // Initialize memory
     memory = new FinancialSituationMemory()
@@ -254,11 +263,14 @@ describe('Individual Agent Unit Tests', () => {
   let llmClient: UnifiedLLMClient
 
   beforeAll(() => {
-    llmClient = new UnifiedLLMClient({
-      llmProvider: 'openai',
-      deepThinkLLM: 'gpt-4',
-      quickThinkLLM: 'gpt-3.5-turbo',
-    })
+    llmClient = new UnifiedLLMClient(
+      {
+        llmProvider: 'openai',
+        deepThinkLLM: 'gpt-4',
+        quickThinkLLM: 'gpt-3.5-turbo',
+      },
+      'gpt-4'
+    )
   })
 
   it('should create MarketAnalyst instance', () => {

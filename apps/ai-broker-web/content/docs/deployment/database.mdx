@@ -1,0 +1,103 @@
+---
+title: Database
+description: "Cloudflare D1, the Drizzle schema, and how migrations are generated and applied."
+icon: Database
+---
+
+Cloudflare D1 is the **only** database this app targets. There is no
+Postgres, libsql/Turso, or local SQLite fallback, and adding a TCP database
+client is one of the reliable ways to break a deploy that builds cleanly.
+
+## Two ways in
+
+| Context | Path | Needs |
+| --- | --- | --- |
+| **On Workers** | The `DB` binding, via `import { env } from "cloudflare:workers"` | Nothing — the binding is declared in `wrangler.jsonc`. |
+| **Off Workers** — scripts, CI, `drizzle-kit` | The D1 REST API (`d1-http` driver) | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_D1_TOKEN`, optionally `CLOUDFLARE_DATABASE_ID`. |
+
+`packages/investing` runs in both contexts, so it reads the binding off
+`globalThis.__CLOUDFLARE_ENV__` — assigned in `worker/index.ts` — rather than
+importing `cloudflare:workers`, which only resolves inside `workerd` and would
+break the client bundle.
+
+## The schema
+
+`apps/ai-broker-web/lib/db/schema.ts` is the source of truth. It is a Drizzle
+`sqliteTable` schema covering roughly these groups:
+
+| Group | Tables |
+| --- | --- |
+| **Identity** | `users`, `sessions`, `accounts`, `verifications`, `wallet_addresses` |
+| **Billing & settings** | `subscriptions`, `user_settings` |
+| **Trading** | `strategies`, `signals`, `positions`, `trades`, `portfolios`, `watchlists`, `watchlist` |
+| **Prediction markets** | `polymarket_leaders`, `polymarket_positions`, `polymarket_categories` |
+| **Copy trading** | `nvstly_leaders`, `nvstly_trades`, `zulu_traders`, `zulu_currency_stats` |
+| **Collaboration** | `organizations`, `organization_members`, `teams`, `team_members`, `user_invitations`, `user_follows` |
+| **Social** | `shared_items`, `comments`, `likes`, `notifications` |
+| **Observability** | `agent_api_logs` |
+
+## Migration workflow
+
+```bash
+# 1. Edit lib/db/schema.ts
+
+# 2. Generate a migration into apps/ai-broker-web/migrations/
+bun run db:generate
+
+# 3. Apply it to the local Miniflare D1 used by dev and preview
+bun run db:migrate:local
+
+# 4. Apply it to production
+bun run db:migrate:remote
+```
+
+`db:generate` only reads the schema, so it works without credentials.
+`db:push` and `db:studio` talk to D1 over the REST API and need the Cloudflare
+variables above.
+
+<Callout type="warn">
+  Migrations are applied by **Wrangler**, not by `drizzle-kit migrate` — Wrangler
+  reads `migrations_dir` from `wrangler.jsonc` and tracks which files have run.
+  Never edit or renumber a migration that has already been applied; add a new
+  one instead.
+</Callout>
+
+## Keeping migrations rollback-safe
+
+A `wrangler rollback` reverts code but never the database. Prefer additive
+changes so the previous version of the code keeps working against the newer
+schema:
+
+- Add columns as nullable, or with a default.
+- Add a new column and backfill it before you stop writing the old one.
+- Drop a column in a later release, once no deployed version reads it.
+
+## Inspecting data
+
+```bash
+cd apps/ai-broker-web
+
+# Local Miniflare copy
+bunx wrangler d1 execute ai-broker-db --local --command "SELECT count(*) FROM users"
+
+# Production — read-only queries first
+bunx wrangler d1 execute ai-broker-db --remote --command "SELECT count(*) FROM users"
+
+# Drizzle Studio (uses the REST API)
+bun run db:studio
+```
+
+The `/admin/database` page in the app exposes the same read-only view for
+addresses on the `ADMIN_EMAILS` allowlist.
+
+## Backups
+
+D1 supports [Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/),
+which restores to any point in the last 30 days:
+
+```bash
+bunx wrangler d1 time-travel info ai-broker-db
+bunx wrangler d1 time-travel restore ai-broker-db --timestamp <unix-timestamp>
+```
+
+Take a bookmark before running anything destructive against production.

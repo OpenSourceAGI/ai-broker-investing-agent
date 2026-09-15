@@ -5,7 +5,7 @@ export const runtime = 'nodejs'
 import { chatModel } from '@/lib/ai/providers'
 import { systemPrompt } from '@/lib/ai/prompts'
 import { categories } from '@/lib/constants'
-import { source } from '@/lib/docs/source'
+import { source } from '@/lib/fumadocs/source'
 import {
   ChatPromptTemplate,
   MessagesPlaceholder,

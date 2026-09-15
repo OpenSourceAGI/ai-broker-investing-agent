@@ -14,7 +14,19 @@ export function ConditionalLayoutWrapper({
 }) {
   const pathname = usePathname()
   const isDocsPage = pathname.startsWith("/docs")
+  const isAdminPage = pathname.startsWith("/admin")
   const isHomepage = pathname === "/"
+
+  if (isAdminPage) {
+    // The admin area brings its own nav and needs the full width for wide
+    // tables; the app sidebar, stock ticker and mobile dock are not part of it.
+    return (
+      <>
+        {children}
+        <Toaster position="top-right" />
+      </>
+    )
+  }
 
   if (isDocsPage) {
     // Docs pages use app sidebar + their own fumadocs layout

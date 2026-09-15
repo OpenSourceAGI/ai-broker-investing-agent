@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FinnhubWrapper } from '@/packages/investing/src/stocks/finnhub-wrapper';
 import { quoteCacheService } from '@/packages/investing/src/stocks/quote-cache-service';
+import { validateSymbol } from '@/lib/stocks/symbol';
 
 const finnhub = new FinnhubWrapper();
 
@@ -12,7 +13,25 @@ export async function GET(
     let symbol = '';
     try {
         const paramsValue = await params;
-        symbol = paramsValue.symbol;
+
+        // Partial tickers from a search box ("GOO" on the way to "GOOGL") used
+        // to reach the upstream providers and come back as a 404 only after the
+        // round-trip. Rejecting them here makes the answer immediate and
+        // distinguishes "not a ticker" (400) from "no data" (404).
+        const validation = validateSymbol(paramsValue.symbol);
+        if (!validation.ok) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: validation.error,
+                    code: validation.code,
+                    timestamp: new Date().toISOString()
+                },
+                { status: validation.status }
+            );
+        }
+        symbol = validation.symbol;
+
         const { searchParams } = new URL(request.url);
 
         // Get parameters with defaults
@@ -100,9 +119,15 @@ export async function GET(
                 endDateStr
             );
 
-            // If we have enough cached data (at least 80% of expected), use it
-            const expectedDays = Math.floor((new Date(endDateStr).getTime() - new Date(startDateStr).getTime()) / (1000 * 60 * 60 * 24));
-            if (cachedQuotes.length >= expectedDays * 0.8) {
+            // Decide whether the cache covers the window. The comparison has to
+            // be against *trading* days: markets are open ~5 of every 7 days, so
+            // a complete year of bars is only ~69% of the calendar days in it and
+            // would never clear a threshold measured against calendar days.
+            const calendarDays = Math.floor(
+                (new Date(endDateStr).getTime() - new Date(startDateStr).getTime()) / (1000 * 60 * 60 * 24)
+            );
+            const expectedTradingDays = Math.floor((calendarDays * 5) / 7);
+            if (expectedTradingDays > 0 && cachedQuotes.length >= expectedTradingDays * 0.8) {
                 console.log(`Using ${cachedQuotes.length} cached quotes for ${symbol}`);
                 return NextResponse.json({
                     success: true,

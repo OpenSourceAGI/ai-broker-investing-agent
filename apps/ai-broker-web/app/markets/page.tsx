@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/client"
 
 import { MarketScanner } from "@/components/investing/marketwatch/market-scanner"
 import { Card } from "@/components/ui/card"

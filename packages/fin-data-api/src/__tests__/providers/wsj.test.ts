@@ -24,7 +24,7 @@ describe('WSJ Provider', () => {
       const data = {
         symbol: 'AAPL',
         name: 'Apple Inc.',
-        price: 150.0,
+        last_price: 150.0,
         change: 5.0,
         percent_change: 3.45,
       };

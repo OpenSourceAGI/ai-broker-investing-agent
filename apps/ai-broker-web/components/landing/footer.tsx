@@ -27,7 +27,7 @@ const columns = [
     links: [
       { label: "Docs", href: "/docs" },
       { label: "Research Paper", href: "https://zenodo.org/records/20836179" },
-      { label: "Risk Disclosure", href: "/docs/risk-disclosure" },
+      { label: "Risk Disclosure", href: "/docs/reference/risk-disclosure" },
       { label: "AI Ethics", href: "https://rights.institute/ethics/" },
     ],
   },

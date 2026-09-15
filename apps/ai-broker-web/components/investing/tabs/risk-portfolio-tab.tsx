@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 // import { demoRiskMetrics, demoPositions, demoTrades } from "@/lib/demo-data"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/client"
 import {
   Activity,
   AlertTriangle,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { signIn, useSession } from "@/lib/auth-client"
+import { signIn, useSession } from "@/lib/auth/client"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 

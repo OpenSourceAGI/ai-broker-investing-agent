@@ -27,7 +27,7 @@ describe('FinViz Provider', () => {
     it('should validate correct data', () => {
       const data = {
         symbol: 'AAPL',
-        price: 150.0,
+        price: '150.00',
         market_cap: '2.5T',
       };
       expect(() => FinVizQuoteDataSchema.parse(data)).not.toThrow();

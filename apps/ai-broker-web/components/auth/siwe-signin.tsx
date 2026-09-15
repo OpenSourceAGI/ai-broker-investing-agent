@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/client"
 import { useRouter } from "next/navigation"
 import { Loader2, Wallet } from "lucide-react"
 import { BrowserProvider } from "ethers"

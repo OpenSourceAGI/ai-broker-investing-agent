@@ -50,7 +50,7 @@ export function AgentsTeamSection() {
   return (
     <section id="agents" className="relative border-t border-border py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-end">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-end">
           <div>
             <div className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
               The Team

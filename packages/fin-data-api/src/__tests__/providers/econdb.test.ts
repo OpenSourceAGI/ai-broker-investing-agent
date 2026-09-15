@@ -14,7 +14,7 @@ describe('EconDB Provider', () => {
 
   describe('Query Schema', () => {
     it('should validate correct query', () => {
-      const query = { ticker: 'ticker/RGDP', country: 'US' };
+      const query = { ticker: 'ticker/RGDP' };
       expect(() => EconDBEconomicDataQuerySchema.parse(query)).not.toThrow();
     });
 
@@ -28,6 +28,7 @@ describe('EconDB Provider', () => {
       const data = {
         date: '2023-01-01',
         value: 25000,
+        ticker: 'ticker/RGDP',
       };
       expect(() => EconDBEconomicDataDataSchema.parse(data)).not.toThrow();
     });
@@ -41,7 +42,7 @@ describe('EconDB Provider', () => {
     });
 
     it('should transform query', () => {
-      const query = fetcher.transformQuery({ ticker: 'ticker/RGDP', country: 'US' });
+      const query = fetcher.transformQuery({ ticker: 'ticker/RGDP' });
       expect(query.ticker).toBe('ticker/RGDP');
     });
   });

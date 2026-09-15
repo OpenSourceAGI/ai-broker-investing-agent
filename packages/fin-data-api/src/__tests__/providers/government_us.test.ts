@@ -26,8 +26,10 @@ describe('Government US Provider', () => {
   describe('Data Schema', () => {
     it('should validate correct data', () => {
       const data = {
-        date: '2023-01-01',
-        value: 4.5,
+        title: 'Daily Treasury Par Yield Curve Rates',
+        description: 'Daily par yield curve rates published by the Treasury.',
+        modified: '2023-01-01',
+        publisher: 'U.S. Department of the Treasury',
       };
       expect(() => GovernmentUSDatasetDataSchema.parse(data)).not.toThrow();
     });

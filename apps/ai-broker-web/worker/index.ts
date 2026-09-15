@@ -6,9 +6,14 @@
  * scheduled cron routing: every schedule in wrangler.jsonc `triggers.crons` is
  * mapped to a Next.js API route and dispatched through the same handler with
  * the CRON_SECRET bearer token the routes already expect.
+ *
+ * The request path also runs the first-load Turnstile gate (lib/turnstile)
+ * ahead of the app, so an unverified desktop browser gets a bot check instead
+ * of the page on its very first HTML request.
  */
 import { env as workerEnv } from "cloudflare:workers";
 import handler from "vinext/server/app-router-entry";
+import { handleTurnstileGate } from "../lib/turnstile";
 
 /**
  * `packages/investing` runs both on Workers and in plain Node scripts, so it
@@ -23,7 +28,15 @@ const CRON_ROUTES: Record<string, string> = {
 };
 
 export default {
-  fetch(request: Request, env: CloudflareEnv, ctx: import("@cloudflare/workers-types").ExecutionContext) {
+  async fetch(request: Request, env: CloudflareEnv, ctx: import("@cloudflare/workers-types").ExecutionContext) {
+    // Cloudflare Turnstile, in front of everything else: a desktop browser's
+    // first HTML page view is answered with a "just a moment" check until it
+    // carries a pass this Worker signed. Returns null — and costs one HMAC
+    // verify — for every other request, and for all of them when the
+    // TURNSTILE_* variables are unset. See lib/turnstile/gate.ts.
+    const gated = await handleTurnstileGate(request, env);
+    if (gated) return gated;
+
     return handler.fetch(request, env, ctx);
   },
 

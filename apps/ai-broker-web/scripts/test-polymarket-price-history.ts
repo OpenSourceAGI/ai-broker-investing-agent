@@ -36,8 +36,8 @@ async function testPolymarketPriceHistory() {
   try {
     // Step 0: Verify database connection
     console.log('🔌 Step 0: Verifying database connection...')
-    console.log(`   DATABASE_URL: ${process.env.DATABASE_URL ? '✓ set' : '✗ not set'}`)
-    console.log(`   DATABASE_AUTH_TOKEN: ${process.env.DATABASE_AUTH_TOKEN ? '✓ set' : '✗ not set'}`)
+    console.log(`   CLOUDFLARE_ACCOUNT_ID: ${process.env.CLOUDFLARE_ACCOUNT_ID ? '✓ set' : '✗ not set'}`)
+    console.log(`   CLOUDFLARE_D1_TOKEN: ${process.env.CLOUDFLARE_D1_TOKEN || process.env.CLOUDFLARE_API_TOKEN ? '✓ set' : '✗ not set'}`)
 
     try {
       // Test a simple query
@@ -51,9 +51,9 @@ async function testPolymarketPriceHistory() {
       if (error.message.includes('no such table')) {
         console.log('\n💡 Tip: The polymarket_price_history table does not exist')
         console.log('   Run: npm run db:push')
-      } else if (error.message.includes('URL_SCHEME_NOT_SUPPORTED')) {
-        console.log('\n💡 Tip: Database URL scheme not supported')
-        console.log('   Make sure DATABASE_URL is set to a valid libsql:// URL')
+      } else if (error.message.includes('Cloudflare D1')) {
+        console.log('\n💡 Tip: Cloudflare D1 is not reachable from this process')
+        console.log('   Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_D1_TOKEN to use the D1 REST API')
       } else {
         console.log('\n💡 Tip: Check your database configuration and connection')
       }

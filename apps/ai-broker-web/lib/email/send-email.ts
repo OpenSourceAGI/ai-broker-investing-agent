@@ -13,27 +13,28 @@ export interface SendEmailOptions {
 
 export interface SendEmailResult {
   success: boolean;
-  provider: "cloudflare" | "resend" | "console";
+  provider: "cloudflare" | "console";
   error?: string;
 }
 
 /**
- * Send transactional email, preferring Cloudflare Email Workers.
+ * Send transactional email through Cloudflare Email Workers.
  *
- * Provider order:
- * 1. Cloudflare Email Workers — the `SEND_EMAIL` binding in wrangler.jsonc
- *    (requires Email Routing enabled on the zone and a sender under a
- *    verified domain).
- * 2. Resend, when RESEND_API_KEY is set (local dev / fallback).
- * 3. Console log, so flows never hard-fail in unconfigured environments.
+ * The `SEND_EMAIL` binding in wrangler.jsonc is the only delivery path —
+ * there is no third-party provider (Resend, SendGrid, SES) fallback. It
+ * requires Email Routing enabled on the zone and the sender address
+ * configured under a verified domain.
+ *
+ * When the binding is absent (plain `vite build`, unit tests, an unconfigured
+ * local environment) the message is logged instead so auth and invitation
+ * flows never hard-fail during development.
  */
 export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
   const from = options.from || process.env.EMAIL_FROM || "noreply@autoinvestment.broker";
   const fromName = options.fromName || "Auto Investment Broker";
 
-  // 1. Cloudflare Email Workers
-  try {
-    if (env?.SEND_EMAIL) {
+  if (env?.SEND_EMAIL) {
+    try {
       const msg = createMimeMessage();
       msg.setSender({ name: fromName, addr: from });
       msg.setRecipient(options.to);
@@ -47,34 +48,16 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
         new EmailMessage(from, options.to, msg.asRaw()) as never,
       );
       return { success: true, provider: "cloudflare" };
-    }
-  } catch (error) {
-    console.error("Cloudflare email send failed, trying fallback:", error);
-  }
-
-  // 2. Resend fallback
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const { Resend } = await import("resend");
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
-        from: `${fromName} <${from}>`,
-        to: options.to,
-        subject: options.subject,
-        html: options.html,
-        text: options.text,
-      });
-      return { success: true, provider: "resend" };
     } catch (error) {
-      console.error("Resend email send failed:", error);
-      return { success: false, provider: "resend", error: String(error) };
+      console.error("Cloudflare email send failed:", error);
+      return { success: false, provider: "cloudflare", error: String(error) };
     }
   }
 
-  // 3. Unconfigured environment — log instead of failing the flow.
+  // No SEND_EMAIL binding — log instead of failing the flow.
   console.log(`
     ============================================
-    EMAIL (no provider configured)
+    EMAIL (Cloudflare SEND_EMAIL binding absent)
     ============================================
     To: ${options.to}
     Subject: ${options.subject}

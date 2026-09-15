@@ -1,6 +1,7 @@
 {
   "name": "api-mcp-server",
   "version": "1.0.0",
+  "private": true,
   "description": "MCP server generated from OpenAPI spec (33 tools)",
   "type": "module",
   "main": "src/index.js",

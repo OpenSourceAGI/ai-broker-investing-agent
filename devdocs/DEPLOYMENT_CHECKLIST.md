@@ -35,6 +35,33 @@ npm run db:migrate:remote   # production D1 (ai-broker-db)
 npm run deploy              # vinext build + vinext-cloudflare deploy
 ```
 
+### 2b. Git-connected deploys (Workers Builds)
+
+Workers Builds runs the build command and then the deploy command from the same
+root directory — the repository root for this project, since the build has to
+compile the workspace packages as well as the app:
+
+| Setting | Value |
+| --- | --- |
+| Root directory | *(repository root)* |
+| Build command | `bun run build` |
+| Deploy command | `npx wrangler deploy` |
+| Non-production branch deploy command | `npx wrangler versions upload` |
+
+There is no Wrangler configuration at the repository root, so Wrangler used to
+fail there with `Missing entry-point to Worker script or to assets directory`.
+`bun run build` now finishes by running `.github/scripts/write-root-deploy-config.mjs`,
+which copies the [generated configuration
+redirect](https://developers.cloudflare.com/workers/wrangler/configuration/#generated-wrangler-configuration)
+that `@cloudflare/vite-plugin` emits at
+`apps/ai-broker-web/.wrangler/deploy/config.json` up to the repository root
+(Wrangler only searches *up* from its working directory). Both `wrangler deploy`
+and `wrangler versions upload` then load the built Worker's generated config.
+
+`wrangler versions upload` uploads a version without updating triggers, so cron
+schedule changes only take effect on a production-branch build (`wrangler
+deploy`) or after `npx wrangler triggers deploy`.
+
 ### 3. Verify the trigger is registered
 
 Cloudflare Dashboard → Workers & Pages → `ai-broker-investing-agent` →

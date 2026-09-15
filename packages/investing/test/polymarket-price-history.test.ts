@@ -4,9 +4,17 @@ import {
   syncPriceHistory,
   getPriceHistory,
   fetchMarkets,
-} from '../polymarket'
+} from '../src/prediction'
 
-describe('Polymarket Price History', () => {
+// These are integration tests: they call the live Polymarket API and read and
+// write the D1 database. Opt in with RUN_INTEGRATION_TESTS=1 and D1 credentials
+// (CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_D1_TOKEN) in the environment.
+const runIntegration =
+  process.env.RUN_INTEGRATION_TESTS === '1' &&
+  Boolean(process.env.CLOUDFLARE_ACCOUNT_ID) &&
+  Boolean(process.env.CLOUDFLARE_D1_TOKEN || process.env.CLOUDFLARE_API_TOKEN)
+
+describe.runIf(runIntegration)('Polymarket Price History', () => {
   let testTokenId: string
   let testMarketId: string
 

@@ -10,7 +10,7 @@ import {
   Bell,
   Palette
 } from 'lucide-react'
-import { useSession, signOut } from "@/lib/auth-client"
+import { useSession, signOut } from "@/lib/auth/client"
 import {
   SidebarMenu,
   SidebarMenuButton,

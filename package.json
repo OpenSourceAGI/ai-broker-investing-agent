@@ -12,11 +12,12 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build",
+    "build": "turbo run build && node .github/scripts/write-root-deploy-config.mjs",
     "start": "turbo run start",
     "preview": "turbo run preview",
     "deploy": "turbo run deploy",
     "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage && node .github/scripts/merge-coverage.mjs",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "cf-typegen": "turbo run cf-typegen",
@@ -31,7 +32,8 @@
   },
   "devDependencies": {
     "turbo": "^2.5.8",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.24.0"
   },
   "engines": {
     "node": ">=20"

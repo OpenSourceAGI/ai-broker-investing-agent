@@ -1,6 +1,7 @@
 // Stock Quote API Route - Using Unified Quote Service
 import { NextRequest, NextResponse } from "next/server";
 import { getQuote } from "@/packages/investing/src/stocks/unified-quote-service";
+import { validateSymbol } from "@/lib/stocks/symbol";
 import { finnhub } from "@/packages/investing/src/stocks/finnhub-wrapper";
 import stockNamesData from "@/packages/investing/src/stock-names-data/stock-names.json";
 import sectorsIndustriesData from "@/packages/investing/src/stock-names-data/sectors-industries.json";
@@ -66,7 +67,26 @@ export async function GET(
   { params }: { params: Promise<{ symbol: string }> },
 ) {
   try {
-    const { symbol } = await params;
+    const { symbol: rawSymbol } = await params;
+
+    // Reject malformed and unknown tickers before touching a data provider: a
+    // search box sends a request per keystroke, and every partial ticker on the
+    // way to a real one would otherwise cost an upstream call and surface as a
+    // 500 in the browser console.
+    const validation = validateSymbol(rawSymbol);
+    if (!validation.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: validation.error,
+          code: validation.code,
+          timestamp: new Date().toISOString(),
+        },
+        { status: validation.status },
+      );
+    }
+    const symbol = validation.symbol;
+
     const searchParams = request.nextUrl.searchParams;
     const liveParam = searchParams.get("live");
     const useCache = liveParam !== "true"; // Use cache by default, bypass if live=true
@@ -75,14 +95,16 @@ export async function GET(
     const quoteResult = await getQuote(symbol, { useCache });
 
     if (!quoteResult.success || !quoteResult.data) {
+      // The ticker is real but no provider had data for it. That is a missing
+      // resource, not a server fault, so it must not be a 500.
       return NextResponse.json(
         {
           success: false,
-          error: quoteResult.error || "Failed to fetch quote",
-          code: "QUOTE_ERROR",
+          error: quoteResult.error || `No quote data available for ${symbol}`,
+          code: "QUOTE_UNAVAILABLE",
           timestamp: new Date().toISOString(),
         },
-        { status: 500 },
+        { status: 404 },
       );
     }
 

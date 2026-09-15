@@ -1,9 +1,6 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+// `cn` lives in lib/cn.ts (the template's dedicated module) and is re-exported
+// here so the many existing `@/lib/utils` call sites keep working.
+export { cn } from "./cn";
 
 /**
  * Adds variable state (like query, active tab. etc) to

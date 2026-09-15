@@ -17,14 +17,16 @@
       "outputs": [
         ".source/**",
         "dist/**",
-        "build/**"
+        "build/**",
+        ".wrangler/deploy/**"
       ]
     },
     "ai-broker-web#build": {
       "dependsOn": [],
       "outputs": [
         "dist/**",
-        ".source/**"
+        ".source/**",
+        ".wrangler/deploy/**"
       ]
     },
     "dev": {
@@ -59,6 +61,11 @@
       "dependsOn": [
         "^build"
       ],
+      "outputs": [
+        "coverage/**"
+      ]
+    },
+    "test:coverage": {
       "outputs": [
         "coverage/**"
       ]

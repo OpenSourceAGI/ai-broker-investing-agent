@@ -1,5 +1,5 @@
 import { createSearchAPI } from 'fumadocs-core/search/server'
-import { source } from '@/lib/docs/source'
+import { source } from '@/lib/fumadocs/source'
 
 export const { GET } = createSearchAPI('advanced', {
   language: 'english',

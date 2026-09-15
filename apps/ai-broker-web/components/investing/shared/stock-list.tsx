@@ -14,7 +14,7 @@ import {
   Plus,
   Search
 } from "lucide-react"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/client"
 import Link from "next/link"
 import { toast } from "sonner"
 

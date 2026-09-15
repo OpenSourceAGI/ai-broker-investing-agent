@@ -10,6 +10,72 @@ import YahooFinance from "yahoo-finance2";
 const yf = new YahooFinance();
 
 /**
+ * A single row of historical price data, shaped like the rows the deprecated
+ * `yahooFinance.historical()` helper used to return.
+ */
+export interface HistoricalRow {
+  date: Date;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  adjClose: number;
+  volume: number;
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  const num = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
+/**
+ * Convert `chart()` quotes into historical-style rows.
+ *
+ * Yahoo regularly returns rows where only some of the OHLCV fields are
+ * populated (the in-progress session, halted symbols, dividend/split
+ * timestamps). The deprecated `historical()` helper throws on those rows;
+ * here we drop rows with no usable price at all and backfill the remaining
+ * gaps from the fields that are present.
+ */
+export function normalizeChartQuotes(quotes: any[] | undefined): HistoricalRow[] {
+  if (!Array.isArray(quotes)) return [];
+
+  const rows: HistoricalRow[] = [];
+
+  for (const quote of quotes) {
+    if (!quote) continue;
+
+    const date =
+      quote.date instanceof Date ? quote.date : new Date(quote.date as any);
+    if (Number.isNaN(date.getTime())) continue;
+
+    const close = toFiniteNumber(quote.close);
+    const open = toFiniteNumber(quote.open);
+    const high = toFiniteNumber(quote.high);
+    const low = toFiniteNumber(quote.low);
+    const adjClose = toFiniteNumber(quote.adjclose ?? quote.adjClose);
+
+    // Fall back to any price we do have, so a partially filled row is still
+    // usable rather than being dropped entirely.
+    const reference = close ?? open ?? adjClose ?? high ?? low;
+    if (reference === null) continue; // No usable price data in this row
+
+    rows.push({
+      date,
+      open: open ?? reference,
+      high: high ?? Math.max(open ?? reference, close ?? reference),
+      low: low ?? Math.min(open ?? reference, close ?? reference),
+      close: close ?? reference,
+      adjClose: adjClose ?? close ?? reference,
+      volume: toFiniteNumber(quote.volume) ?? 0,
+    });
+  }
+
+  return rows;
+}
+
+/**
  * Yahoo Finance Wrapper Class
  * Provides a comprehensive API for stock market data
  */
@@ -63,6 +129,14 @@ export class YahooFinanceWrapper {
 
   /**
    * Get historical price data
+   *
+   * Implemented on top of `chart()` rather than the deprecated `historical()`
+   * helper. `historical()` throws ("Historical returned a result with SOME
+   * (but not all) null values") whenever Yahoo returns a partially populated
+   * row - which happens regularly for the in-progress trading session, for
+   * halted symbols and around dividend/split timestamps. We normalize those
+   * rows here instead of failing the whole request.
+   *
    * @param symbol - Stock symbol
    * @param options - Historical data options (period1, period2, interval)
    */
@@ -75,23 +149,28 @@ export class YahooFinanceWrapper {
     },
   ) {
     try {
-      const data = await yf.historical(
+      const period1 =
+        options?.period1 ?? new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+      const period2 = options?.period2 ?? new Date();
+      const interval = options?.interval || "1d";
+
+      const chart = await yf.chart(
         symbol,
-        {
-          period1:
-            options?.period1 ||
-            new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
-          period2: options?.period2 || new Date(),
-          interval: options?.interval || "1d",
-        },
+        { period1, period2, interval },
         { validateResult: false },
       );
+
+      const data = normalizeChartQuotes(chart?.quotes);
+
       return {
         success: true,
         data,
       };
     } catch (error: any) {
-      console.error(`Yahoo Finance historical error for ${symbol}:`, error);
+      console.error(
+        `Yahoo Finance historical error for ${symbol}:`,
+        error?.message || error,
+      );
       return {
         success: false,
         error: error.message || "Failed to fetch historical data",

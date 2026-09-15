@@ -4,7 +4,7 @@ export const baseUrl =
   process.env.API_URL || "https://autoinvestment.broker/api";
 
 export const config = {
-  input: "../../content/docs/ai-broker-openapi.json",
+  input: "../../apps/ai-broker-web/content/docs/ai-broker-openapi.json",
   output: "./src",
   plugins: [
     {

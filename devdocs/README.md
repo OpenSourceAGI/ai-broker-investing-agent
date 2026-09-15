@@ -1,89 +1,50 @@
-# Scripts
+# Developer notes
 
-Collection of utility scripts for the AI Broker Investing Agent.
+Internal engineering notes for `ai-broker-investing-agent`. These are working
+documents — implementation summaries, operational runbooks, and open questions.
 
-## Sync High-Volume Polymarket Markets
+For the published, user-facing documentation see
+[`apps/ai-broker-web/content/docs`](../apps/ai-broker-web/content/docs), which is
+served at <https://docs.autoinvestment.broker/>.
 
-Scrapes all active Polymarket markets with volume above a specified threshold and stores their historical price data in the database.
+## Where things belong
 
-### Usage
+| If it is… | It goes in… |
+| --- | --- |
+| A guide someone outside the team would read | `apps/ai-broker-web/content/docs` |
+| How a workspace is used or built | That workspace's own `README.md` |
+| An implementation note, runbook, or decision record | Here |
 
-#### Using npm script (recommended):
+## Index
 
-```bash
-npm run sync:high-volume-markets [minVolume] [interval]
-```
+### Operations
 
-#### Using tsx directly:
+- [Auth configuration](./AUTH_CONFIGURATION.md) — better-auth on Cloudflare
+  Workers: bindings, cookies, and the OAuth callback origin.
+- [Deployment checklist](./DEPLOYMENT_CHECKLIST.md) — pre-flight checks for the
+  Polymarket cron job.
+- [Sync scripts](./sync-scripts.md) — the maintenance scripts under
+  `apps/ai-broker-web/scripts`, and how to run them.
+- [High-volume sync guide](./HIGH_VOLUME_SYNC_GUIDE.md) — scraping and storing
+  high-volume Polymarket markets.
+- [Holder syncing](./HOLDER_SYNCING.md) — how top-holder data is fetched and
+  batched.
+- [Quote caching](./QUOTE_CACHING.md) — the stock-quote cache and its refresh
+  path.
 
-```bash
-npx tsx scripts/sync-high-volume-markets.ts [minVolume] [interval]
-```
+### Implementation notes
 
-#### Using API endpoint:
+- [Implementation summary](./IMPLEMENTATION_SUMMARY.md) — Polymarket data sync
+  with holders.
+- [Error handling improvements](./ERROR_HANDLING_IMPROVEMENTS.md)
+- [Initialization and usage](./initialization-and-usage.md)
 
-```bash
-curl -X POST http://localhost:3000/api/polymarket/markets/sync-high-volume \
-  -H "Content-Type: application/json" \
-  -d '{"minVolume": 100000, "interval": "1h"}'
-```
+### Planning
 
-### Parameters
+- [Todo](./todo.md) — open ideas and indicator research.
 
-- **minVolume** (optional): Minimum 24-hour volume in USD to filter markets
-  - Default: `100000` ($100k)
-  - Example: `200000` for markets with $200k+ volume
+## Related
 
-- **interval** (optional): Time interval for price history data
-  - Default: `1h` (1-hour intervals)
-  - Options: `1h`, `1d`, `max`
-
-### Examples
-
-```bash
-# Sync all markets with volume >= $100k (default)
-npm run sync:high-volume-markets
-
-# Sync markets with volume >= $200k with 1-hour intervals
-npm run sync:high-volume-markets 200000 1h
-
-# Sync markets with volume >= $50k with daily intervals
-npm run sync:high-volume-markets 50000 1d
-```
-
-### What it does
-
-1. Fetches all active markets from Polymarket API
-2. Filters markets by 24-hour volume (>= minVolume)
-3. Saves filtered markets to the database
-4. For each market with token IDs:
-   - Fetches historical price data from Polymarket CLOB API
-   - Stores price points in the database
-5. Returns summary with counts and duration
-
-### Output
-
-The script will output:
-- Number of markets synced
-- Number of price data points saved
-- Success/failure counts for price history
-- Total duration
-- Detailed progress logs
-
-### Database Tables
-
-This script populates the following tables:
-- `polymarket_markets` - Market metadata (question, volume, tags, etc.)
-- `polymarket_price_history` - Historical price data points (timestamp, price, interval)
-
-### Performance
-
-- Fetching all markets: ~5-10 seconds
-- Price history per market: ~1-2 seconds each
-- Total time depends on number of markets (e.g., 100 markets ≈ 2-3 minutes)
-
-### Error Handling
-
-- Failed price history fetches are logged but don't stop the sync
-- Partial success is reported (e.g., "95/100 markets synced")
-- API errors return detailed error messages
+- [Deployment guide](https://docs.autoinvestment.broker/docs/deployment)
+- [Scheduled jobs](https://docs.autoinvestment.broker/docs/deployment/scheduled-jobs)
+- [Cron routes README](../apps/ai-broker-web/app/api/cron/README.md)

@@ -18,8 +18,8 @@ describe('Deribit Provider', () => {
       expect(() => DeribitOptionsQuerySchema.parse(query)).not.toThrow();
     });
 
-    it('should require currency', () => {
-      expect(() => DeribitOptionsQuerySchema.parse({})).toThrow();
+    it('should default currency to BTC when omitted', () => {
+      expect(DeribitOptionsQuerySchema.parse({}).currency).toBe('BTC');
     });
   });
 
@@ -27,10 +27,14 @@ describe('Deribit Provider', () => {
     it('should validate correct data', () => {
       const data = {
         instrument_name: 'BTC-31MAR23-20000-C',
+        creation_timestamp: 1672531200000,
+        expiration_timestamp: 1680249600000,
         strike: 20000,
-        expiration: '2023-03-31',
         option_type: 'call',
-        mark_price: 1500.0,
+        settlement_period: 'month',
+        is_active: true,
+        tick_size: 0.0005,
+        min_trade_amount: 0.1,
       };
       expect(() => DeribitOptionsDataSchema.parse(data)).not.toThrow();
     });

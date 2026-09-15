@@ -772,6 +772,11 @@ export const stockQuoteCache = sqliteTable("stock_quote_cache", {
   low: real("low"),
   previousClose: real("previous_close"),
   volume: real("volume"),
+  // When this row was last written. Without it a cached quote has no age, so
+  // the `cacheTTL` every caller passes cannot be applied and a stale price is
+  // served forever. Nullable so rows written before this column existed read
+  // back as "age unknown" and are treated as expired (refetched once).
+  updatedAt: integer("updated_at", { mode: "timestamp" }),
 });
 
 // Stock Fundamentals - Store fundamental data like PE ratio, etc.

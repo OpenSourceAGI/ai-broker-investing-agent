@@ -2,7 +2,7 @@ import { tool } from '@langchain/core/tools'
 import { initAdvancedSearch } from 'fumadocs-core/search/server'
 import { z } from 'zod'
 import { categories } from '@/lib/constants'
-import { source } from '@/lib/docs/source'
+import { source } from '@/lib/fumadocs/source'
 
 const server = initAdvancedSearch({
   language: 'english',
