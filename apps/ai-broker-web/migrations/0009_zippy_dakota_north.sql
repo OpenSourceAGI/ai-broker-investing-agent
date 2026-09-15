@@ -1,1 +1,0 @@
-ALTER TABLE `polymarket_markets` ADD `event_slug` text;
