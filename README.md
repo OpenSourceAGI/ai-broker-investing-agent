@@ -17,7 +17,7 @@
     <a href="https://www.npmjs.com/package/investing"><img src="https://img.shields.io/npm/dt/investing.svg" alt="NPM Total Downloads" /></a>
     <a href="https://codecov.io/gh/OpenSourceAGI/ai-broker-investing-agent"><img src="https://codecov.io/gh/OpenSourceAGI/ai-broker-investing-agent/graph/badge.svg" alt="Coverage" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/actions/workflows/test.yml"><img src="https://github.com/OpenSourceAGI/ai-broker-investing-agent/actions/workflows/test.yml/badge.svg?branch=main" alt="CI status" /></a>
-    <img src="https://img.shields.io/badge/%EB%AA%A8%20lines-17k-yellow" />
+    <img src="https://img.shields.io/badge/%EB%AA%A8%20lines-28k-yellow" />
     <br />
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/graphs/contributors"><img src="https://img.shields.io/github/contributors/OpenSourceAGI/ai-broker-investing-agent" alt="Contributors" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/forks"><img src="https://img.shields.io/github/forks/OpenSourceAGI/ai-broker-investing-agent" alt="GitHub Forks" /></a>
