@@ -1,0 +1,139 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1765529656237,
+      "tag": "0000_worthless_saracen",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1765545582539,
+      "tag": "0001_peaceful_the_hunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1765556211173,
+      "tag": "0002_material_anthem",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1765557606050,
+      "tag": "0003_marvelous_ulik",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1765613301453,
+      "tag": "0004_nervous_rawhide_kid",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1765695539238,
+      "tag": "0005_glorious_mephistopheles",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1766067771107,
+      "tag": "0006_true_inertia",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1766190955124,
+      "tag": "0007_tranquil_liz_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1769027696863,
+      "tag": "0008_slim_mauler",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1769033568733,
+      "tag": "0009_zippy_dakota_north",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1769120024454,
+      "tag": "0010_clumsy_khan",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1769188769125,
+      "tag": "0011_old_freak",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1769189801888,
+      "tag": "0012_misty_tomas",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1769217156338,
+      "tag": "0013_chilly_veda",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1769274471925,
+      "tag": "0014_spooky_leo",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1769724868739,
+      "tag": "0015_early_krista_starr",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1770345863924,
+      "tag": "0016_secret_wonder_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1787647566930,
+      "tag": "0017_greedy_jackal",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1787647567930,
+      "tag": "0018_quote_cache_updated_at",
+      "breakpoints": true
+    }
+  ]
+}

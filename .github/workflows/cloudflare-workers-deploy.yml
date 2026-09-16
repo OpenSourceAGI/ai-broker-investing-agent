@@ -92,6 +92,18 @@ jobs:
       - name: Build app
         run: npm run build --if-present
 
+      # Before the Worker, never after: the new code writes every column its
+      # Drizzle schema declares, so a D1 database still on the old schema fails
+      # the very first insert. Wrangler applies only the migrations that the
+      # database has not recorded yet, so this is a no-op once it is current.
+      - name: Apply D1 migrations
+        if: hashFiles(format('apps/{0}/migrations/*.sql', matrix.app)) != ''
+        env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run db:migrate:remote --if-present
+
       - name: Deploy Worker with Wrangler
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
