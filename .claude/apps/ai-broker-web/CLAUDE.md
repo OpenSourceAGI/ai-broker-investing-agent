@@ -18,7 +18,11 @@ rule inside a route handler, it is in the wrong file.
   (`triggers.crons`) *and* the `CRON_ROUTES` map in `worker/index.ts`. An
   unmapped schedule logs a warning and silently does nothing.
 - **Never edit an applied migration.** Change `lib/db/schema.ts`, run
-  `bun run db:generate`, commit the new file in `migrations/`.
+  `bun run db:generate`, commit the new file in `migrations/` — *and*
+  `migrations/meta/`, which is what `db:generate` diffs against. A schema
+  column that no migration creates breaks the whole table: Drizzle names every
+  column in its `INSERT`, so the first write fails with `no such column`.
+  `lib/db/__tests__/migrations.test.ts` guards this.
 - **Every env var in `env.ts` is optional on purpose** so builds and previews
   never fail validation. Guard at the call site; don't make one required.
 - **`/admin` is gated by `ADMIN_EMAILS`** (comma-separated). With neither

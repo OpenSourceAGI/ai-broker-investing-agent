@@ -1,0 +1,1 @@
+ALTER TABLE `polymarket_markets` ADD `clob_token_ids` text;

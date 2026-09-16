@@ -14,6 +14,7 @@ import { headers } from "next/headers";
 import { sendEmail, renderEmailLayout, renderEmailButton } from "../email/send-email";
 import { env } from "../../env";
 import { serverEnv } from "../env/runtime";
+import { describeLogArg } from "./logger";
 
 // Lazy Stripe client initialization to avoid build-time errors
 let _stripeClient: Stripe | null = null
@@ -211,18 +212,32 @@ export const auth = betterAuth({
       });
     },
   },
+  logger: {
+    log: (level, message, ...args) => {
+      console[level === "error" ? "error" : level === "warn" ? "warn" : "log"](
+        `[Better Auth] ${message}`,
+        ...args.map(describeLogArg),
+      );
+    },
+  },
   trustedOrigins: [appUrl],
   session: {
     expiresIn: 60 * 60 * 24 * 60, // 60 days
     updateAge: 60 * 60 * 24 * 3, // 1 day
   },
-  hooks: {
-    createUser: {
-      before: async (user) => {
-        if (!user.name) {
-          user.name = user.email?.split("@")[0] || "User";
-        }
-        return user;
+  /**
+   * `users.name` is NOT NULL, and a provider that returns a profile without one
+   * would fail the insert. This has to be `databaseHooks`, not `hooks`: the
+   * latter only takes `before`/`after` request middleware, so the same guard
+   * written as `hooks.createUser` was silently never called.
+   */
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          if (user.name) return;
+          return { data: { ...user, name: user.email?.split("@")[0] || "User" } };
+        },
       },
     },
   },

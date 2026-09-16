@@ -86,7 +86,7 @@ first, or from this directory with `bun run <script>`.
 | `dev` | `vinext dev` on port 3000, with live D1 and email bindings. |
 | `build` | `vinext build` → `dist/client` + `dist/server`. |
 | `preview` | Builds and serves the production Worker locally. |
-| `deploy` | `vinext-cloudflare deploy`. |
+| `deploy` | Applies `migrations/` to the remote D1, then `vinext-cloudflare deploy`. |
 | `test` | `vitest run`. |
 | `type-check` | `tsc --noEmit`. |
 | `cf-typegen` | Regenerates `cloudflare-env.d.ts` from `wrangler.jsonc`. |
@@ -293,9 +293,13 @@ bun run preview   # the production Worker, locally — do this first
 bun run deploy
 ```
 
-`bun run deploy` runs `vinext-cloudflare deploy`, which builds and uploads the
-Worker, its assets, and the cron triggers together. Roll back from the
-dashboard under Workers → the Worker → Deployments.
+`bun run deploy` applies any unapplied migrations to the remote D1 and then
+runs `vinext-cloudflare deploy`, which builds and uploads the Worker, its
+assets, and the cron triggers together. The order matters: the Worker writes
+every column its Drizzle schema declares, so new code against a database still
+on the old schema fails on its first insert. The GitHub Actions deploy does the
+same two steps. Roll back from the dashboard under Workers → the Worker →
+Deployments.
 
 The full guide — Git-connected builds, custom domains, and rollbacks — is in
 [Deployment](https://docs.autoinvestment.broker/docs/deployment).
