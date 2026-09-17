@@ -1,8 +1,19 @@
+/**
+ * @fileoverview The API reference, served at the API root.
+ *
+ * `GET /api` renders the Scalar viewer against the OpenAPI spec at
+ * `/api/openapi.json`. It lives here rather than a level down because `/api`
+ * is the URL people try first; the old `/api/docs` address redirects here so
+ * the badges already published to npm keep working.
+ */
 import { NextResponse } from 'next/server'
+
+/** Where the spec this viewer renders is served from. */
+export const OPENAPI_SPEC_URL = '/api/openapi.json'
 
 const config = {
   spec: {
-    url: '/api/openapi.json',
+    url: OPENAPI_SPEC_URL,
   },
   theme: 'solarized',
 }
@@ -19,7 +30,7 @@ export async function GET() {
   <body>
     <script
       id="api-reference"
-      data-url="/api/openapi.json"
+      data-url="${OPENAPI_SPEC_URL}"
       data-configuration='${JSON.stringify(config)}'></script>
     <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
   </body>
