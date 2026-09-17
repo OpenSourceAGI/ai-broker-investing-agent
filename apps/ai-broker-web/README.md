@@ -5,7 +5,7 @@ the D1 schema. This is the only workspace in the monorepo that ships.
 
 📑 [Documentation](https://docs.autoinvestment.broker/) ·
 🚀 [Live app](https://autoinvestment.broker) ·
-🔌 [API](https://autoinvestment.broker/api/docs)
+🔌 [API](https://autoinvestment.broker/api)
 
 ## What it does
 

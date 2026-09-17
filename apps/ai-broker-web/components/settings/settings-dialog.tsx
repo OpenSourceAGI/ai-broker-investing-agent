@@ -679,7 +679,7 @@ export function SettingsDialog({
               </Button>
             </div>
             <h4 className="font-medium mb-2">
-              <a target="_blank" href="/api/docs">API Documentation</a>
+              <a target="_blank" href="/api">API Documentation</a>
             </h4>
           </div>
         </CardContent>

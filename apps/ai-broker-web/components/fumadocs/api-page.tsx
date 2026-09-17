@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-// Scalar API reference removed - using CDN version in /api/docs instead
+// Scalar API reference removed - using CDN version at /api instead
 // If you need the React component, reinstall: pnpm add @scalar/api-reference-react
 const ApiReferenceReact = null
 
@@ -64,7 +64,7 @@ export function APIPage({ className, children, document, operations, ...props }:
         <div className="text-muted-foreground">
           <p>API Reference component not available.</p>
           <p className="text-sm mt-2">
-            Use <a href="/api/docs" className="text-primary underline">/api/docs</a> for API documentation.
+            Use <a href="/api" className="text-primary underline">/api</a> for API documentation.
           </p>
         </div>
       </div>

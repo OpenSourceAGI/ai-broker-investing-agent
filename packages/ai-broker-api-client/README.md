@@ -95,5 +95,5 @@ generation time with `API_URL`.
 ## Related
 
 - [`packages/mcp-server`](../mcp-server) — the same API exposed as MCP tools.
-- [API reference](https://autoinvestment.broker/api/docs)
+- [API reference](https://autoinvestment.broker/api)
 - [Project documentation](https://docs.autoinvestment.broker/)
