@@ -2,7 +2,9 @@ name: Publish to npm
 
 on:
   push:
-    branches: [master]
+    # `main`, not `master`: this repository's default branch is `main`, so the
+    # old filter matched no push and the workflow had never run once.
+    branches: [main]
 
 permissions:
   contents: write
