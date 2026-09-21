@@ -1,9 +1,6 @@
 <p align="center">
-    <img src="https://i.imgur.com/4UC1Ixq.png" />
-</p>
-
-<!-- template-git-repo:badges:start -->
-<p align="center">
+    <img src="https://i.imgur.com/4UC1Ixq.png" /><br/>
+    <a href="https://doi.org/10.5281/zenodo.20836179"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.20836179.svg" alt="DOI"></a>
     <a href="https://deepwiki.com/OpenSourceAGI/ai-broker-investing-agent"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
     <a href="https://autoinvestment.broker"><img height="20px" src="https://img.shields.io/badge/App-blueviolet?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website" /></a>
     <a href="https://autoinvestment.broker/docs"><img src="https://img.shields.io/badge/Docs-blue?logo=ReadTheDocs&logoColor=white" alt="Documentation" /></a>
