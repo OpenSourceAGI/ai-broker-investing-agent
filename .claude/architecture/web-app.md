@@ -80,6 +80,11 @@ fails the build when the schema and `migrations/` disagree.
 **`bun run deploy` and the deploy workflow apply migrations before the
 Worker**, in that order: new code against an old database fails on its first
 insert, while old code against a new database keeps working.
+Cloudflare Workers Builds does not: its default deploy command is plain
+`wrangler deploy`, so set it to `bun run deploy:cloudflare` (root script:
+migrate, then deploy). A Google sign-in failing with `unable_to_create_user` is
+this drift — see
+[`devdocs/RUNBOOK_UNABLE_TO_CREATE_USER.md`](../../devdocs/RUNBOOK_UNABLE_TO_CREATE_USER.md).
 
 ## Auth
 
