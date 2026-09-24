@@ -21,6 +21,9 @@ served at <https://docs.autoinvestment.broker/>.
 
 - [Auth configuration](./AUTH_CONFIGURATION.md) — better-auth on Cloudflare
   Workers: bindings, cookies, and the OAuth callback origin.
+- [Runbook: `unable_to_create_user`](./RUNBOOK_UNABLE_TO_CREATE_USER.md) —
+  Google sign-in failing because production D1 is behind the schema; how to
+  migrate it and keep deploys migrating.
 - [Deployment checklist](./DEPLOYMENT_CHECKLIST.md) — pre-flight checks for the
   Polymarket cron job.
 - [Sync scripts](./sync-scripts.md) — the maintenance scripts under

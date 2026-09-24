@@ -135,18 +135,27 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      # Bun, not npm: this is a Bun workspace with no lockfile committed, so
+      # `cache: npm` against apps/<app>/package-lock.json failed with "Some
+      # specified paths were not resolved" and `npm ci` had nothing to install
+      # from. Every run of this workflow died there, before the migration step
+      # below, which is how production D1 stayed behind the schema.
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: apps/${{ matrix.app }}/package-lock.json
+          bun-version: 1.3.11
 
       - name: Install dependencies
-        run: npm ci
+        # From the repository root, so the workspace packages link. No
+        # --frozen-lockfile: lockfiles are not committed in this repo.
+        working-directory: .
+        run: bun install
 
       - name: Build app
-        run: npm run build --if-present
+        # Through turbo so the workspace packages the app imports are built
+        # into dist/ first.
+        working-directory: .
+        run: bunx turbo run build --filter=./apps/${{ matrix.app }}...
 
       # Before the Worker, never after: the new code writes every column its
       # Drizzle schema declares, so a D1 database still on the old schema fails
@@ -158,11 +167,16 @@ jobs:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npm run db:migrate:remote --if-present
+        run: |
+          if jq -e '.scripts["db:migrate:remote"]' package.json > /dev/null; then
+            bun run db:migrate:remote
+          else
+            echo "apps/${{ matrix.app }} has no db:migrate:remote script — skipping."
+          fi
 
       - name: Deploy Worker with Wrangler
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy
+        run: bunx wrangler deploy

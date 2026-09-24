@@ -105,7 +105,13 @@
       "cache": false
     },
     "db:migrate:remote": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": [
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_API_KEY",
+        "CLOUDFLARE_EMAIL"
+      ]
     },
     "clean": {
       "cache": false
