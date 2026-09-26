@@ -32,10 +32,10 @@ export function SiweSignIn() {
       const chainId = Number(network.chainId)
 
       // 1. Get Nonce from backend
-      const nonceResponse = await authClient.siwe.nonce({
-        walletAddress: address,
-        chainId: chainId,
-      })
+      // No arguments: better-auth >= 1.7 validates /siwe/nonce and /siwe/verify
+      // with strict schemas, so an extra walletAddress/chainId is a 400. The
+      // address and chain are read from the signed message instead.
+      const nonceResponse = await authClient.siwe.nonce()
 
       if (nonceResponse.error || !nonceResponse.data?.nonce) {
         console.error("Failed to get nonce:", nonceResponse.error)
@@ -67,8 +67,6 @@ export function SiweSignIn() {
       const { data, error } = await authClient.siwe.verify({
         message: preparedMessage,
         signature,
-        walletAddress: address,
-        chainId: chainId,
       })
 
       if (error) {
