@@ -8,6 +8,7 @@ import { PredictionMarketsPreview } from "@/components/landing/prediction-market
 import { BrokersGridSection } from "@/components/landing/brokers-grid-section"
 import { StatsBand } from "@/components/landing/stats-band"
 import { FinalCtaSection } from "@/components/landing/final-cta-section"
+import { ResearchLibrarySection } from "@/components/landing/research-library-section"
 import { Header } from "@/components/landing/header"
 import { Footer } from "@/components/landing/footer"
 
@@ -51,6 +52,7 @@ export default function LandingPage() {
 
       <StatsBand />
       <FinalCtaSection />
+      <ResearchLibrarySection />
 
       <Footer />
     </main>
