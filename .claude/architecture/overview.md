@@ -35,13 +35,9 @@ apps/ai-broker-web            Next.js on Cloudflare Workers (via vinext)
         │       ├─ leaders/            ZuluTrade + NVSTly copy-trading leaders
         │       ├─ live-data/          Dukascopy FX/price feed
         │       ├─ correlate/          time-series correlation
-        │       └─ prediction/         market sync, analysis, its own D1 tables
-        │
-        ├─► packages/predictos         prediction-market "super intelligence"
-        │       ├─ agents/             bookmaker, event analysis, mapper, order bots
-        │       ├─ clients/            Polymarket, Polyfactual, x402
-        │       ├─ data/               Polymarket + Kalshi market data
-        │       └─ arbitrage.ts        cross-platform arbitrage
+        │       ├─ prediction/         market sync, analysis, its own D1 tables
+        │       └─ prediction-markets/ bookmaker, event analysis, mapper, order bots,
+        │                              Polymarket/Kalshi clients, cross-platform arbitrage
         │
         └─► packages/fin-data-api      Congress.gov, Seeking Alpha, CFTC providers
         │
@@ -69,8 +65,7 @@ Route groups under `app/`: `dashboard`, `markets`, `stock`, `portfolio`,
 
 | Package | Published | What it owns |
 | --- | --- | --- |
-| `investing` | npm | Trading agents, debate research, algo strategies, Alpaca, leaderboards, live data, correlation, prediction-market sync. The heart of the repo. |
-| `predictos` | npm | Prediction-market multi-agent analysis, Polymarket/Kalshi clients, cross-platform arbitrage. Adapted from PredictionXBT/PredictOS (MIT). |
+| `investing` | npm | Trading agents, debate research, algo strategies, Alpaca, leaderboards, live data, correlation, prediction-market sync, prediction-market agents and cross-platform arbitrage. The heart of the repo. |
 | `fin-data-api` | — | TypeScript port of OpenBB finance APIs: Congress, earnings calendars, CFTC. Zod-validated, Scalar OpenAPI docs. The one Jest workspace. |
 | `ai-broker-api-client` | private | Typed client **generated** from the OpenAPI spec with `@hey-api/openapi-ts`. Do not hand-edit `*.gen.ts`. |
 | `mcp-server` | — | MCP server **generated** from the same OpenAPI spec (33 tools) via `mcp-use`. |

@@ -21,8 +21,7 @@ Cloudflare Workers at [autoinvestment.broker](https://autoinvestment.broker).
 2. **Lockfiles are deliberately not committed here.** CI runs a plain
    `bun install` *without* `--frozen-lockfile`. Do not add `bun.lock`.
 3. **Find the owning package before you edit.** Trading behaviour lives in
-   `packages/investing` and `packages/predictos`, not in the app that renders
-   it. See [`architecture/overview.md`](.claude/architecture/overview.md).
+   `packages/investing`, not in the app that renders it. See [`architecture/overview.md`](.claude/architecture/overview.md).
 4. **Packages are consumed as built `dist/`, not live source.** A package edit
    that "doesn't show up" almost always means it was not rebuilt. See
    [`architecture/monorepo.md`](.claude/architecture/monorepo.md).
@@ -44,7 +43,7 @@ Cloudflare Workers at [autoinvestment.broker](https://autoinvestment.broker).
 | You want to change… | Go to |
 | --- | --- |
 | Trading agents, signals, market data, brokers | `packages/investing` |
-| Prediction markets, cross-venue arbitrage | `packages/predictos` |
+| Prediction markets, cross-venue arbitrage | `packages/investing/src/prediction-markets` |
 | Congress / earnings / CFTC data providers | `packages/fin-data-api` |
 | The typed API client (generated) | `packages/ai-broker-api-client` |
 | The MCP server (generated) | `packages/mcp-server` |
@@ -108,4 +107,3 @@ sits in one tree rather than beside the source.
 | `packages/fin-data-api` | [.claude/packages/fin-data-api/CLAUDE.md](.claude/packages/fin-data-api/CLAUDE.md) |
 | `packages/investing` | [.claude/packages/investing/CLAUDE.md](.claude/packages/investing/CLAUDE.md) |
 | `packages/mcp-server` | [.claude/packages/mcp-server/CLAUDE.md](.claude/packages/mcp-server/CLAUDE.md) |
-| `packages/predictos` | [.claude/packages/predictos/CLAUDE.md](.claude/packages/predictos/CLAUDE.md) |

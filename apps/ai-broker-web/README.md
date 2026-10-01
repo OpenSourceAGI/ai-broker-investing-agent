@@ -14,7 +14,7 @@ the D1 schema. This is the only workspace in the monorepo that ships.
 | Agent debate | `/debate`, `/stock/[symbol]` | Several LLM analyst agents argue a position — bull, bear, risk — and return a scored verdict with citations. |
 | Markets | `/markets`, `/stock/[symbol]` | Quotes, historical bars and charts from Alpaca and Finnhub, rendered with lightweight-charts. |
 | Portfolio | `/portfolio`, `/dashboard` | Positions, entry/exit signals from `packages/investing`, and paper or broker execution through Alpaca. |
-| Prediction markets | `/predict` | Cross-venue prices and arbitrage spreads from `packages/predictos` (Polymarket, Kalshi). |
+| Prediction markets | `/predict` | Cross-venue prices and arbitrage spreads from `packages/investing/src/prediction-markets` (Polymarket, Kalshi). |
 | Copy trading | `/leaders` | Leaderboards of tracked traders and their disclosed positions. |
 | Accounts | `/login`, `/legal` | better-auth sign-in (Google, email, SIWE wallet), Stripe subscriptions via the better-auth plugin, Didit KYC at `/api/kyc`. |
 | Admin | `/admin` | User and D1 controls, gated on `ADMIN_EMAILS`. |

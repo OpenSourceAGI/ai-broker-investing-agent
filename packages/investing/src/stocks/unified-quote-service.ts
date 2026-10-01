@@ -292,7 +292,7 @@ export class UnifiedQuoteService {
       };
     }
 
-    console.error(`[UnifiedQuotes] Failed to fetch any quotes`);
+    console.warn(`[UnifiedQuotes] Failed to fetch any quotes`);
     return {
       success: false,
       error: `Failed to fetch quotes for any of the ${symbols.length} symbols`,

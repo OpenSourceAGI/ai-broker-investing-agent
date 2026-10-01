@@ -19,9 +19,7 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "predictos": ["../predictos/src/index.ts"],
-      "predictos/*": ["../predictos/src/*"]
+      "@/*": ["src/*"]
     }
   },
   "include": ["src/**/*", "test/test-unified-quotes.ts"],

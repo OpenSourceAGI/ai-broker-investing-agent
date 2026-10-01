@@ -12,12 +12,12 @@ Import from a subpath export, never from `src/`:
 
 | Entry | What it gives you |
 | --- | --- |
-| `investing` | The barrel — db schemas, trading agents, Alpaca client, stocks, prediction, predictos, strategies, leaders, correlation |
+| `investing` | The barrel — db schemas, trading agents, Alpaca client, stocks, prediction, prediction-markets, strategies, leaders, correlation |
 | `investing/trading-agents` | The analyst agent graph |
 | `investing/alpaca` | Broker client |
 | `investing/stocks` | Instrument data and name resolution |
 | `investing/prediction` | Prediction-market sync, analysis, tables |
-| `investing/predictos` | Re-export of the PredictOS core |
+| `investing/prediction-markets` | Prediction-market multi-agent analysis, Polymarket/Kalshi clients, cross-platform arbitrage |
 | `investing/constants`, `investing/utils` | Shared constants and helpers |
 | `investing/data/*` | Raw data files, served unbuilt |
 
@@ -46,6 +46,7 @@ bundle. **Do not import `cloudflare:workers` here.**
 | `live-data/` | Dukascopy feed + symbol table |
 | `correlate/` | Time-series correlation / XGBoost prediction statistics |
 | `prediction/` | Market sync, analysis, API, and its own D1 tables |
+| `prediction-markets/` | Bookmaker / event-analysis / mapper agents, Polymarket order bots, venue clients, arbitrage. MIT — keep its `LICENSE` file. |
 | `stocks/`, `stock-names-data/` | Instruments and name resolution |
 | `qwksearch/`, `trending-topics/` | News/web research feeding the news analyst |
 | `llm/` | Shared provider calls |

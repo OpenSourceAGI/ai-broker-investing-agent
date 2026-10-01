@@ -70,7 +70,7 @@ hand.
 | Workflow | Trigger | What it guards |
 | --- | --- | --- |
 | `test.yml` | push to `main`, PR, manual | `bun install` then `bun run test:coverage`, uploads the merged `coverage/lcov.info` to Codecov |
-| `npm-publish.yml` | push to `main`, manual | Publishes changed public packages (`investing`, `predictos`) |
+| `npm-publish.yml` | push to `main`, manual | Publishes changed public packages (`investing`) |
 | `auto-merge-claude.yml` | PR | Enables auto-merge / auto-approve on Claude PRs, deletes the head branch on merge |
 | `auto-merge-and-create-prs.yml` | every 12h | Merges eligible PRs and opens PRs for branches that lack one |
 
@@ -80,7 +80,7 @@ blocks a merge on its own. Codecov being down does not fail the job
 
 ## Publishing
 
-Only `investing` and `predictos` publish to npm. The other three workspaces are
+Only `investing` publishes to npm. The other workspaces are
 `"private": true`. Publishing runs on push to `main` and prefers **trusted
 publishing (OIDC)** — no secret at all — falling back to an `NPM_TOKEN` secret.
 npm granular tokens expire after at most 90 days, so a red publish job is

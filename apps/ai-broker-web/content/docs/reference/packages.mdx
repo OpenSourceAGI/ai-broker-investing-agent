@@ -12,9 +12,6 @@ it.
   <Card title="investing" href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/investing">
     Trading agents, market data, and prediction markets.
   </Card>
-  <Card title="predictos" href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/predictos">
-    Prediction-market analysis and cross-platform arbitrage.
-  </Card>
   <Card title="fin-data-api" href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/tree/main/packages/fin-data-api">
     A TypeScript financial data API across many providers.
   </Card>
@@ -39,7 +36,8 @@ the app, so a change here needs no separate build during development.
 | `alpaca/` | Alpaca broker integration. |
 | `tradingview/` | TradingView charting and PineScript integration. |
 | `leaders/` | Copy-trading leaderboards. |
-| `prediction/`, `predictos/` | Prediction-market data and analysis. |
+| `prediction/` | Prediction-market data sync and analysis. |
+| `prediction-markets/` | Prediction-market multi-agent analysis, Polymarket/Kalshi clients, and cross-platform arbitrage (`investing/prediction-markets`). |
 | `llm/` | Model provider plumbing. |
 | `qwksearch/`, `trending-topics/` | News and research retrieval. |
 | `db/` | Shared data access over the D1 binding. |
@@ -51,11 +49,11 @@ the app, so a change here needs no separate build during development.
   not by a `resolve.alias`, because aliases cannot vary per environment.
 </Callout>
 
-## `predictos`
+### `investing/prediction-markets`
 
 Prediction-market multi-agent analysis, data clients, and cross-platform
-arbitrage. Adapted from PredictionXBT/PredictOS and refactored from
-Deno/Supabase edge functions into Node/TypeScript ESM.
+arbitrage, refactored from Deno/Supabase edge functions into Node/TypeScript
+ESM.
 
 | Module | Responsibility |
 | --- | --- |
@@ -63,8 +61,6 @@ Deno/Supabase edge functions into Node/TypeScript ESM.
 | `clients/`, `data/` | Platform data clients. |
 | `arbitrage.ts` | Cross-platform arbitrage detection. |
 | `events.ts`, `types.ts` | Shared event and type definitions. |
-
-Like `investing`, it is transpiled with the app rather than pre-built.
 
 ## `fin-data-api`
 
@@ -94,7 +90,7 @@ from the same OpenAPI spec, exposing the API as tools an AI assistant can call.
 
 ```bash
 bunx turbo run build --filter=investing      # one package
-bunx turbo run test  --filter=predictos
+bunx turbo run test  --filter=investing
 bunx turbo run build --filter=ai-broker-web  # the app and its dependencies
 ```
 

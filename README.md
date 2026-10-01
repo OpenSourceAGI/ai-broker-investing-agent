@@ -75,7 +75,6 @@ from the repo root, and `turbo` fans it out to the workspaces that define it.
 │   └── ai-broker-web/        # Next.js app (UI, API routes, docs, D1 schema & migrations)
 ├── packages/
 │   ├── investing/            # Trading agents, market data, prediction markets
-│   ├── predictos/            # Prediction-market analysis & cross-platform arbitrage
 │   ├── ai-broker-api-client/ # Generated API client
 │   ├── fin-data-api/         # Financial data API service
 │   └── mcp-server/           # MCP server generated from the OpenAPI spec
@@ -103,7 +102,7 @@ npx turbo run test --filter=investing
 ### Coverage
 
 `npm run test:coverage` runs each workspace's suite with coverage on (Vitest for the app,
-`investing`, `predictos` and the API client; Jest for `fin-data-api`) and merges the
+`investing` and the API client; Jest for `fin-data-api`) and merges the
 per-workspace LCOV reports into `coverage/lcov.info` with repository-root-relative paths.
 
 CI runs the same command on every pull request in
@@ -120,7 +119,6 @@ Each workspace documents itself:
 | :--- | :--- |
 | The app | [`apps/ai-broker-web`](apps/ai-broker-web/README.md) |
 | Trading agents & market data | [`packages/investing`](packages/investing/README.md) |
-| Prediction markets & arbitrage | [`packages/predictos`](packages/predictos/README.md) |
 | Financial data API | [`packages/fin-data-api`](packages/fin-data-api/README.md) |
 | Generated API client | [`packages/ai-broker-api-client`](packages/ai-broker-api-client/README.md) |
 | MCP server | [`packages/mcp-server`](packages/mcp-server/README.md) |

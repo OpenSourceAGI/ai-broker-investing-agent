@@ -111,6 +111,52 @@ const leaders = await fetchLeaderboard({
 });
 ```
 
+### Kalshi Momentum Paper Agent
+
+The prediction-markets package includes a deterministic TypeScript port of the
+momentum rules from PyKalshi's MIT-licensed
+`kalshi-bot-api/examples/momentum_bot.py`. It consumes recorded ticks and uses
+an in-memory paper executor, so it never connects to Kalshi, submits orders, or
+requires credentials.
+
+Run the included replay from `packages/investing`:
+
+```bash
+bun run demo:kalshi-momentum
+```
+
+```typescript
+import { runKalshiMomentumPaperAgent } from "investing/prediction-markets";
+
+const result = runKalshiMomentumPaperAgent({
+  initialCashCents: 10_000,
+  ticks: [50, 51, 52, 53, 58].map((yesPriceCents, index) => ({
+    ticker: "DEMO-KALSHI-MARKET",
+    timestamp: new Date(Date.UTC(2026, 0, 1, 0, index)).toISOString(),
+    yesPriceCents,
+  })),
+});
+
+console.log(result.report);
+```
+
+Prices are integer cents per contract. A YES tick of `53` implies a NO price
+of `47`. Trade `action` (`BUY`, `SELL`, `HOLD`) is separate from the binary
+`outcome` (`YES`, `NO`): selling YES closes YES contracts and does not mean
+buying NO.
+
+Configuration controls `lookback`, `momentumThreshold`, `positionSize`,
+`profitTargetCents`, `stopLossCents`, and `maxPosition`. The defaults preserve
+the upstream example: three consecutive moves, 10 contracts, a 5-cent target,
+a 3-cent stop, and a 50-contract limit. The paper executor fills immediately at
+the recorded outcome price with no fees or slippage and reports cash, open
+positions, and realized/unrealized P&L.
+
+This replay is a strategy demonstration, not a backtest or live execution
+system. It assumes complementary YES/NO prices, does not model an order book,
+partial fills, fees, latency, settlement, or market resolution, and does not
+enable the existing unimplemented Kalshi live mapper.
+
 ### Trading Agents Framework
 
 ```typescript
@@ -214,6 +260,36 @@ Get Polymarket leaderboard of top traders.
 - `orderBy` - 'VOL' | 'PNL'
 - `limit` - Number of results (default: 20)
 - `category` - Market category (default: 'overall')
+
+### Prediction-Market Agents & Arbitrage
+
+```typescript
+import {
+  runEventAnalysisAgent,
+  runBookmakerAgent,
+  runMapperAgent,
+  findArbitrage,
+  getEvents,
+} from "investing/prediction-markets";
+```
+
+Multi-agent analysis over Polymarket and Kalshi, refactored from Deno/Supabase
+edge functions into plain typed async functions (MIT, see
+`src/prediction-markets/LICENSE`):
+
+- **AI clients** — OpenAI, Grok/xAI and BlockRun (x402 micropayments), plus the
+  analysis prompt builders.
+- **Market data** — Kalshi via DFlow and Polymarket via Dome/Gamma.
+- `runEventAnalysisAgent` — analyzes an event's markets for alpha and a
+  predicted winner.
+- `runBookmakerAgent` — aggregates several agent analyses into one assessment.
+- `runMapperAgent` — turns an analysis into Polymarket order parameters.
+- `findArbitrage` — finds the same event on the other venue and checks whether
+  it is mispriced across venues.
+- `getEvents` — resolves a Polymarket/Kalshi URL into its raw markets.
+
+Keys are read from options, falling back to `OPENAI_API_KEY`, `XAI_API_KEY`,
+`BLOCKRUN_WALLET_KEY`, `DOME_API_KEY` and `DFLOW_API_KEY`.
 
 ### Trading Agents
 

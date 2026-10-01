@@ -35,10 +35,6 @@ component_management:
       name: packages/investing
       paths:
         - packages/investing/**
-    - component_id: predictos
-      name: packages/predictos
-      paths:
-        - packages/predictos/**
     - component_id: fin_data_api
       name: packages/fin-data-api
       paths:

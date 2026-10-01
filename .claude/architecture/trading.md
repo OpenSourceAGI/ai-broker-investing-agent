@@ -43,10 +43,10 @@ The debate suite has its own script because it is slow and network-shaped:
 cd packages/investing && bun run test:debate
 ```
 
-### `packages/predictos`
+### `packages/investing/src/prediction-markets`
 
-Prediction-market intelligence, adapted from PredictionXBT/PredictOS (MIT — keep
-the attribution intact).
+Prediction-market intelligence (MIT — keep its `LICENSE` file intact). Exposed
+as `investing/prediction-markets` and re-exported from the `investing` barrel.
 
 | File / directory | What it owns |
 | --- | --- |

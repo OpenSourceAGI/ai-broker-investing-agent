@@ -7,7 +7,7 @@ on **Cloudflare Workers**. Full notes in
 ## Keep route handlers thin
 
 `app/api/*` handlers parse, authorize, delegate, serialize. Trading logic lives
-in `packages/investing` and `packages/predictos` — if you are writing a decision
+in `packages/investing` — if you are writing a decision
 rule inside a route handler, it is in the wrong file.
 
 ## Things that bite

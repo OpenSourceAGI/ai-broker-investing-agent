@@ -62,7 +62,6 @@ script at all (it is generated).
 | --- | --- |
 | `apps/ai-broker-web` | Vitest |
 | `packages/investing` | Vitest (plus `test:debate` for the debate suite) |
-| `packages/predictos` | Vitest |
 | `packages/ai-broker-api-client` | Vitest |
 | `packages/fin-data-api` | **Jest** |
 

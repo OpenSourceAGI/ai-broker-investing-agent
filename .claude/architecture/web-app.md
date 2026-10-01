@@ -18,7 +18,7 @@ apps/ai-broker-web/
 ```
 
 Route handlers under `app/api/` are meant to stay **thin** — parse, authorize,
-delegate to `packages/investing` or `packages/predictos`, serialize. Trading
+delegate to `packages/investing`, serialize. Trading
 logic does not belong in a route.
 
 ## Bindings

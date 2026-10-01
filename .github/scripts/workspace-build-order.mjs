@@ -11,7 +11,7 @@
  * package that sorts before its own dependency then fails its declaration
  * build on it:
  *
- *   Cannot find module 'predictos' or its corresponding type declarations.
+ *   Cannot find module 'investing' or its corresponding type declarations.
  *
  * Usage: node .github/scripts/workspace-build-order.mjs [rootDir]
  *   rootDir defaults to `packages`. Prints one directory per line, with a

@@ -15,7 +15,6 @@ ai-broker-investing-agent/
 │   └── ai-broker-web/          # The deployed app: UI, API routes, docs, D1 schema
 ├── packages/
 │   ├── investing/              # Trading agents, market data, prediction markets
-│   ├── predictos/              # Prediction-market analysis & cross-platform arbitrage
 │   ├── ai-broker-api-client/   # Generated typed client for the public API
 │   ├── fin-data-api/           # Financial data API service
 │   └── mcp-server/             # MCP server generated from the OpenAPI spec
@@ -25,10 +24,10 @@ ai-broker-investing-agent/
 └── tsconfig.base.json          # Shared compiler options
 ```
 
-Only `apps/ai-broker-web` is deployed. `packages/investing` and
-`packages/predictos` are consumed straight from TypeScript source and compiled
-with the app (`transpilePackages` in `vite.config.ts`), so a change in either is
-picked up without a separate build step in development.
+Only `apps/ai-broker-web` is deployed. `packages/investing` is consumed
+straight from TypeScript source and compiled with the app (`transpilePackages`
+in `vite.config.ts`), so a change there is picked up without a separate build
+step in development.
 
 ## Inside the app
 
@@ -115,7 +114,7 @@ The trading logic lives in `packages/investing`, not in the app:
 | `correlate/` | Cross-asset and time-series correlation. |
 | `live-data/`, `stocks/` | Market data ingestion and the ticker dataset. |
 | `alpaca/`, `tradingview/` | Broker and charting integrations. |
-| `leaders/`, `prediction/`, `predictos/` | Copy-trading leaderboards and prediction markets. |
+| `leaders/`, `prediction/`, `prediction-markets/` | Copy-trading leaderboards and prediction markets. |
 
 The app calls into these through `app/api/**` routes, which is also what the
 public OpenAPI spec and the generated `ai-broker-api-client` describe.

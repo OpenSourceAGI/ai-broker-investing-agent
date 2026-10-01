@@ -26,8 +26,8 @@ export default defineConfig({
       external: [
         "react", "react-dom", "next",
         "axios", "csv-parse", "date-fns", "dotenv", "drizzle-orm",
-        "ethers", "indicatorts", "langchain", "nanoid",
-        "predictos", "sec-edgar-toolkit", "xgboost_node", "zod",
+        "@polymarket/clob-client", "ethers", "indicatorts", "langchain", "nanoid",
+        "sec-edgar-toolkit", "xgboost_node", "zod",
         "yahoo-finance2", "node-fetch",
       ],
     },

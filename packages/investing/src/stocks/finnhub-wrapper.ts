@@ -201,7 +201,7 @@ export class FinnhubWrapper {
       }
     }
 
-    console.error(
+    console.log(
       `[Historical] Failed to fetch data for ${symbol} from Finnhub, Alpaca, and Yahoo Finance`,
     );
 

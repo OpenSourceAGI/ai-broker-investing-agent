@@ -109,9 +109,9 @@ export default defineConfig({
         images: {
           unoptimized: true,
         },
-        // `investing` and `predictos` are workspace packages consumed straight
-        // from TypeScript source, so they have to be compiled with the app.
-        transpilePackages: ["indicatorts", "investing", "predictos"],
+        // `investing` is a workspace package consumed straight from
+        // TypeScript source, so it has to be compiled with the app.
+        transpilePackages: ["indicatorts", "investing"],
         reactStrictMode: true,
       },
     }),
