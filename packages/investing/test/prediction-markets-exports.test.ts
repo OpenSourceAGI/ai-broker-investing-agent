@@ -7,6 +7,8 @@ describe("prediction-markets module", () => {
     "runEventAnalysisAgent",
     "runBookmakerAgent",
     "runMapperAgent",
+    "runKalshiMomentumPaperAgent",
+    "createKalshiMomentumState",
     "findArbitrage",
     "getEvents",
   ] as const;

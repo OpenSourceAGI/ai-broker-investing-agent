@@ -10,6 +10,16 @@
 export { runEventAnalysisAgent } from "./event-analysis-agent.js";
 export { runBookmakerAgent } from "./bookmaker-agent.js";
 export { runMapperAgent, NoTradeError } from "./mapper-agent.js";
+export { runKalshiMomentumPaperAgent } from "./kalshi-momentum-agent.js";
+export { InMemoryPaperExecutor } from "../execution/paper.js";
+export type { InMemoryPaperExecutorConfig } from "../execution/paper.js";
+export {
+  DEFAULT_KALSHI_MOMENTUM_CONFIG,
+  createKalshiMomentumState,
+  normalizeKalshiMomentumConfig,
+  evaluateKalshiMomentumTick,
+  applyMomentumExecution,
+} from "../strategies/kalshi-momentum.js";
 
 // --- Research / execution agents ---
 export { runPolyfactualResearch } from "./polyfactual-research.js";

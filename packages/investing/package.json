@@ -66,6 +66,7 @@
     "test:watch": "vitest",
     "test:debate": "vitest run src/trading-agents/__tests__/debate-agents.test.ts",
     "test:debate:watch": "vitest src/trading-agents/__tests__/debate-agents.test.ts",
+    "demo:kalshi-momentum": "bun examples/kalshi-momentum-paper-demo.ts",
     "ship": "npm run build && npx standard-version --release-as patch; rm CHANGELOG.md; npm publish",
     "import:leaders": "bun lib/leaders/nvsty-leaders.ts",
     "import:stategies": "bun lib/algo-stategies/tv-scraper.ts --pages=10",

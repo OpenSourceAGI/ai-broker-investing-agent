@@ -57,6 +57,138 @@ export type DataProvider = "dome" | "dflow" | "gamma";
 export type GrokTool = "x_search" | "web_search";
 
 // ============================================================================
+// Kalshi momentum paper agent
+// ============================================================================
+
+/** A binary prediction-market outcome. */
+export type PredictionMarketOutcome = "YES" | "NO";
+
+/**
+ * A recorded Kalshi market observation.
+ *
+ * `yesPriceCents` is an integer from 0 through 100 representing the price of
+ * one YES contract in cents. The corresponding NO price is
+ * `100 - yesPriceCents`.
+ */
+export interface KalshiMarketTick {
+  ticker: string;
+  timestamp: string;
+  yesPriceCents: number;
+}
+
+/** Configuration for the deterministic Kalshi momentum strategy. */
+export interface KalshiMomentumConfig {
+  /** Maximum number of price directions retained. */
+  lookback: number;
+  /** Consecutive moves required to enter a position. */
+  momentumThreshold: number;
+  /** Contracts requested for each entry. */
+  positionSize: number;
+  /** Profit per contract, in cents, that triggers an exit. */
+  profitTargetCents: number;
+  /** Loss per contract, in cents, that triggers an exit. */
+  stopLossCents: number;
+  /** Maximum contracts allowed in one ticker/outcome position. */
+  maxPosition: number;
+}
+
+/** Open position tracked by the momentum strategy. Prices are cents/contract. */
+export interface KalshiMomentumPosition {
+  ticker: string;
+  outcome: PredictionMarketOutcome;
+  quantity: number;
+  entryPriceCents: number;
+}
+
+/** Serializable state used to replay the strategy deterministically. */
+export interface KalshiMomentumStrategyState {
+  /** Recent YES-price directions: 1 = up, -1 = down, 0 = flat. */
+  directions: Array<-1 | 0 | 1>;
+  /** Most recently observed YES price, in cents/contract. */
+  lastYesPriceCents?: number;
+  position?: KalshiMomentumPosition;
+  tradesExecuted: number;
+}
+
+/**
+ * Venue-neutral instruction produced by a prediction-market strategy.
+ *
+ * `action` describes portfolio behavior. `outcome` describes the binary
+ * contract. A SELL YES closes YES contracts; it does not mean BUY NO.
+ * `priceCents` is cents per contract, from 0 through 100.
+ */
+export interface PredictionMarketTradeIntent {
+  action: "BUY" | "SELL" | "HOLD";
+  outcome: PredictionMarketOutcome | null;
+  ticker: string;
+  quantity: number;
+  priceCents: number;
+  timestamp: string;
+  reason: string;
+}
+
+/** Position held by the in-memory paper executor. */
+export interface PaperPosition {
+  ticker: string;
+  outcome: PredictionMarketOutcome;
+  quantity: number;
+  averageEntryPriceCents: number;
+  markPriceCents: number;
+  unrealizedPnlCents: number;
+}
+
+/** Complete serializable portfolio snapshot. All money values are cents. */
+export interface PaperPortfolioState {
+  initialCashCents: number;
+  cashCents: number;
+  positions: Record<string, PaperPosition>;
+  realizedPnlCents: number;
+  unrealizedPnlCents: number;
+  equityCents: number;
+}
+
+/** Result of deterministically applying one intent to the paper portfolio. */
+export interface PaperExecutionResult {
+  status: "FILLED" | "REJECTED" | "SKIPPED";
+  intent: PredictionMarketTradeIntent;
+  fill?: {
+    priceCents: number;
+    quantity: number;
+    cashChangeCents: number;
+    realizedPnlCents: number;
+  };
+  reason?: string;
+  portfolio: PaperPortfolioState;
+}
+
+/** One tick's strategy decision and paper-execution result. */
+export interface KalshiMomentumAgentStep {
+  tick: KalshiMarketTick;
+  intent: PredictionMarketTradeIntent;
+  execution: PaperExecutionResult;
+  strategyState: KalshiMomentumStrategyState;
+}
+
+/** Input for a credential-free recorded-tick momentum replay. */
+export interface KalshiMomentumAgentRequest {
+  ticks: KalshiMarketTick[];
+  config?: Partial<KalshiMomentumConfig>;
+  initialCashCents?: number;
+  initialStrategyState?: KalshiMomentumStrategyState;
+  initialPortfolio?: PaperPortfolioState;
+}
+
+/** Structured output from the Kalshi momentum paper agent. */
+export interface KalshiMomentumAgentResult {
+  mode: "paper";
+  config: KalshiMomentumConfig;
+  steps: KalshiMomentumAgentStep[];
+  strategyState: KalshiMomentumStrategyState;
+  portfolio: PaperPortfolioState;
+  report: string;
+}
+
+// ============================================================================
 // Event analysis
 // ============================================================================
 
