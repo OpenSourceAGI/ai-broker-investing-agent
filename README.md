@@ -17,6 +17,7 @@
     <img src="https://img.shields.io/badge/%EB%AA%A8%20lines-28k-yellow" />
     <br />
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/graphs/contributors"><img src="https://img.shields.io/github/contributors/OpenSourceAGI/ai-broker-investing-agent" alt="Contributors" /></a>
+    <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/branches"><img src="https://img.shields.io/github/branches/OpenSourceAGI/ai-broker-investing-agent.svg" alt="Branches" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/forks"><img src="https://img.shields.io/github/forks/OpenSourceAGI/ai-broker-investing-agent" alt="GitHub Forks" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/issues"><img src="https://img.shields.io/github/issues/OpenSourceAGI/ai-broker-investing-agent?logo=github" alt="GitHub Issues" /></a>
     <a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/pulls"><img src="https://img.shields.io/github/issues-pr/OpenSourceAGI/ai-broker-investing-agent?logo=github&label=PRs" alt="Open Pull Requests" /></a>
