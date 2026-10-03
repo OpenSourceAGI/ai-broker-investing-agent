@@ -204,7 +204,12 @@ async function run() {
   console.log(`Scripts with source code: ${enrichedCount}/${results.length}`);
 }
 
-run().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+// Only scrape when this file is the program being run. It is re-exported from
+// the package index, and merely importing a library must never hit the network,
+// write a file into the caller's working directory, or exit the process.
+if (/(^|[\\/])tv-scraper\.[cm]?[jt]s$/.test(process.argv[1] ?? '')) {
+  run().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}
