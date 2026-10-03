@@ -80,6 +80,11 @@ export function createFakeDb(options: FakeDbOptions = {}): FakeDb {
     }
     node.then = (onFulfilled: (value: unknown) => unknown, onRejected?: (reason: unknown) => unknown) =>
       Promise.resolve(resolveWith()).then(onFulfilled, onRejected);
+    // SQLite's `.get()` ends a chain with the first row rather than an array.
+    node.get = (...args: unknown[]) => {
+      record('get', args);
+      return Promise.resolve(resolveWith()).then((rows) => (Array.isArray(rows) ? rows[0] : rows));
+    };
     return node;
   };
 
