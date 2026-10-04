@@ -59,9 +59,33 @@ describe('PATCH /api/user/strategies/[id]', () => {
 
   it('passes performance metrics through', async () => {
     const fake = setupDb({ update: [{ id: 's1' }] })
-    await PATCH(patch({ totalReturn: 12.5, winRate: 0.6 }), ctx)
+    await PATCH(patch({ todayPnL: 12.5, winRate: 0.6 }), ctx)
     const set = (fake.calls.set[0] as any[])[0]
-    expect(set).toMatchObject({ totalReturn: 12.5, winRate: 0.6 })
+    expect(set).toMatchObject({ todayPnL: 12.5, winRate: 0.6 })
+  })
+
+  it('ignores columns the caller must not write', async () => {
+    const fake = setupDb({ update: [{ id: 's1' }] })
+    await PATCH(
+      patch({
+        name: 'ok',
+        id: 'other',
+        userId: 'victim',
+        createdAt: 0,
+        todayPnL: 'lots',
+        winRate: Number.NaN,
+        bogus: 1,
+      }),
+      ctx,
+    )
+    const set = (fake.calls.set[0] as any[])[0]
+    expect(Object.keys(set).sort()).toEqual(['name', 'updatedAt'])
+  })
+
+  it('rejects a body that is not an object', async () => {
+    setupDb()
+    expect((await PATCH(patch([1]), ctx)).status).toBe(400)
+    expect((await PATCH(patch(null), ctx)).status).toBe(400)
   })
 
   it('404s when the caller owns no such strategy', async () => {
