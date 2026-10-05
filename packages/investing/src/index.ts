@@ -49,3 +49,5 @@ export * from "./debate-research/stock-agents-api";
 
 // Wikipedia pageviews
 export * from "./trending-topics/wiki-page-views";
+
+export * from "./strategy-signals";

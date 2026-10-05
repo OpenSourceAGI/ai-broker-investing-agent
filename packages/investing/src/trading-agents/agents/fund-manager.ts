@@ -4,12 +4,30 @@
  */
 
 import { AgentState } from '../types'
-import { UnifiedLLMClient } from '../utils/llm-client'
+import type { LLMClient } from '../utils/llm-client'
+import { parseFinalLine, wholeNumberToken } from '../utils/parse-final-line'
+import { strategyPrompt } from '../utils/strategy-prompt'
+import type { FundManagerApproval } from '../../strategy-signals/types'
+
+export function parseFundManagerApproval(text: string, proposalId: string): FundManagerApproval {
+  const id = parseFinalLine(text, 'PROPOSAL ID:', v => v === proposalId)
+  const decision = parseFinalLine(text, 'DECISION:', ['APPROVE', 'REJECT', 'MODIFY'])
+  const quantity = parseFinalLine(text, 'APPROVED QUANTITY:', wholeNumberToken)
+  // A wrong proposal ID, a missing decision, or a missing quantity for APPROVE/MODIFY means REJECT.
+  if (!id.value || !decision.value || (decision.value !== 'REJECT' && !quantity.value)) {
+    return { decision: 'REJECT', proposalId }
+  }
+  return {
+    decision: decision.value as FundManagerApproval['decision'],
+    proposalId,
+    ...(quantity.value ? { quantity: Number(quantity.value) } : {})
+  }
+}
 
 export class FundManager {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
 
-  constructor(llm: UnifiedLLMClient) {
+  constructor(llm: LLMClient) {
     this.llm = llm
   }
 
@@ -17,6 +35,35 @@ export class FundManager {
    * Review all analysis and make final approval decision
    */
   async makeDecision(state: AgentState): Promise<Partial<AgentState>> {
+    if (state.proposal) {
+      const proposal = state.proposal
+      try {
+        const intro = `You are the **Fund Manager** reviewing this exact proposal: ${JSON.stringify(proposal)}`
+        const prompt =
+          strategyPrompt(intro, state, 'the **Fund Manager**') +
+          `\nProposal: ${JSON.stringify(proposal)}` +
+          `\nDeterministic verdict: ${JSON.stringify(state.riskVerdict)}` +
+          `\nJudge decision: ${JSON.stringify(state.judgeDecision)}` +
+          `\nApprove only this proposal's action, within every cap. End with these lines:` +
+          `\nPROPOSAL ID: ${proposal.proposalId}` +
+          `\nDECISION: APPROVE|REJECT|MODIFY (one token)` +
+          `\nAPPROVED QUANTITY: <whole number>`
+        const response = await this.llm.invoke(prompt)
+        const approval = parseFundManagerApproval(response.content, proposal.proposalId)
+        return {
+          fundManagerDecision: response.content,
+          fundManagerApproval: approval,
+          finalApproval: approval.decision,
+          approvedPositionSize: approval.quantity?.toString() ?? null
+        }
+      } catch {
+        return {
+          fundManagerApproval: { decision: 'REJECT', proposalId: proposal.proposalId },
+          finalApproval: 'REJECT',
+          riskReviewReason: 'fund manager model error'
+        }
+      }
+    }
     const {
       companyOfInterest,
       investmentDebateState,

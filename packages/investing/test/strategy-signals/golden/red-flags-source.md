@@ -1,0 +1,5 @@
+# Advisory red-flags provenance
+
+Vendored `red_flag_detector.py` blob at b877b41: `b4d95312305ceffe1802a7f41a9ed7600f291df6`. Actual native Python detector run in the credential-excluded, offline Docker assessment produced EXTREME_LEVERAGE, EARNINGS_QUALITY and REFINANCING_RISK for the fixture (600% D/E, $100 net income, -$250 free cash flow, 1.5 interest coverage). Input values and strict thresholds are hand reviewed; outputs are never produced by the TypeScript code to establish their expectations. Python 3.11 image digest: `sha256:6f31d6e9ba2b0a787a3f81c37b004155b87b9efa1b771182bd550c1615745be5`; dependency: structlog. Native detector ran successfully; the complete LLM framework was not run.
+
+The integration is independently implemented because no license notice is present. It takes typed numeric metrics rather than copying the original report regex parser. HOLD/recommendation/advisory behavior is approved integration policy: unlike the original AUTO_REJECT result it carries no deterministic veto or source guard. Missing metrics remain unknown. Thresholds are sector-specific, and strict equality does not trip a rule.

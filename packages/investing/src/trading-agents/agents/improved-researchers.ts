@@ -4,7 +4,7 @@
  */
 
 import { AgentState, InvestDebateState, StructuredReport } from '../types'
-import { UnifiedLLMClient } from '../utils/llm-client'
+import type { LLMClient } from '../utils/llm-client'
 import { FinancialSituationMemory } from '../utils/memory'
 
 /**
@@ -32,10 +32,10 @@ ${fundamentalsReport}`
 }
 
 export class ImprovedBullResearcher {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private memory: FinancialSituationMemory
 
-  constructor(llm: UnifiedLLMClient, memory: FinancialSituationMemory) {
+  constructor(llm: LLMClient, memory: FinancialSituationMemory) {
     this.llm = llm
     this.memory = memory
   }
@@ -123,10 +123,10 @@ Provide a structured bull case using this format:
 }
 
 export class ImprovedBearResearcher {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private memory: FinancialSituationMemory
 
-  constructor(llm: UnifiedLLMClient, memory: FinancialSituationMemory) {
+  constructor(llm: LLMClient, memory: FinancialSituationMemory) {
     this.llm = llm
     this.memory = memory
   }

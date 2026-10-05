@@ -4,14 +4,15 @@
  */
 
 import { AgentState, Message } from '../types'
-import { UnifiedLLMClient } from '../utils/llm-client'
+import type { LLMClient } from '../utils/llm-client'
+import { strategyPrompt } from '../utils/strategy-prompt'
 import { FinancialSituationMemory } from '../utils/memory'
 
 export class Trader {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private memory: FinancialSituationMemory
 
-  constructor(llm: UnifiedLLMClient, memory: FinancialSituationMemory) {
+  constructor(llm: LLMClient, memory: FinancialSituationMemory) {
     this.llm = llm
     this.memory = memory
   }
@@ -55,6 +56,14 @@ Leverage these insights to make an informed and strategic decision.`
       }
     ]
 
+    if (state.instrument?.type === 'event') {
+      messages[0].content =
+        strategyPrompt('', state, 'a trading agent') +
+        '\nEnd with FINAL TRANSACTION PROPOSAL: BUY, SELL or HOLD (one token).'
+      messages[1].content = `Research Manager plan: ${investmentPlan}`
+    } else if (state.strategySignalsReport) {
+      messages[1].content += `\nThird-party strategy signals: ${state.strategySignalsReport}`
+    }
     const response = await this.llm.invoke(messages)
 
     return {

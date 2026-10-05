@@ -4,14 +4,16 @@
  */
 
 import { AgentState, InvestDebateState } from '../types'
-import { UnifiedLLMClient } from '../utils/llm-client'
+import type { LLMClient } from '../utils/llm-client'
+import { strategyPrompt } from '../utils/strategy-prompt'
+import { parseFinalLine } from '../utils/parse-final-line'
 import { FinancialSituationMemory } from '../utils/memory'
 
 export class BullResearcher {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private memory: FinancialSituationMemory
 
-  constructor(llm: UnifiedLLMClient, memory: FinancialSituationMemory) {
+  constructor(llm: LLMClient, memory: FinancialSituationMemory) {
     this.llm = llm
     this.memory = memory
   }
@@ -49,7 +51,7 @@ Reflections from similar situations and lessons learned: ${pastMemoryStr}
 
 Use this information to deliver a compelling bull argument, refute the bear's concerns, and engage in a dynamic debate that demonstrates the strengths of the bull position. You must also address reflections and learn from lessons and mistakes you made in the past.`
 
-    const response = await this.llm.invoke(prompt)
+    const response = await this.llm.invoke(strategyPrompt(prompt, state, 'a Bull Analyst'))
 
     const argument = `Bull Analyst: ${response.content}`
 
@@ -69,10 +71,10 @@ Use this information to deliver a compelling bull argument, refute the bear's co
 }
 
 export class BearResearcher {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private memory: FinancialSituationMemory
 
-  constructor(llm: UnifiedLLMClient, memory: FinancialSituationMemory) {
+  constructor(llm: LLMClient, memory: FinancialSituationMemory) {
     this.llm = llm
     this.memory = memory
   }
@@ -110,7 +112,7 @@ Reflections from similar situations and lessons learned: ${pastMemoryStr}
 
 Use this information to deliver a compelling bear argument, highlight risks, and engage in a dynamic debate. Learn from past mistakes reflected in the memories provided.`
 
-    const response = await this.llm.invoke(prompt)
+    const response = await this.llm.invoke(strategyPrompt(prompt, state, 'a Bear Analyst'))
 
     const argument = `Bear Analyst: ${response.content}`
 
@@ -130,10 +132,10 @@ Use this information to deliver a compelling bear argument, highlight risks, and
 }
 
 export class InvestmentJudge {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private memory: FinancialSituationMemory
 
-  constructor(llm: UnifiedLLMClient, memory: FinancialSituationMemory) {
+  constructor(llm: LLMClient, memory: FinancialSituationMemory) {
     this.llm = llm
     this.memory = memory
   }
@@ -154,11 +156,13 @@ Based on the arguments presented by both sides:
 
 Provide your reasoning and conclude with a clear decision: "FINAL DECISION: INVEST" or "FINAL DECISION: NOT INVEST"`
 
-    const response = await this.llm.invoke(prompt)
+    const eventEnding = state.instrument?.type === 'event'
+      ? '\nEnd with FINAL DECISION: INVEST or FINAL DECISION: NOT INVEST.'
+      : ''
+    const response = await this.llm.invoke(strategyPrompt(prompt, state, 'an Investment Judge') + eventEnding)
 
-    const decision = response.content.includes('INVEST') && !response.content.includes('NOT INVEST')
-      ? 'INVEST'
-      : 'NOT INVEST'
+    // Read only the last FINAL DECISION line; anything malformed is the conservative NOT INVEST.
+    const decision = parseFinalLine(response.content, 'FINAL DECISION:', ['INVEST', 'NOT INVEST']).value ?? 'NOT INVEST'
 
     const newInvestmentDebateState: InvestDebateState = {
       ...investmentDebateState,
