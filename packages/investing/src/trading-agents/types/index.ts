@@ -3,6 +3,17 @@
  * Core type definitions for the multi-agent trading system
  */
 
+import type {
+  Instrument,
+  NormalizedSignal,
+  TradeProposal,
+  RiskVerdict,
+  JudgeDecision,
+  ExecutionApproval,
+  FundManagerApproval,
+  VenueMarket
+} from '../../strategy-signals/types'
+
 export interface Message {
   role: 'system' | 'user' | 'assistant'
   content: string
@@ -48,6 +59,16 @@ export interface RiskDebateState {
 }
 
 export interface AgentState {
+  instrument?: Instrument
+  eventMarket?: VenueMarket
+  strategySignals?: NormalizedSignal[]
+  strategySignalsReport?: string
+  proposal?: TradeProposal
+  riskVerdict?: RiskVerdict
+  judgeDecision?: JudgeDecision
+  fundManagerApproval?: FundManagerApproval
+  approval?: ExecutionApproval
+  riskReviewReason?: string
   /** Company that we are interested in trading */
   companyOfInterest: string
   /** Date we are trading at */

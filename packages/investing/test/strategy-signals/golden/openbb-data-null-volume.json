@@ -1,0 +1,4 @@
+{
+  "raw": [{ "date": "2026-01-01", "open": 10, "high": 11, "low": 9, "close": 10, "volume": null, "vwap": null }],
+  "expected": { "bars": [{ "date": "2026-01-01", "open": 10, "high": 11, "low": 9, "close": 10, "volume": 0, "missingVolume": 1 }], "missingVolume": 1 }
+}

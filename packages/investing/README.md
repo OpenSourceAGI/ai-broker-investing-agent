@@ -39,6 +39,92 @@ A comprehensive TypeScript/JavaScript library for investment analysis, trading a
 - 🧠 **AI-Powered Analysis** - LLM-based investment research and debate generation
 - 📦 **Data Files** - Pre-packaged stock indexes, sector information, and market data
 
+## Third-party strategy signals
+
+The source integration connects all ten vendored project folders to the agent
+pipeline through pure sources, venue/data mappings and a survival risk posture.
+The [integration overview](../../devdocs/third-party-trading-bots-overview.md)
+records each project's runtime, license, native assessment and operational scope.
+Full notices ship in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+From the repository root, run the credential-free paper demo in Docker:
+
+```bash
+bash devdocs/third-party-integration/harness/run.sh install
+bash devdocs/third-party-integration/harness/run.sh demo
+```
+
+The image uses pinned Bun 1.3.11 with Node/native build prerequisites. Dependencies
+live in container-only volumes; the staged repository excludes credentials and
+host node_modules. Tests and the demo run with `--network=none`.
+
+The demo first prints a readable summary: six numbered stages per run (strategy,
+normalized signal, research input, Trader, Portfolio Manager, execution). It then
+prints the full JSON trace: signals → report → proposal → Trader → risk debate → judge →
+verdict → Fund Manager → approval → fill → account snapshots. It includes momentum
+BUY/SELL, Vibe YES/NO, BTC bullish/bearish, copy sizing, sequential Gabagool targets,
+PyKalshi and pmxt mappings, OpenBB-backed stock BUY/SELL and Defensive sizing.
+The pmxt fixture opts into explicitly synthetic quotes; a point price is not a
+live executable quote. Models are scripted and all prices/forecasts are fixtures.
+
+Source consumers can opt into the new stage with the fourth graph argument and
+the third `propagate` argument:
+
+```typescript
+// Source-level example inside packages/investing. Avoid src/index.ts: it loads
+// native dependencies and dotenv. Built package/subpath imports remain broken.
+import { TradingAgentsGraph } from './src/trading-agents/graph/trading-graph'
+import { kalshiMomentumSource } from './src/strategy-signals/sources/kalshi-momentum'
+
+const graph = new TradingAgentsGraph([], false, undefined, {
+  llm: { deep: suppliedLLM, quick: suppliedLLM },
+  riskReview: true,
+  riskLimits: { maxPositionPerMarket: 50, maxOpenPositions: 5 },
+})
+const context = { account: venue.snapshot(), evaluationTime }
+const strategySignals = kalshiMomentumSource.run({ ticks }, context)
+const result = await graph.propagate(market.title, evaluationTime.slice(0, 10), {
+  instrument: { type: 'event', venue: venue.venue, marketId: market.marketId },
+  strategySignals,
+  account: context.account,
+  evaluationTime,
+  event: market,
+  sources: { [kalshiMomentumSource.id]: kalshiMomentumSource },
+})
+if (result.state.approval) await venue.execute(result.state.approval)
+```
+
+The caller supplies the LLM, current venue/account, market and evaluation time. With `riskReview: true`, an `account` snapshot is required for stocks too: without one the gate cannot check cash or holdings, so the run ends at HOLD.
+Register each executable source so its freshness and guards can run; unregistered
+third-party proposals fail closed. Event runs skip stock analysts. Fixture stock
+runs select no external analysts and execute an Alpaca-shaped order against
+`MockEquityBroker` after a cash/share preflight. Existing callers without `run`
+retain byte-identical prompts; risk review is opt-in.
+
+Every executable result binds to one selected `proposalId`. BLOCK means HOLD;
+REDUCE supplies a whole-number cap. Final quantity is the minimum of the proposal,
+common/source risk caps, judge cap and Fund Manager quantity. Invalid model output
+or model errors cannot grant approval. Red flags remain advisory input. Forecast
+guards/Kelly apply only to genuine forecasts, never a substituted market price.
+
+Gabagool portfolio targets execute one leg per call, recomputed from actual
+holdings and fill costs. A rejected leg does not create a holding. Strategy prices
+retain decimal-cent precision; the paper execution bridge rejects unsupported
+sub-cent prices. Fractional weighted average costs are valid account values.
+Survival multipliers (1 / 1 / 0.75 / 0.5 / 0) are new demo policy, not upstream rules.
+
+Verification commands are `run.sh test`, `test-root`, `tsc`, `build`, `coverage`
+and `pack`. The type gate permits only reproduced pre-existing diagnostic
+identities/occurrences; it does not claim a clean TypeScript build. Coverage is
+reported for the new module and changed graph/risk-judge files.
+
+**Scope:** source-level fixture/paper execution only. Built exports, the web app
+and Workers runtime are not validated by this demo. Live broker/venue execution,
+an execution ledger, portfolio versioning and concurrency control are outside
+this integration. Current snapshots must be refreshed and callers must serialize
+execution. See the [workflow](../../devdocs/third-party-integration/skills/integrate-trading-bot/SKILL.md)
+to add a source, mapping or posture.
+
 ## Installation
 
 ```bash

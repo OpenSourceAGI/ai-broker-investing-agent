@@ -4,13 +4,13 @@
  */
 
 import { AgentState, Message } from '../types'
-import { UnifiedLLMClient } from '../utils/llm-client'
+import type { LLMClient } from '../utils/llm-client'
 import { getStockData, getIndicators } from '../tools/data-tools'
 
 export class MarketAnalyst {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
 
-  constructor(llm: UnifiedLLMClient) {
+  constructor(llm: LLMClient) {
     this.llm = llm
   }
 

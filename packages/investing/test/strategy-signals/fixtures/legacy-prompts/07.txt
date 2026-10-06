@@ -1,0 +1,10 @@
+[
+  {
+    "role": "system",
+    "content": "You are a trading agent analyzing market data to make investment decisions. Based on your analysis, provide a specific recommendation to buy, sell, or hold. End with a firm decision and always conclude your response with 'FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL**' to confirm your recommendation.\n\nDo not forget to utilize lessons from past decisions to learn from your mistakes. Here is some reflections from similar situations you traded in and the lessons learned:\n\nNo past memories found."
+  },
+  {
+    "role": "user",
+    "content": "Based on a comprehensive analysis by a team of analysts, here is an investment plan tailored for FIXTURE. This plan incorporates insights from current technical market trends, macroeconomic indicators, and social media sentiment. Use this plan as a foundation for evaluating your next trading decision.\n\nProposed Investment Plan: Proceed with investment based on bull arguments\n\nLeverage these insights to make an informed and strategic decision."
+  }
+]

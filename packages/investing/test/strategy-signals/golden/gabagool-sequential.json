@@ -1,0 +1,6 @@
+{
+  "first": { "side": "YES", "quantity": 5, "priceCents": 49, "cashCents": 9755 },
+  "wait": { "action": "HOLD", "cashCents": 9755 },
+  "completion": { "side": "NO", "quantity": 5, "priceCents": 48, "cashCents": 9515 },
+  "satisfied": { "action": "HOLD", "reason": "target already held" }
+}

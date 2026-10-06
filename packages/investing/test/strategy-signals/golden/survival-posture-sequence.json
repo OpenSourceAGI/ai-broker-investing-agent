@@ -1,0 +1,5 @@
+{
+  "initialBalance": 1000,
+  "balances": [800, 800, 800, 750, 750, 750, 950, 1000, 1000, 1000, 500],
+  "states": ["SURVIVAL", "SURVIVAL", "DEFENSIVE", "DEFENSIVE", "DEFENSIVE", "RECOVERY", "RECOVERY", "RECOVERY", "RECOVERY", "SURVIVAL", "CRITICAL"]
+}

@@ -1,0 +1,10 @@
+{
+  "venue": "polymarket",
+  "marketId": "COPY-FIXTURE",
+  "asOf": "2026-01-01T00:00:10Z",
+  "outcome": "YES",
+  "side": "BUY",
+  "notionalUsd": 100,
+  "shares": 200,
+  "priceCents": 50
+}

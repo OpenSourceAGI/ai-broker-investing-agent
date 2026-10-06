@@ -1,0 +1,10 @@
+{
+  "direction": "BULLISH",
+  "bullishContribution": 0.48,
+  "bearishContribution": 0.24,
+  "score": 66.66666666666667,
+  "confidence": 0.8,
+  "outcome": "YES",
+  "quantity": 2,
+  "priceCents": 50
+}

@@ -4,14 +4,15 @@
  */
 
 import { AgentState, RiskDebateState } from '../types'
-import { UnifiedLLMClient } from '../utils/llm-client'
+import type { LLMClient } from '../utils/llm-client'
+import { strategyPrompt } from '../utils/strategy-prompt'
 import { FinancialSituationMemory } from '../utils/memory'
 
 export class RiskyAnalyst {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private memory: FinancialSituationMemory
 
-  constructor(llm: UnifiedLLMClient, memory: FinancialSituationMemory) {
+  constructor(llm: LLMClient, memory: FinancialSituationMemory) {
     this.llm = llm
     this.memory = memory
   }
@@ -46,7 +47,7 @@ As the risk-seeking perspective, you should:
 
 Present your argument conversationally, engaging with the other analysts' concerns while making a compelling case for higher risk tolerance.`
 
-    const response = await this.llm.invoke(prompt)
+    const response = await this.llm.invoke(strategyPrompt(prompt, state, 'a Risk-Seeking Analyst'))
     const argument = `Risky Analyst: ${response.content}`
 
     const newRiskDebateState: RiskDebateState = {
@@ -69,10 +70,10 @@ Present your argument conversationally, engaging with the other analysts' concer
 }
 
 export class SafeAnalyst {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private memory: FinancialSituationMemory
 
-  constructor(llm: UnifiedLLMClient, memory: FinancialSituationMemory) {
+  constructor(llm: LLMClient, memory: FinancialSituationMemory) {
     this.llm = llm
     this.memory = memory
   }
@@ -111,7 +112,7 @@ As the conservative perspective, you should:
 
 Engage conversationally with the risky analyst's arguments, providing counterpoints grounded in risk management principles.`
 
-    const response = await this.llm.invoke(prompt)
+    const response = await this.llm.invoke(strategyPrompt(prompt, state, 'a Risk-Conservative Analyst'))
     const argument = `Safe Analyst: ${response.content}`
 
     const newRiskDebateState: RiskDebateState = {
@@ -134,10 +135,10 @@ Engage conversationally with the risky analyst's arguments, providing counterpoi
 }
 
 export class NeutralAnalyst {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private memory: FinancialSituationMemory
 
-  constructor(llm: UnifiedLLMClient, memory: FinancialSituationMemory) {
+  constructor(llm: LLMClient, memory: FinancialSituationMemory) {
     this.llm = llm
     this.memory = memory
   }
@@ -179,7 +180,7 @@ As the neutral perspective, you should:
 
 Provide a balanced perspective that synthesizes the best elements from both aggressive and conservative approaches.`
 
-    const response = await this.llm.invoke(prompt)
+    const response = await this.llm.invoke(strategyPrompt(prompt, state, 'a Neutral Risk Analyst'))
     const argument = `Neutral Analyst: ${response.content}`
 
     const newRiskDebateState: RiskDebateState = {

@@ -4,13 +4,13 @@
  */
 
 import { AgentState, Message } from '../types'
-import { UnifiedLLMClient } from '../utils/llm-client'
+import type { LLMClient } from '../utils/llm-client'
 import * as qwk from 'qwksearch-api-client'
 
 export class NewsAnalyst {
-    private llm: UnifiedLLMClient
+    private llm: LLMClient
 
-    constructor(llm: UnifiedLLMClient) {
+    constructor(llm: LLMClient) {
         this.llm = llm
     }
 

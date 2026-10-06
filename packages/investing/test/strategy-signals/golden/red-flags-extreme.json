@@ -1,0 +1,6 @@
+{
+  "input": { "symbol": "FIXTURE", "debtToEquityPercent": 600, "netIncome": 100, "freeCashFlow": -250, "interestCoverage": 1.5 },
+  "expectedFlags": ["EARNINGS_QUALITY", "EXTREME_LEVERAGE", "REFINANCING_RISK"],
+  "integrationAction": "HOLD",
+  "kind": "recommendation"
+}

@@ -1,0 +1,12 @@
+{
+  "venue": "polymarket",
+  "marketId": "BTC-FIXTURE",
+  "asOf": "2026-01-01T00:00:10Z",
+  "yesAskCents": 50,
+  "noAskCents": 50,
+  "signals": [
+    { "source": "SpikeDetection", "direction": "BULLISH", "confidence": 0.8, "strength": 4, "timestamp": "2026-01-01T00:00:00Z" },
+    { "source": "PriceDivergence", "direction": "BEARISH", "confidence": 0.8, "strength": 4, "timestamp": "2026-01-01T00:00:00Z" },
+    { "source": "SentimentAnalysis", "direction": "BULLISH", "confidence": 0.8, "strength": 4, "timestamp": "2026-01-01T00:00:00Z" }
+  ]
+}
