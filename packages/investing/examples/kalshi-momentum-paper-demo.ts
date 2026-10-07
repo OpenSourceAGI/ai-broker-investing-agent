@@ -1,15 +1,14 @@
-import { runKalshiMomentumPaperAgent } from "../src/prediction-markets/index.js";
+import { runKalshiMomentumResearchDemo } from "./fixtures/kalshi-momentum-research.js";
 
-const baseTime = Date.parse("2026-01-01T00:00:00.000Z");
-const yesPrices = [50, 51, 52, 53, 58];
-const ticks = yesPrices.map((yesPriceCents, index) => ({
-  ticker: "DEMO-KALSHI-MARKET",
-  timestamp: new Date(baseTime + index * 60_000).toISOString(),
-  yesPriceCents,
-}));
+const result = await runKalshiMomentumResearchDemo();
 
-const result = runKalshiMomentumPaperAgent({ ticks, initialCashCents: 10_000 });
-
+console.log("Paper only; recorded ticks and model responses; no credentials or network.");
+console.log("PyKalshi momentum → investing research/debate/judge/trader → FundManager approval → paper portfolio checks");
+for (const step of result.steps.filter((step) => step.researchSignal)) {
+  console.log(`\nStrategy: ${step.intent.action} ${step.intent.outcome} ${step.intent.quantity} at ${step.intent.priceCents}c`);
+  console.log(step.researchSignal!.reasoning);
+  console.log(`Paper executor: ${step.execution.status}`);
+}
 console.log(result.report);
 console.log("\nStructured result:");
 console.log(JSON.stringify(result, null, 2));

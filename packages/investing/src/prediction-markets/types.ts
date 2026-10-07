@@ -5,6 +5,8 @@
  * original Supabase edge functions.
  */
 
+import type { TradeSignal } from "../trading-agents/types/index.js";
+
 // ============================================================================
 // Configuration
 // ============================================================================
@@ -88,7 +90,7 @@ export interface KalshiMomentumConfig {
   profitTargetCents: number;
   /** Loss per contract, in cents, that triggers an exit. */
   stopLossCents: number;
-  /** Maximum contracts allowed in one ticker/outcome position. */
+  /** Maximum contracts allowed per market, across both outcomes. */
   maxPosition: number;
 }
 
@@ -106,6 +108,8 @@ export interface KalshiMomentumStrategyState {
   directions: Array<-1 | 0 | 1>;
   /** Most recently observed YES price, in cents/contract. */
   lastYesPriceCents?: number;
+  ticker?: string;
+  lastTimestamp?: string;
   position?: KalshiMomentumPosition;
   tradesExecuted: number;
 }
@@ -165,6 +169,8 @@ export interface PaperExecutionResult {
 export interface KalshiMomentumAgentStep {
   tick: KalshiMarketTick;
   intent: PredictionMarketTradeIntent;
+  /** Optional review from the existing investing research/trader workflow. */
+  researchSignal?: TradeSignal;
   execution: PaperExecutionResult;
   strategyState: KalshiMomentumStrategyState;
 }

@@ -37,6 +37,11 @@ served at <https://docs.autoinvestment.broker/>.
 
 ### Implementation notes
 
+- [Momentum replay walkthrough](./prediction-markets-agent-system-walkthrough.md) —
+  algorithm, shared approval flow, development history and reproduction.
+- [Momentum replay PR description](./prediction-markets-agent-pr-description.md) —
+  scope, verification and limitations.
+
 - [Implementation summary](./IMPLEMENTATION_SUMMARY.md) — Polymarket data sync
   with holders.
 - [Error handling improvements](./ERROR_HANDLING_IMPROVEMENTS.md)

@@ -35,12 +35,12 @@
     "./prediction-markets": {
       "types": "./dist/prediction-markets/index.d.ts",
       "import": "./dist/prediction-markets/index.mjs",
-      "require": "./dist/prediction-markets/index.js"
+      "require": "./dist/prediction-markets/index.cjs"
     },
     "./trading-agents": {
       "types": "./dist/trading-agents/index.d.ts",
       "import": "./dist/trading-agents/index.mjs",
-      "require": "./dist/trading-agents/index.js"
+      "require": "./dist/trading-agents/index.cjs"
     },
     "./constants": {
       "types": "./dist/constants/index.d.ts",

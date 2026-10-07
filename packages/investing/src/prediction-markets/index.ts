@@ -60,3 +60,5 @@ export { getEvents } from "./events.js";
 export * as polyfactual from "./clients/polyfactual.js";
 export * as x402 from "./clients/x402.js";
 export * as polymarketClob from "./clients/polymarket.js";
+
+export { predictionMarketResearch, reviewPredictionMarketIntent } from "./adapters/trading-agents.js";
