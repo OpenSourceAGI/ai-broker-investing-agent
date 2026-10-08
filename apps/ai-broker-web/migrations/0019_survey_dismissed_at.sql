@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `survey_dismissed_at` integer;

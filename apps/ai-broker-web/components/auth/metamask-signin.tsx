@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { Loader2, Wallet } from "lucide-react"
 import { BrowserProvider } from "ethers"
 import { SiweMessage } from "siwe"
+import { consumeSurveyPrompt } from "@/lib/survey/prompt"
 
 export function MetaMaskSignIn() {
   const { data: session } = useSession()
@@ -17,10 +18,7 @@ export function MetaMaskSignIn() {
 
   useEffect(() => {
     if (session?.user) {
-      fetch('/api/user/check-survey')
-        .then(r => r.json())
-        .then(data => router.push(data.hasCompletedSurvey ? "/" : "/survey"))
-        .catch(() => router.push("/survey"))
+      consumeSurveyPrompt().then(show => router.push(show ? "/survey" : "/"))
     }
     if (typeof window !== "undefined") {
       setHasMetaMask(!!window.ethereum)
@@ -87,13 +85,7 @@ export function MetaMaskSignIn() {
 
       if (data) {
         router.refresh()
-        try {
-          const surveyResponse = await fetch('/api/user/check-survey')
-          const surveyData = await surveyResponse.json()
-          router.push(surveyData.hasCompletedSurvey ? "/" : "/survey")
-        } catch {
-          router.push("/survey")
-        }
+        router.push((await consumeSurveyPrompt()) ? "/survey" : "/")
       }
 
     } catch (err) {

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -9,6 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import grab from 'grab-url';
+import { useSession } from "@/lib/auth/client"
+import { dismissSurvey } from "@/lib/survey/prompt"
 
 const SECTIONS = [
   { id: 1, title: "Profile & Background", questions: [1, 2] },
@@ -21,6 +24,13 @@ export default function InvestorSurvey() {
   const [responses, setResponses] = useState<Record<string, any>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const { data: session } = useSession()
+  const isSignedIn = !!session?.user
+
+  const handleDismiss = async () => {
+    await dismissSurvey()
+    router.push("/")
+  }
 
   const handleResponseChange = (questionId: string, value: any) => {
     setResponses((prev) => ({ ...prev, [questionId]: value }))
@@ -66,6 +76,14 @@ export default function InvestorSurvey() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12 max-w-4xl">
+        {isSignedIn && (
+          <div className="flex justify-end mb-4">
+            <Button variant="ghost" size="sm" onClick={handleDismiss}>
+              <X className="mr-1 h-4 w-4" />
+              Not now
+            </Button>
+          </div>
+        )}
         {submitSuccess && (
           <Card className="mb-8 backdrop-blur-sm bg-green-50/80 border-green-200/40 shadow-lg">
             <CardContent className="pt-6">
@@ -453,10 +471,15 @@ export default function InvestorSurvey() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-center pb-12">
+        <div className="flex flex-col items-center gap-3 pb-12">
           <Button size="lg" onClick={handleSubmit} className="px-12 shadow-lg" disabled={isSubmitting || submitSuccess}>
             {isSubmitting ? "Submitting..." : submitSuccess ? "Submitted!" : "Submit Survey"}
           </Button>
+          {isSignedIn && (
+            <Button variant="link" size="sm" onClick={handleDismiss} className="text-muted-foreground">
+              Skip the survey. You can take it later from Settings.
+            </Button>
+          )}
         </div>
       </main>
 

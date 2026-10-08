@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/lib/auth/client"
+import { consumeSurveyPrompt } from "@/lib/survey/prompt"
 
 import { StrategiesTab } from "@/components/investing/tabs/strategies-tab"
 import { Card } from "@/components/ui/card"
@@ -17,22 +18,12 @@ function StockContent() {
   useEffect(() => {
     const checkSurveyAndInitialize = async () => {
       if (session?.user && !isPending) {
-        // Check if user has completed the survey
-        try {
-          const response = await fetch('/api/user/check-survey')
-          const data = await response.json()
-
-          if (!data.hasCompletedSurvey) {
-            router.push("/survey")
-            return
-          }
-
-          await initializePortfolio()
-        } catch (error) {
-          console.error("Error checking survey status:", error)
-          // Continue with initialization if check fails
-          await initializePortfolio()
+        if (await consumeSurveyPrompt()) {
+          router.push("/survey")
+          return
         }
+
+        await initializePortfolio()
       }
     }
 
