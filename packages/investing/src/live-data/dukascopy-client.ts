@@ -1,4 +1,13 @@
-import { getHistoricalRates, getRealTimeRates, Config } from "dukascopy-node";
+import {
+  BufferFetcher,
+  Instrument as DukascopyInstrument,
+  Timeframe as DukascopyTimeframe,
+  defaultConfig,
+  formatOutput,
+  generateUrls,
+  normaliseDates,
+  processData,
+} from "dukascopy-node";
 
 // Flexible instrument type that accepts any valid Dukascopy instrument
 // Includes common instruments as suggestions but allows any string
@@ -71,33 +80,147 @@ export interface JsonItemTick {
   bidVolume?: number;
 }
 
+const TIMEFRAMES = new Set<string>(Object.keys(DukascopyTimeframe));
+const INSTRUMENTS = new Set<string>(Object.keys(DukascopyInstrument));
+
+interface FetchRatesInput {
+  instrument: string;
+  from: Date;
+  to: Date;
+  timeframe: TimeframeType;
+  priceType: PriceType;
+  volumes: boolean;
+  format: FormatType;
+}
+
+function toValidDate(value: Date | string | number, label: string): Date {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Invalid ${label} date: ${String(value)}`);
+  }
+  return date;
+}
+
+/**
+ * Validate a request by hand instead of through dukascopy-node's
+ * `getHistoricalRates`, whose config check (fastest-validator) compiles its
+ * schema with `new Function`. Cloudflare Workers forbid code generation from
+ * strings, so that call throws in production before any data is fetched.
+ */
+export function validateRatesInput(input: FetchRatesInput): void {
+  if (!INSTRUMENTS.has(input.instrument)) {
+    throw new Error(`Unknown Dukascopy instrument: ${input.instrument}`);
+  }
+  if (!TIMEFRAMES.has(input.timeframe)) {
+    throw new Error(`Unknown Dukascopy timeframe: ${input.timeframe}`);
+  }
+  if (input.priceType !== "bid" && input.priceType !== "ask") {
+    throw new Error(`Unknown Dukascopy price type: ${input.priceType}`);
+  }
+  if (input.format !== "array" && input.format !== "json" && input.format !== "csv") {
+    throw new Error(`Unknown Dukascopy format: ${input.format}`);
+  }
+  if (input.from.getTime() >= input.to.getTime()) {
+    throw new Error("Dukascopy date range must start before it ends");
+  }
+}
+
+/**
+ * Same pipeline as dukascopy-node's `getHistoricalRates` (urls → fetch →
+ * decode → filter → format), built from the library's exported pieces so no
+ * runtime code generation and no filesystem cache are involved.
+ */
+async function fetchRates(input: FetchRatesInput): Promise<any> {
+  validateRatesInput(input);
+
+  const instrument = input.instrument as any;
+  const timeframe = input.timeframe as any;
+  const [startDate, endDate] = normaliseDates({
+    instrument,
+    startDate: input.from,
+    endDate: input.to,
+    timeframe,
+    utcOffset: defaultConfig.utcOffset,
+  });
+
+  const urls = generateUrls({
+    instrument,
+    timeframe,
+    priceType: input.priceType as any,
+    startDate,
+    endDate,
+  });
+
+  const fetcher = new BufferFetcher({
+    batchSize: defaultConfig.batchSize,
+    pauseBetweenBatchesMs: defaultConfig.pauseBetweenBatchesMs,
+    retryCount: defaultConfig.retryCount,
+    pauseBetweenRetriesMs: defaultConfig.pauseBetweenRetriesMs,
+    retryOnEmpty: defaultConfig.retryOnEmpty,
+    failAfterRetryCount: defaultConfig.failAfterRetryCount,
+  });
+  const bufferObjects = await fetcher.fetch(urls);
+
+  const processed = processData({
+    instrument,
+    requestedTimeframe: timeframe,
+    bufferObjects,
+    priceType: input.priceType as any,
+    volumes: input.volumes,
+    volumeUnits: defaultConfig.volumeUnits,
+    ignoreFlats: defaultConfig.ignoreFlats,
+  } as any);
+
+  const [startMs, endMs] = [+startDate, +endDate];
+  const filtered = processed.filter(
+    ([timestamp]: number[]) => timestamp && timestamp >= startMs && timestamp < endMs,
+  );
+
+  return (formatOutput as any)({
+    processedData: filtered,
+    format: input.format,
+    timeframe,
+  });
+}
+
+/** Mirrors dukascopy-node's look-back window for `last` candles. */
+function lookbackStart(timeframe: TimeframeType, now: Date, last: number): Date {
+  const stepMs: Record<TimeframeType, number> = {
+    tick: 1e3,
+    s1: 1e3,
+    m1: 60e3,
+    m5: 5 * 60e3,
+    m15: 15 * 60e3,
+    m30: 30 * 60e3,
+    h1: 60 * 60e3,
+    h4: 4 * 60 * 60e3,
+    d1: 24 * 60 * 60e3,
+    mn1: 30 * 24 * 60 * 60e3,
+  };
+  return new Date(+now - last * 5 * (stepMs[timeframe] ?? stepMs.d1));
+}
+
 /**
  * Fetch historical market data from Dukascopy
  * Supports forex, stocks, crypto, ETFs, indices, commodities, and bonds
  */
 export async function getHistoricalData(config: DukascopyConfig) {
   try {
-    //@ts-ignore
-    const dukascopyConfig: Config = {
-      //@ts-ignore
-      instrument: config.instrument,
-      dates: {
-        from: new Date(config.dates.from),
-        to: config.dates.to ? new Date(config.dates.to) : new Date(),
-      },
+    const data = await fetchRates({
+      instrument: String(config.instrument),
+      from: toValidDate(config.dates.from, "from"),
+      to: config.dates.to ? toValidDate(config.dates.to, "to") : new Date(),
       timeframe: config.timeframe || "d1",
       format: config.format || "json",
       priceType: config.priceType || "bid",
       volumes: config.volumes !== false,
-    };
-
-    const data = await getHistoricalRates(dukascopyConfig);
+    });
     return { success: true, data };
   } catch (error: any) {
     console.error("Dukascopy historical data error:", error);
     return {
       success: false,
-      error: error.message || "Failed to fetch historical data",
+      error: error?.message || "Failed to fetch historical data",
     };
   }
 }
@@ -108,29 +231,32 @@ export async function getHistoricalData(config: DukascopyConfig) {
  */
 export async function getRealTimeData(config: RealTimeConfig) {
   try {
-    const data = await getRealTimeRates({
-      //@ts-ignore
-      instrument: config.instrument,
-      timeframe: config.timeframe || "tick",
-      //@ts-ignore
-      format: config.format || "json",
+    const timeframe = config.timeframe || "tick";
+    const format = config.format || "json";
+    const last = config.last || 10;
+    const now = new Date();
+
+    const rates = await fetchRates({
+      instrument: String(config.instrument),
+      from: config.dates
+        ? toValidDate(config.dates.from, "from")
+        : lookbackStart(timeframe, now, last),
+      to: config.dates?.to ? toValidDate(config.dates.to, "to") : now,
+      timeframe,
+      format: "array",
       priceType: config.priceType || "bid",
-      last: config.last || 10,
       volumes: config.volumes !== false,
-      ...(config.dates && {
-        dates: {
-          from: new Date(config.dates.from),
-          to: config.dates.to ? new Date(config.dates.to) : new Date(),
-        },
-      }),
     });
+
+    const sliced = config.dates ? rates : rates.slice(-last);
+    const data = (formatOutput as any)({ processedData: sliced, format, timeframe });
 
     return { success: true, data };
   } catch (error: any) {
     console.error("Dukascopy real-time data error:", error);
     return {
       success: false,
-      error: error.message || "Failed to fetch real-time data",
+      error: error?.message || "Failed to fetch real-time data",
     };
   }
 }

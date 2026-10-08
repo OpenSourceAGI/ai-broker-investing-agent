@@ -56,7 +56,7 @@ bundle. **Do not import `cloudflare:workers` here.**
 | `algo-stategies/` | `algo-strategies.json` + the TradingView scraper. (The directory name is misspelled upstream; leave it.) |
 | `alpaca/` | Broker REST client and the Alpaca MCP client |
 | `leaders/` | ZuluTrade and NVSTly copy-trading leaderboards |
-| `live-data/` | Dukascopy feed + symbol table |
+| `live-data/` | Dukascopy feed + symbol table. Never call dukascopy-node's `getHistoricalRates`/`getRealTimeRates` directly: their config check compiles with `new Function`, which Cloudflare Workers reject. `dukascopy-client.ts` rebuilds that pipeline from the library's exported pieces. |
 | `correlate/` | Time-series correlation / XGBoost prediction statistics |
 | `prediction/` | Market sync, analysis, API, and its own D1 tables |
 | `prediction-markets/` | Bookmaker / event-analysis / mapper agents, Polymarket order bots, venue clients, arbitrage. MIT — keep its `LICENSE` file. |
