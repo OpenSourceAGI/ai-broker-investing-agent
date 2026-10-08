@@ -1,8 +1,8 @@
 // Stock Search API Route
 import { NextRequest, NextResponse } from 'next/server';
-import YahooFinance from 'yahoo-finance2';
+import { createYahooFinance } from '@/packages/investing/src/stocks/yahoo-finance-wrapper';
 
-const yahooFinance = new YahooFinance();
+const yahooFinance = createYahooFinance();
 
 export async function GET(request: NextRequest) {
     try {

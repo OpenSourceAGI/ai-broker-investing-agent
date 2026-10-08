@@ -6,8 +6,37 @@
 
 import YahooFinance from "yahoo-finance2";
 
-// Create singleton instance of YahooFinance
-const yf = new YahooFinance();
+/**
+ * Options that make yahoo-finance2 safe to share across requests on
+ * Cloudflare Workers.
+ *
+ * yahoo-finance2 routes every fetch through one module-level queue (default
+ * concurrency 4). When the queue is full, a waiting job is started from the
+ * `.finally()` of whichever job finished before it - i.e. inside a *different*
+ * request's async context. On Workers the Response is then bound to that other
+ * request, and reading its body throws "Cannot perform I/O on behalf of a
+ * different request (I/O type: ReadableStreamSource)".
+ *
+ * With unlimited concurrency and no interval the queue never defers a job, so
+ * every fetch starts synchronously in the request that asked for it. The queue
+ * is shared by every YahooFinance instance in the isolate and each call
+ * re-applies its instance's queue options, so every instance must use these.
+ */
+export const WORKER_SAFE_YAHOO_FINANCE_OPTIONS = {
+  queue: { concurrency: Infinity, interval: 0 },
+} as const;
+
+/** Create a YahooFinance client that never runs one request's fetch in another's context. */
+export function createYahooFinance(
+  options: ConstructorParameters<typeof YahooFinance>[0] = {},
+) {
+  return new YahooFinance({
+    ...options,
+    queue: { ...options?.queue, ...WORKER_SAFE_YAHOO_FINANCE_OPTIONS.queue },
+  });
+}
+
+const yf = createYahooFinance();
 
 /**
  * A single row of historical price data, shaped like the rows the deprecated
