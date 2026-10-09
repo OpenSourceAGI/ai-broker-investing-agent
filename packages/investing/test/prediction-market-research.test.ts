@@ -188,3 +188,79 @@ describe("momentum through the existing upstream approval pipeline", () => {
     expect(request).toEqual(before);
   });
 });
+
+describe("approval boundary rejects corrupted or rewritten proposals", () => {
+  it.each([
+    ["action", { action: "SELL" }],
+    ["outcome", { outcome: "NO" }],
+    ["price", { limitPriceCents: 54 }],
+    ["market", { instrument: { type: "event", venue: "kalshi", marketId: "OTHER", outcome: "YES" } }],
+    ["timestamp", { asOf: "2026-01-01T00:04:00.000Z" }],
+  ] as const)("vetoes a changed %s even when a graph reports APPROVE", async (_field, changes) => {
+    const { graph } = reviewedGraph();
+    const signal = await reviewPredictionMarketIntent(graph, intent, portfolio(), reviewOptions);
+    const state = graph.getCurrentState()!;
+    state.approval = { ...state.approval!, proposal: { ...state.approval!.proposal, ...changes } };
+    vi.spyOn(graph, "propagate").mockResolvedValue({ state, signal });
+    const decision = await reviewPredictionMarketIntent(graph, intent, portfolio(), reviewOptions);
+    expect(decision).toMatchObject({ action: "HOLD" });
+    expect(decision.reasoning).toContain("Approved proposal differs from the original intent");
+    expect(intent).toMatchObject({ action: "BUY", outcome: "YES", quantity: 10, priceCents: 53 });
+  });
+
+  it.each(["proposal binding", "risk verdict", "quantity", "sub-cent price", "instrument"] as const)(
+    "fails closed for invalid execution approval: %s", async field => {
+      const { graph } = reviewedGraph();
+      const signal = await reviewPredictionMarketIntent(graph, intent, portfolio(), reviewOptions);
+      const state = graph.getCurrentState()!, approval = state.approval!;
+      if (field === "proposal binding") approval.fundManager.proposalId = "another-proposal";
+      if (field === "risk verdict") approval.verdict.allowed = false;
+      if (field === "quantity") approval.finalQuantity = 11;
+      if (field === "sub-cent price") approval.proposal.limitPriceCents = 53.5;
+      if (field === "instrument") approval.proposal.instrument = { type: "equity", symbol: "OTHER" };
+      vi.spyOn(graph, "propagate").mockResolvedValue({ state, signal });
+      const decision = await reviewPredictionMarketIntent(graph, intent, portfolio(), reviewOptions);
+      expect(decision.action).toBe("HOLD");
+      expect(decision.reasoning).toContain("Invalid execution approval");
+    },
+  );
+
+  it("normalizes HOLD as research without attaching an executable order or outcome", async () => {
+    const { graph } = reviewedGraph(undefined, false);
+    const signal = await reviewPredictionMarketIntent(graph, intent, portfolio());
+    const state = graph.getCurrentState()!;
+    const propagate = vi.spyOn(graph, "propagate").mockResolvedValue({ state, signal: { ...signal, action: "HOLD" } });
+    const hold = { ...intent, action: "HOLD" as const, outcome: null, quantity: 0 };
+    expect((await reviewPredictionMarketIntent(graph, hold, portfolio())).action).toBe("HOLD");
+    const normalized = propagate.mock.calls[0][2]!.strategySignals![0];
+    expect(normalized).toMatchObject({ kind: "signal", action: "HOLD" });
+    expect(normalized.order).toBeUndefined();
+    expect(normalized.instrument).not.toHaveProperty("outcome");
+    expect(JSON.parse(normalized.evidence!.research as string).data.intent).toEqual(hold);
+  });
+
+  it("retains Trader reasoning if the graph supplies no review summaries", async () => {
+    const { graph } = reviewedGraph(undefined, false);
+    const signal = await reviewPredictionMarketIntent(graph, intent, portfolio());
+    const state = graph.getCurrentState()!;
+    state.investmentDebateState.judgeDecision = "";
+    state.traderInvestmentPlan = "";
+    state.finalRiskAdjustedPlan = "";
+    state.fundManagerDecision = "";
+    state.riskReviewReason = "";
+    vi.spyOn(graph, "propagate").mockResolvedValue({ state, signal: { ...signal, action: "SELL", reasoning: "Trader exit rationale" } });
+    const sell = { ...intent, action: "SELL" as const };
+    expect(await reviewPredictionMarketIntent(graph, sell, portfolio()))
+      .toMatchObject({ action: "SELL", reasoning: "Trader exit rationale" });
+  });
+
+  it("fails before execution when a review callback returns no signal", async () => {
+    const request = { ticks: structuredClone(momentumDemoTicks), initialPortfolio: portfolio() };
+    const before = structuredClone(request);
+    const execute = vi.spyOn(InMemoryPaperExecutor.prototype, "execute");
+    await expect(runKalshiMomentumPaperAgentWithResearch(request, async () => undefined as unknown as TradeSignal))
+      .rejects.toThrow("must return a TradeSignal");
+    expect(execute.mock.calls.every(([order]) => order.action === "HOLD")).toBe(true);
+    expect(request).toEqual(before);
+  });
+});

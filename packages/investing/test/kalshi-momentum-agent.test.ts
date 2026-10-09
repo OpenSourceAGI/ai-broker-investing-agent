@@ -331,3 +331,144 @@ it("keeps strategy inventory aligned after a filled partial position exit", () =
   expect(execution.portfolio.positions[`${ticker}:YES`]).toMatchObject({ quantity: 6, markPriceCents: 55 });
   expect(execution.portfolio.realizedPnlCents).toBe(8);
 });
+
+describe("resumed momentum and executor safety boundaries", () => {
+  const prefix = () => runKalshiMomentumPaperAgent({ ticks: ticks([50, 51, 52, 53]) });
+
+  it.each([
+    { directions: [2] }, { directions: Array(6).fill(1) }, { directions: null },
+    { tradesExecuted: -1 }, { tradesExecuted: 0.5 }, { tradesExecuted: Infinity },
+  ])("rejects malformed resumed history %j without mutating it", fields => {
+    const state = { ...prefix().strategyState, ...fields } as Parameters<typeof evaluateKalshiMomentumTick>[1];
+    const before = structuredClone(state);
+    expect(() => evaluateKalshiMomentumTick(ticks([58])[0], state, normalizeKalshiMomentumConfig()))
+      .toThrow("Invalid momentum history");
+    expect(state).toEqual(before);
+  });
+
+  it.each([{ directions: [1] }, { ticker }, { lastTimestamp: ticks([50])[0].timestamp }])(
+    "rejects orphan history without a previous price %j", fields => {
+      const state = { ...createKalshiMomentumState(), ...fields } as Parameters<typeof evaluateKalshiMomentumTick>[1];
+      expect(() => evaluateKalshiMomentumTick(ticks([50])[0], state, normalizeKalshiMomentumConfig()))
+        .toThrow("requires a previous price");
+    },
+  );
+
+  it.each([
+    { ticker: "" }, { ticker: "OTHER" }, { outcome: "MAYBE" },
+    { quantity: 0 }, { quantity: 51 }, { entryPriceCents: NaN }, { entryPriceCents: 101 },
+  ])("rejects malformed resumed strategy positions %j", fields => {
+    const state = prefix().strategyState;
+    state.position = { ...state.position!, ...fields } as NonNullable<typeof state.position>;
+    expect(() => evaluateKalshiMomentumTick(ticks([58])[0], state, normalizeKalshiMomentumConfig()))
+      .toThrow("Invalid momentum position");
+  });
+
+  it("rejects duplicate instants through the pure strategy API without advancing history", () => {
+    const state = evaluateKalshiMomentumTick(ticks([50])[0], createKalshiMomentumState(), normalizeKalshiMomentumConfig()).state;
+    const before = structuredClone(state);
+    expect(() => evaluateKalshiMomentumTick(
+      { ...ticks([51])[0], timestamp: "2026-01-01T05:30:00+05:30" }, state, normalizeKalshiMomentumConfig(),
+    )).toThrow("strictly increasing");
+    expect(state).toEqual(before);
+  });
+
+  it("rejects a conflicting cash seed when resuming a portfolio", () => {
+    const result = prefix(), before = structuredClone(result);
+    expect(() => runKalshiMomentumPaperAgent({
+      ticks: ticks([50, 51, 52, 53, 58]).slice(4), initialCashCents: 1_000,
+      initialStrategyState: result.strategyState, initialPortfolio: result.portfolio,
+    })).toThrow("must match the resumed portfolio");
+    expect(result).toEqual(before);
+  });
+
+  it.each([-1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])(
+    "rejects an unsafe initial cash value %s", initialCashCents => {
+      expect(() => new InMemoryPaperExecutor({ initialCashCents, maxPositionPerMarket: 50 }))
+        .toThrow("initialCashCents");
+    },
+  );
+
+  it.each([0, -1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])(
+    "rejects an invalid executor position cap %s", maxPositionPerMarket => {
+      expect(() => new InMemoryPaperExecutor({ initialCashCents: 10_000, maxPositionPerMarket }))
+        .toThrow("maxPositionPerMarket");
+    },
+  );
+
+  it.each([null, [], "positions"])("rejects a malformed position map %j", positions => {
+    const initialPortfolio = { ...prefix().portfolio, positions } as unknown as ReturnType<InMemoryPaperExecutor["snapshot"]>;
+    expect(() => new InMemoryPaperExecutor({ initialCashCents: 10_000, maxPositionPerMarket: 50, initialPortfolio }))
+      .toThrow("position map");
+  });
+
+  it.each([
+    { ticker: " KX-DEMO" }, { outcome: "MAYBE" }, { quantity: 0 },
+    { quantity: 0.5 }, { averageEntryPriceCents: NaN }, { averageEntryPriceCents: 101 },
+  ])("rejects malformed resumed executor holdings %j", fields => {
+    const initialPortfolio = prefix().portfolio;
+    initialPortfolio.positions[`${ticker}:YES`] = {
+      ...initialPortfolio.positions[`${ticker}:YES`], ...fields,
+    } as typeof initialPortfolio.positions[string];
+    const before = structuredClone(initialPortfolio);
+    expect(() => new InMemoryPaperExecutor({ initialCashCents: 10_000, maxPositionPerMarket: 50, initialPortfolio }))
+      .toThrow("Invalid initial paper position");
+    expect(initialPortfolio).toEqual(before);
+  });
+
+  it.each([{ outcome: "YES", quantity: 0 }, { outcome: null, quantity: 1 }] as const)(
+    "rejects malformed HOLD without touching inventory %j", fields => {
+      const result = prefix();
+      const paper = new InMemoryPaperExecutor({ initialCashCents: 10_000, maxPositionPerMarket: 50, initialPortfolio: result.portfolio });
+      const before = paper.snapshot();
+      expect(paper.execute({ ...result.steps[3].intent, action: "HOLD", ...fields }))
+        .toMatchObject({ status: "REJECTED", reason: "HOLD requires a null outcome and zero quantity" });
+      expect(paper.snapshot()).toEqual(before);
+    },
+  );
+
+  it("rejects a sale that overflows safe cash and retains both inventories", () => {
+    const result = prefix(), initialPortfolio = { ...result.portfolio, cashCents: Number.MAX_SAFE_INTEGER };
+    const paper = new InMemoryPaperExecutor({ initialCashCents: 10_000, maxPositionPerMarket: 50, initialPortfolio });
+    const before = paper.snapshot();
+    const execution = paper.execute({ ...result.steps[3].intent, action: "SELL", quantity: 1 });
+    expect(execution).toMatchObject({ status: "REJECTED", reason: "Paper cash exceeds safe integer cents" });
+    expect(paper.snapshot()).toEqual(before);
+    expect(applyMomentumExecution(result.strategyState, execution)).toEqual(result.strategyState);
+    expect(initialPortfolio.cashCents).toBe(Number.MAX_SAFE_INTEGER);
+  });
+
+  it("keeps weighted entry prices and isolates snapshots from caller mutation", () => {
+    const result = prefix();
+    const paper = new InMemoryPaperExecutor({ initialCashCents: 10_000, maxPositionPerMarket: 50, initialPortfolio: result.portfolio });
+    const fill = paper.execute({ ...result.steps[3].intent, priceCents: 55 });
+    expect(fill.status).toBe("FILLED");
+    expect(fill.portfolio.positions[`${ticker}:YES`]).toMatchObject({ quantity: 20, averageEntryPriceCents: 54 });
+    fill.portfolio.positions[`${ticker}:YES`].quantity = 999;
+    const marked = paper.mark(ticks([56])[0]);
+    expect(marked.positions[`${ticker}:YES`]).toMatchObject({ quantity: 20, averageEntryPriceCents: 54, unrealizedPnlCents: 40 });
+    expect(result.portfolio.positions[`${ticker}:YES`].quantity).toBe(10);
+  });
+});
+
+it("rejects absent recorded ticks before replay or mark can alter state", () => {
+  const paper = new InMemoryPaperExecutor({ initialCashCents: 1_000, maxPositionPerMarket: 50 });
+  const before = paper.snapshot();
+  const tick = null as unknown as Parameters<typeof paper.mark>[0];
+  expect(() => paper.mark(tick)).toThrow("A market tick is required");
+  expect(() => runKalshiMomentumPaperAgent({ ticks: [tick] })).toThrow("A market tick is required");
+  expect(paper.snapshot()).toEqual(before);
+});
+
+it("rejects safe contract quantities whose total cost is unsafe in cents", () => {
+  const paper = new InMemoryPaperExecutor({
+    initialCashCents: Number.MAX_SAFE_INTEGER, maxPositionPerMarket: Number.MAX_SAFE_INTEGER,
+  });
+  const before = paper.snapshot();
+  const intent: PredictionMarketTradeIntent = {
+    action: "BUY", outcome: "YES", ticker, quantity: Number.MAX_SAFE_INTEGER, priceCents: 2,
+    timestamp: ticks([50])[0].timestamp, reason: "Overflow boundary",
+  };
+  expect(paper.execute(intent)).toMatchObject({ status: "REJECTED", reason: "Order cost exceeds safe integer cents" });
+  expect(paper.snapshot()).toEqual(before);
+});
