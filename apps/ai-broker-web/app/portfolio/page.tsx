@@ -15,31 +15,22 @@ function PortfolioContent() {
   const router = useRouter()
   const [isInitializing, setIsInitializing] = useState(false)
 
-  // Initialize portfolio on first login and check survey completion
+  // Initialize portfolio on first login (only for authenticated users)
   useEffect(() => {
-    const checkSurveyAndInitialize = async () => {
+    const initializePortfolio = async () => {
       if (session?.user && !isPending) {
-        // Check if user has completed the survey
         try {
-          const response = await fetch('/api/user/check-survey')
-          const data = await response.json()
-
-          if (!data.hasCompletedSurvey) {
-            router.push("/survey")
-            return
-          }
-
-          await initializePortfolio()
+          await fetch('/api/user/portfolio/initialize', {
+            method: 'POST',
+          })
         } catch (error) {
-          console.error("Error checking survey status:", error)
-          // Continue with initialization if check fails
-          await initializePortfolio()
+          console.error('Error initializing portfolio:', error)
         }
       }
     }
 
-    checkSurveyAndInitialize()
-  }, [session, isPending, router])
+    initializePortfolio()
+  }, [session, isPending])
 
   const initializePortfolio = async () => {
     try {

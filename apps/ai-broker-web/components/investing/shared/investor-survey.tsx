@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import grab from 'grab-url';
+import { track } from '@amplitude/unified';
 
 const SECTIONS = [
   { id: 1, title: "Profile & Background", questions: [1, 2] },
@@ -18,9 +19,15 @@ const SECTIONS = [
 
 export default function InvestorSurvey() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [responses, setResponses] = useState<Record<string, any>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  // Where to send the user after submitting. Defaults to the dashboard so
+  // dismissing the survey (e.g. via the settings link) doesn't bounce them
+  // back to it.
+  const returnTo = searchParams.get("returnTo") || "/dashboard"
 
   const handleResponseChange = (questionId: string, value: any) => {
     setResponses((prev) => ({ ...prev, [questionId]: value }))
@@ -31,13 +38,6 @@ export default function InvestorSurvey() {
       const response = await grab("survey", {
           post: true,
           response: setIsSubmitting,
-
-          // Contact information
-          name: responses.name,
-          email: responses.email,
-          phone: responses.phone,
-          organization: responses.organization,
-          contactMethod: responses.contactMethod,
 
           // Essential survey responses
           investorType: responses.q1,
@@ -52,26 +52,30 @@ export default function InvestorSurvey() {
           additionalComments: responses.additionalComments,
       })
 
+      setSubmitSuccess(true)
+
+      track('Investor Survey Submitted')
+
       // Scroll to top to show success message
       window.scrollTo({ top: 0, behavior: "smooth" })
 
-      // Redirect to homepage after 2 seconds
+      // Redirect back to where the user came from after 2 seconds
       setTimeout(() => {
-        router.push("/")
+        router.push(returnTo)
       }, 2000)
 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary to-accent/30">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         {submitSuccess && (
-          <Card className="mb-8 backdrop-blur-sm bg-green-50/80 border-green-200/40 shadow-lg">
+          <Card className="mb-8 backdrop-blur-sm bg-green-500/10 border-green-500/30 shadow-lg">
             <CardContent className="pt-6">
               <div className="text-center space-y-2">
-                <h2 className="text-2xl font-bold text-green-900">Thank You!</h2>
-                <p className="text-green-800">Your survey has been successfully submitted. We'll be in touch soon!</p>
+                <h2 className="text-2xl font-bold text-green-600 dark:text-green-400">Thank You!</h2>
+                <p className="text-green-700 dark:text-green-300">Your survey has been successfully submitted. We'll be in touch soon!</p>
               </div>
             </CardContent>
           </Card>
@@ -79,7 +83,7 @@ export default function InvestorSurvey() {
 
         <div className="space-y-8">
           {/* Section 1: Profile & Background */}
-          <Card className="backdrop-blur-sm bg-white/60 border-white/40 shadow-lg">
+          <Card className="backdrop-blur-sm bg-card/60 border-border/40 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl text-balance">Profile & Background</CardTitle>
               <CardDescription>Help us understand your investment background.</CardDescription>
@@ -119,7 +123,7 @@ export default function InvestorSurvey() {
           </Card>
 
           {/* Section 2: Product Fit & Interest */}
-          <Card className="backdrop-blur-sm bg-white/60 border-white/40 shadow-lg">
+          <Card className="backdrop-blur-sm bg-card/60 border-border/40 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl text-balance">Product Fit & Interest</CardTitle>
               <CardDescription>Your perspective on prediction markets and AI-driven trading.</CardDescription>
@@ -184,7 +188,7 @@ export default function InvestorSurvey() {
           </Card>
 
           {/* Section 3: Pricing Expectations */}
-          <Card className="backdrop-blur-sm bg-white/60 border-white/40 shadow-lg">
+          <Card className="backdrop-blur-sm bg-card/60 border-border/40 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl text-balance">Pricing Expectations</CardTitle>
               <CardDescription>Your preferences for pricing structure.</CardDescription>
@@ -222,7 +226,7 @@ export default function InvestorSurvey() {
         </div>
 
         {/* Risk Disclosure */}
-        <Card className="backdrop-blur-sm bg-white/60 border-white/40 shadow-lg">
+        <Card className="backdrop-blur-sm bg-card/60 border-border/40 shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl text-balance">Investment Risk Disclosure</CardTitle>
             <CardDescription>
@@ -230,7 +234,7 @@ export default function InvestorSurvey() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64 overflow-y-auto border border-slate-200 rounded-md p-4 bg-white/80 text-sm space-y-4">
+            <div className="h-64 overflow-y-auto border border-border rounded-md p-4 bg-card/80 text-sm space-y-4">
               <div className="font-semibold text-base">
                 IT IS IMPORTANT THAT YOU READ AND FULLY UNDERSTAND THE FOLLOWING RISKS OF TRADING AND INVESTING IN
                 YOUR SELF-DIRECTED AUTO INVESTMENT BROKER ACCOUNT.
@@ -347,7 +351,7 @@ export default function InvestorSurvey() {
         </Card>
 
         {/* Contact Information & Interest */}
-        <Card className="backdrop-blur-sm bg-white/60 border-white/40 shadow-lg">
+        <Card className="backdrop-blur-sm bg-card/60 border-border/40 shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl text-balance">Contact Information</CardTitle>
             <CardDescription>
@@ -355,114 +359,34 @@ export default function InvestorSurvey() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
-            {/* Overall interest */}
-            <div>
-              <QuestionRadio
-                id="overallInterest"
-                question="9. Overall, how interested are you in AI Broker?"
-                options={[
-                  "Very interested - schedule demo immediately",
-                  "Interested - want to learn more",
-                  "Somewhat interested - need more info",
-                  "Not very interested at this time",
-                ]}
-                value={responses.overallInterest}
-                onChange={(value) => handleResponseChange("overallInterest", value)}
-              />
-            </div>
-
-            {/* Contact information */}
-            <div>
-              <Label className="text-base font-medium">
-                10. Contact details and preferred communication method
-              </Label>
-              <div className="mt-4 grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    value={responses.name || ""}
-                    onChange={(e) => handleResponseChange("name", e.target.value)}
-                    placeholder="John Doe"
-                    className="bg-white/80"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="organization">Organization</Label>
-                  <Input
-                    id="organization"
-                    value={responses.organization || ""}
-                    onChange={(e) => handleResponseChange("organization", e.target.value)}
-                    placeholder="Your Company"
-                    className="bg-white/80"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={responses.email || ""}
-                    onChange={(e) => handleResponseChange("email", e.target.value)}
-                    placeholder="john@example.com"
-                    className="bg-white/80"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={responses.phone || ""}
-                    onChange={(e) => handleResponseChange("phone", e.target.value)}
-                    placeholder="+1 (555) 000-0000"
-                    className="bg-white/80"
-                  />
-                </div>
-              </div>
-              <div className="mt-4 space-y-2">
-                <Label>Preferred contact method</Label>
-                <RadioGroup
-                  value={responses.contactMethod}
-                  onValueChange={(value) => handleResponseChange("contactMethod", value)}
-                >
-                  <div className="flex flex-wrap gap-4">
-                    {["Email", "Phone", "Video call (Zoom/Teams)", "In-person meeting"].map((method) => (
-                      <div key={method} className="flex items-center space-x-2">
-                        <RadioGroupItem value={method} id={`contact-${method}`} />
-                        <Label htmlFor={`contact-${method}`} className="font-normal cursor-pointer">
-                          {method}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </RadioGroup>
-              </div>
-            </div>
-
-            {/* Additional comments */}
-            <div>
-              <QuestionTextarea
-                id="additionalComments"
-                question="11. Any additional comments or questions?"
-                value={responses.additionalComments}
-                onChange={(value) => handleResponseChange("additionalComments", value)}
-                placeholder="Share any additional thoughts..."
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-center pb-12">
-          <Button size="lg" onClick={handleSubmit} className="px-12 shadow-lg" disabled={isSubmitting || submitSuccess}>
-            {isSubmitting ? "Submitting..." : submitSuccess ? "Submitted!" : "Submit Survey"}
-          </Button>
+{/* Overall interest */}
+        <div>
+          <QuestionRadio
+            id="overallInterest"
+            question="9. Overall, how interested are you in AI Broker?"
+            options={[
+              "Very interested - schedule demo immediately",
+              "Interested - want to learn more",
+              "Somewhat interested - need more info",
+              "Not very interested at this time",
+            ]}
+            value={responses.overallInterest}
+            onChange={(value) => handleResponseChange("overallInterest", value)}
+          />
         </div>
-      </main>
+      </CardContent>
+    </Card>
+
+    <div className="flex justify-center pb-12">
+      <Button size="lg" onClick={handleSubmit} className="px-12 shadow-lg" disabled={isSubmitting || submitSuccess}>
+        {isSubmitting ? "Submitting..." : submitSuccess ? "Submitted!" : "Submit Survey"}
+      </Button>
+    </div>
+  </main>
 
       {/* Footer */}
-      <footer className="backdrop-blur-md bg-white/70 border-t border-white/20 py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-slate-600">
+      <footer className="backdrop-blur-md bg-card/70 border-t border-border py-8">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>© 2025 AI Broker. All rights reserved.</p>
           <p className="mt-2">
             Your responses are confidential and will only be used for product development purposes.
@@ -507,7 +431,7 @@ function QuestionRadio({
               <Label htmlFor={`${id}-other`} className="font-normal cursor-pointer">
                 Other:
               </Label>
-              <Input className="max-w-xs bg-white/80" placeholder="Please specify" onClick={() => onChange("other")} />
+              <Input className="max-w-xs bg-card/80" placeholder="Please specify" onClick={() => onChange("other")} />
             </div>
           )}
         </div>
@@ -538,7 +462,7 @@ function QuestionTextarea({
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="resize-none bg-white/80"
+        className="resize-none bg-card/80"
       />
     </div>
   )

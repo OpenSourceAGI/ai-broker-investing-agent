@@ -1,7 +1,7 @@
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useParams } from "next/navigation"
 import { useSession } from "@/lib/auth/client"
 
 import { StrategiesTab } from "@/components/investing/tabs/strategies-tab"
@@ -10,53 +10,26 @@ import { Loader2 } from "lucide-react"
 
 function StockContent() {
   const { data: session, isPending } = useSession()
-  const router = useRouter()
   const params = useParams()
   const symbol = params?.symbol as string | undefined
   const [isInitializing, setIsInitializing] = useState(false)
 
-  // Initialize portfolio on first login and check survey completion (only for authenticated users)
+  // Initialize portfolio on first login (only for authenticated users)
   useEffect(() => {
-    const checkSurveyAndInitialize = async () => {
+    const initializePortfolio = async () => {
       if (session?.user && !isPending) {
-        // Check if user has completed the survey
         try {
-          const response = await fetch('/api/user/check-survey')
-          const data = await response.json()
-
-          if (!data.hasCompletedSurvey) {
-            router.push("/survey")
-            return
-          }
-
-          await initializePortfolio()
+          await fetch('/api/user/portfolio/initialize', {
+            method: 'POST',
+          })
         } catch (error) {
-          console.error("Error checking survey status:", error)
-          // Continue with initialization if check fails
-          await initializePortfolio()
+          console.error('Error initializing portfolio:', error)
         }
       }
     }
 
-    checkSurveyAndInitialize()
-  }, [session, isPending, router])
-
-  const initializePortfolio = async () => {
-    try {
-      setIsInitializing(true)
-      const response = await fetch('/api/user/portfolio/initialize', {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        console.error('Failed to initialize portfolio')
-      }
-    } catch (error) {
-      console.error('Error initializing portfolio:', error)
-    } finally {
-      setIsInitializing(false)
-    }
-  }
+    initializePortfolio()
+  }, [session, isPending])
 
   // Show loading state only when initializing for authenticated users
   if (session?.user && isInitializing) {

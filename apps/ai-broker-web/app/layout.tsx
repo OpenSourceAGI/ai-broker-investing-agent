@@ -7,6 +7,7 @@ import { UIConfigProvider } from "@/lib/ui-config"
 import "./globals.css"
 import "@/components/theme/themes-shadcn.css"
 import { ConditionalLayoutWrapper } from "@/components/layout/conditional-layout-wrapper"
+import { Amplitude } from "./amplitude"
 
 const instrumentSerif = Instrument_Serif({
   weight: "400",
@@ -50,6 +51,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <UIConfigProvider>
+            <Amplitude />
             <ConditionalLayoutWrapper>
               {children}
             </ConditionalLayoutWrapper>

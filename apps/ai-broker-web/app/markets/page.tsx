@@ -1,7 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useEffect } from "react"
 import { useSession } from "@/lib/auth/client"
 
 import { MarketScanner } from "@/components/investing/marketwatch/market-scanner"
@@ -10,66 +9,23 @@ import { Loader2 } from "lucide-react"
 
 function MarketsContent() {
   const { data: session, isPending } = useSession()
-  const router = useRouter()
-  const [isInitializing, setIsInitializing] = useState(false)
 
-  // Initialize portfolio on first login and check survey completion (only for authenticated users)
+  // Initialize portfolio on first login (only for authenticated users)
   useEffect(() => {
-    const checkSurveyAndInitialize = async () => {
+    const initializePortfolio = async () => {
       if (session?.user && !isPending) {
-        // Check if user has completed the survey
         try {
-          const response = await fetch('/api/user/check-survey')
-          const data = await response.json()
-
-          if (!data.hasCompletedSurvey) {
-            router.push("/survey")
-            return
-          }
-
-          await initializePortfolio()
+          await fetch('/api/user/portfolio/initialize', {
+            method: 'POST',
+          })
         } catch (error) {
-          console.error("Error checking survey status:", error)
-          // Continue with initialization if check fails
-          await initializePortfolio()
+          console.error('Error initializing portfolio:', error)
         }
       }
     }
 
-    checkSurveyAndInitialize()
-  }, [session, isPending, router])
-
-  const initializePortfolio = async () => {
-    try {
-      setIsInitializing(true)
-      const response = await fetch('/api/user/portfolio/initialize', {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        console.error('Failed to initialize portfolio')
-      }
-    } catch (error) {
-      console.error('Error initializing portfolio:', error)
-    } finally {
-      setIsInitializing(false)
-    }
-  }
-
-  // Show loading state only when initializing for authenticated users
-  if (session?.user && isInitializing) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Card className="p-8 text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Setting up your portfolio...</h2>
-          <p className="text-sm text-muted-foreground">
-            Initializing your $100,000 play money account
-          </p>
-        </Card>
-      </div>
-    )
-  }
+    initializePortfolio()
+  }, [session, isPending])
 
   // Show dashboard for all users (authenticated or not)
   return (

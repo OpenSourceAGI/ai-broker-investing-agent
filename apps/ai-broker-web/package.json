@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@alpacahq/alpaca-trade-api": "^3.1.3",
+    "@amplitude/unified": "^1.1.38",
     "@better-auth/core": "latest",
     "@better-auth/stripe": "^1.4.18",
     "@fumadocs/mdx-remote": "^1.4.5",
