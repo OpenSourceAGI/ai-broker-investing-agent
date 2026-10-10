@@ -181,7 +181,8 @@ export class QuoteCacheService {
           const parsedDate = quote.date instanceof Date ? quote.date : new Date(quote.date);
           const dateStr = parsedDate.toISOString().split("T")[0];
 
-          return {
+          const adjustedClose = this.roundPrice(quote.adjustedClose);
+          const value: typeof schema.stockHistoricalQuotes.$inferInsert = {
             id: `${symbolUpper}-${dateStr}`,
             symbol: symbolUpper,
             date: dateStr,
@@ -190,9 +191,12 @@ export class QuoteCacheService {
             low: this.roundPrice(quote.low) || 0,
             close: this.roundPrice(quote.close) || 0,
             volume: quote.volume || null,
-            adjustedClose: this.roundPrice(quote.adjustedClose),
             createdAt: now,
           };
+          if (adjustedClose !== null) {
+            value.adjustedClose = adjustedClose;
+          }
+          return value;
         });
 
       if (values.length === 0) {
