@@ -4,13 +4,13 @@
  */
 
 import { AgentState, InvestDebateState, RiskDebateState } from '../types'
-import { UnifiedLLMClient } from '../utils/llm-client'
+import type { LLMClient } from '../utils/llm-client'
 
 export class InvestmentDebateFacilitator {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private maxRounds: number
 
-  constructor(llm: UnifiedLLMClient, maxRounds: number = 3) {
+  constructor(llm: LLMClient, maxRounds: number = 3) {
     this.llm = llm
     this.maxRounds = maxRounds
   }
@@ -105,10 +105,10 @@ Provide your analysis in this structured format:
 }
 
 export class RiskDebateFacilitator {
-  private llm: UnifiedLLMClient
+  private llm: LLMClient
   private maxRounds: number
 
-  constructor(llm: UnifiedLLMClient, maxRounds: number = 2) {
+  constructor(llm: LLMClient, maxRounds: number = 2) {
     this.llm = llm
     this.maxRounds = maxRounds
   }

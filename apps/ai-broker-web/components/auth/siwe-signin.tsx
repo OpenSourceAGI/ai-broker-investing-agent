@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Loader2, Wallet } from "lucide-react"
 import { BrowserProvider } from "ethers"
 import { SiweMessage } from "siwe"
+import { consumeSurveyPrompt } from "@/lib/survey/prompt"
 
 declare global {
   interface Window {
@@ -78,20 +79,7 @@ export function SiweSignIn() {
       if (data) {
         router.refresh()
 
-        // Check if user has completed the survey
-        try {
-          const surveyResponse = await fetch('/api/user/check-survey')
-          const surveyData = await surveyResponse.json()
-
-          if (surveyData.hasCompletedSurvey) {
-            router.push("/")
-          } else {
-            router.push("/survey")
-          }
-        } catch (error) {
-          console.error("Error checking survey status:", error)
-          router.push("/survey")
-        }
+        router.push((await consumeSurveyPrompt()) ? "/survey" : "/")
       }
 
     } catch (error) {

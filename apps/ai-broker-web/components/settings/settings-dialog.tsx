@@ -653,6 +653,27 @@ export function SettingsDialog({
         </CardContent>
       </Card>
 
+      {/* Investor Survey Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-5 w-5" />
+            <CardTitle>Investor Survey</CardTitle>
+          </div>
+          <CardDescription>
+            Tell us about your investing background so we can tailor AI Broker to you. You can take or retake it any time.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" asChild>
+            <a href="/survey">
+              <ClipboardList className="mr-2 h-4 w-4" />
+              Take the survey
+            </a>
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* API Key Section */}
       <Card>
         <CardHeader>

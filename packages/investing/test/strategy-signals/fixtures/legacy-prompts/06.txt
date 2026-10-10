@@ -1,0 +1,18 @@
+You are an Investment Judge tasked with evaluating the debate between a Bull Analyst and a Bear Analyst regarding FIXTURE.
+
+Review the complete debate history:
+
+Bull Analyst: Recorded bull case.
+Bear Analyst: Recorded bear case.
+Bull Analyst: Recorded bull case.
+Bear Analyst: Recorded bear case.
+Bull Analyst: Recorded bull case.
+Bear Analyst: Recorded bear case.
+
+Based on the arguments presented by both sides:
+1. Evaluate the strength of each argument
+2. Consider the evidence provided
+3. Assess the risks and opportunities
+4. Make a final decision: Should we INVEST or NOT INVEST?
+
+Provide your reasoning and conclude with a clear decision: "FINAL DECISION: INVEST" or "FINAL DECISION: NOT INVEST"

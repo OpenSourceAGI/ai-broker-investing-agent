@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { signIn, useSession } from "@/lib/auth/client"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { consumeSurveyPrompt } from "@/lib/survey/prompt"
 
 export function GoogleSignIn() {
   const { data: session } = useSession()
@@ -15,20 +16,7 @@ export function GoogleSignIn() {
   useEffect(() => {
     const checkUserAndRedirect = async () => {
       if (session?.user) {
-        // Check if user has completed the survey
-        try {
-          const response = await fetch('/api/user/check-survey')
-          const data = await response.json()
-
-          if (data.hasCompletedSurvey) {
-            router.push("/")
-          } else {
-            router.push("/survey")
-          }
-        } catch (error) {
-          console.error("Error checking survey status:", error)
-          router.push("/survey")
-        }
+        router.push((await consumeSurveyPrompt()) ? "/survey" : "/")
       }
     }
 
@@ -43,14 +31,14 @@ export function GoogleSignIn() {
     setIsLoading(true)
     await signIn.social({
       provider: "google",
-      callbackURL: "/survey",
+      callbackURL: "/login",
     })
   }
 
   const handleDevLogin = async () => {
     setIsLoading(true)
     await signIn.anonymous({
-      callbackURL: "/survey",
+      callbackURL: "/login",
     })
   }
 

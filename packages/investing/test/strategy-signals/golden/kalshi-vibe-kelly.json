@@ -1,0 +1,9 @@
+[
+  {"cashCents":10000,"probabilityYes":0.7,"outcome":"YES","priceCents":55,"quantity":9},
+  {"cashCents":10000,"probabilityYes":0.3,"outcome":"NO","priceCents":55,"quantity":9},
+  {"cashCents":1000,"probabilityYes":0.6,"outcome":"YES","priceCents":55,"quantity":2},
+  {"cashCents":55,"probabilityYes":0.6,"outcome":"YES","priceCents":55,"quantity":1},
+  {"cashCents":54,"probabilityYes":0.6,"outcome":"YES","priceCents":55,"quantity":0},
+  {"cashCents":1200,"probabilityYes":0.58,"outcome":"YES","priceCents":56,"quantity":1},
+  {"cashCents":10000,"probabilityYes":0.5,"outcome":"YES","priceCents":55,"quantity":0}
+]

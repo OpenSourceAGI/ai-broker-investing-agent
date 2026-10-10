@@ -1,0 +1,1 @@
+{"marketId":"PMXT-FIXTURE","title":"Will the fixture event occur?","description":"Synthetic binary event, no external data.","resolutionDate":"2026-01-02T00:00:00Z","tickSize":0.001,"outcomes":[{"outcomeId":"TOKEN-YES","label":"Yes","price":0.55},{"outcomeId":"TOKEN-NO","label":"No","price":0.45}]}

@@ -16,12 +16,19 @@ export async function GET(request: NextRequest) {
 
     const user = await db.query.users.findFirst({
       where: eq(users.id, session.user.id),
-      columns: { surveyResponse: true }
+      columns: { surveyResponse: true, surveyDismissedAt: true }
     });
 
-    const hasCompletedSurvey = !!(user?.surveyResponse && user.surveyResponse !== null && user.surveyResponse.trim() !== '');
+    const hasCompletedSurvey = !!(user?.surveyResponse && user.surveyResponse.trim() !== '');
+    const hasDismissedSurvey = !!user?.surveyDismissedAt;
 
-    return NextResponse.json({ hasCompletedSurvey });
+    return NextResponse.json({
+      hasCompletedSurvey,
+      hasDismissedSurvey,
+      // The survey is only auto-shown until the user completes or dismisses it;
+      // after that it is reachable from Settings.
+      shouldShowSurvey: !hasCompletedSurvey && !hasDismissedSurvey,
+    });
   } catch (error) {
     console.error("Error checking survey status:", error);
     return NextResponse.json(

@@ -1,0 +1,8 @@
+{
+  "percentage": { "copyUsd": 20, "effectivePercent": 20, "quantity": 40 },
+  "fixed": { "copyUsd": 20, "effectivePercent": 0, "quantity": 40 },
+  "cap": { "copyUsd": 500, "effectivePercent": 100, "quantity": 1000 },
+  "tinyWhale": { "copyUsd": 0, "effectivePercent": 0, "quantity": 0, "skipped": "BelowMinSharesToCopy" },
+  "adaptiveSmallPercent": 27.727272727272727,
+  "adaptiveLargePercent": 7.272727272727273
+}

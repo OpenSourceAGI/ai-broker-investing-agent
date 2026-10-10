@@ -1,0 +1,3 @@
+# pmxt mapping fixture provenance
+
+The raw fixture follows vendored `core/src/types.ts:UnifiedMarket` and `MarketOutcome`. Hand-reviewed conversion preserves token IDs, Yes/No labels and dollar tick .001 as .1 cents. The SDK provides point prices, not a live order book: default mapping leaves bid/ask null. Tests explicitly set `priceAsQuote: true` to use point prices as synthetic mock bid=ask quotes; this is not evidence of real venue liquidity. A 3-contract YES BUY at .55 dollars leaves 9,835 cents and 3 YES contracts from 10,000 cents. Changing price to .499 preserves 49.9 cents, which the existing execution model rejects.

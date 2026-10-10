@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/lib/auth/client"
+import { consumeSurveyPrompt } from "@/lib/survey/prompt"
 
 import { OverviewTab } from "@/components/investing/tabs/overview-tab"
 import { RiskPortfolioTab } from "@/components/investing/tabs/risk-portfolio-tab"
@@ -14,23 +15,6 @@ function PortfolioContent() {
   const { data: session, isPending } = useSession()
   const router = useRouter()
   const [isInitializing, setIsInitializing] = useState(false)
-
-  // Initialize portfolio on first login (only for authenticated users)
-  useEffect(() => {
-    const initializePortfolio = async () => {
-      if (session?.user && !isPending) {
-        try {
-          await fetch('/api/user/portfolio/initialize', {
-            method: 'POST',
-          })
-        } catch (error) {
-          console.error('Error initializing portfolio:', error)
-        }
-      }
-    }
-
-    initializePortfolio()
-  }, [session, isPending])
 
   const initializePortfolio = async () => {
     try {
@@ -48,6 +32,13 @@ function PortfolioContent() {
       setIsInitializing(false)
     }
   }
+
+  // Initialize portfolio on first login (only for authenticated users)
+  useEffect(() => {
+    if (session?.user && !isPending) {
+      initializePortfolio()
+    }
+  }, [session, isPending])
 
   // Show loading state
   if (isPending || isInitializing) {

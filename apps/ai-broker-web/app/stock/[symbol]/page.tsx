@@ -1,8 +1,9 @@
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useSession } from "@/lib/auth/client"
+import { consumeSurveyPrompt } from "@/lib/survey/prompt"
 
 import { StrategiesTab } from "@/components/investing/tabs/strategies-tab"
 import { Card } from "@/components/ui/card"
@@ -12,12 +13,18 @@ function StockContent() {
   const { data: session, isPending } = useSession()
   const params = useParams()
   const symbol = params?.symbol as string | undefined
+  const router = useRouter()
   const [isInitializing, setIsInitializing] = useState(false)
 
   // Initialize portfolio on first login (only for authenticated users)
   useEffect(() => {
     const initializePortfolio = async () => {
       if (session?.user && !isPending) {
+        if (await consumeSurveyPrompt()) {
+          router.push("/survey")
+          return
+        }
+
         try {
           await fetch('/api/user/portfolio/initialize', {
             method: 'POST',

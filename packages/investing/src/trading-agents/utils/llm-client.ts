@@ -13,7 +13,11 @@ export interface LLMResponse {
   }>
 }
 
-export class UnifiedLLMClient {
+export interface LLMClient {
+  invoke(input: string | Message[]): Promise<LLMResponse>
+}
+
+export class UnifiedLLMClient implements LLMClient {
   private provider: string
   private model: string
   private temperature: number

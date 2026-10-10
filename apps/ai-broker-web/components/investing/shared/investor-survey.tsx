@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
+import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -9,7 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import grab from 'grab-url';
-import { track } from '@amplitude/unified';
+import { useSession } from "@/lib/auth/client"
+import { dismissSurvey } from "@/lib/survey/prompt"
 
 const SECTIONS = [
   { id: 1, title: "Profile & Background", questions: [1, 2] },
@@ -23,6 +25,13 @@ export default function InvestorSurvey() {
   const [responses, setResponses] = useState<Record<string, any>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const { data: session } = useSession()
+  const isSignedIn = !!session?.user
+
+  const handleDismiss = async () => {
+    await dismissSurvey()
+    router.push("/")
+  }
 
   // Where to send the user after submitting. Defaults to the dashboard so
   // dismissing the survey (e.g. via the settings link) doesn't bounce them
@@ -70,6 +79,14 @@ export default function InvestorSurvey() {
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary to-accent/30">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12 max-w-4xl">
+        {isSignedIn && (
+          <div className="flex justify-end mb-4">
+            <Button variant="ghost" size="sm" onClick={handleDismiss}>
+              <X className="mr-1 h-4 w-4" />
+              Not now
+            </Button>
+          </div>
+        )}
         {submitSuccess && (
           <Card className="mb-8 backdrop-blur-sm bg-green-500/10 border-green-500/30 shadow-lg">
             <CardContent className="pt-6">
@@ -359,20 +376,113 @@ export default function InvestorSurvey() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
-{/* Overall interest */}
-        <div>
-          <QuestionRadio
-            id="overallInterest"
-            question="9. Overall, how interested are you in AI Broker?"
-            options={[
-              "Very interested - schedule demo immediately",
-              "Interested - want to learn more",
-              "Somewhat interested - need more info",
-              "Not very interested at this time",
-            ]}
-            value={responses.overallInterest}
-            onChange={(value) => handleResponseChange("overallInterest", value)}
-          />
+            {/* Overall interest */}
+            <div>
+              <QuestionRadio
+                id="overallInterest"
+                question="9. Overall, how interested are you in AI Broker?"
+                options={[
+                  "Very interested - schedule demo immediately",
+                  "Interested - want to learn more",
+                  "Somewhat interested - need more info",
+                  "Not very interested at this time",
+                ]}
+                value={responses.overallInterest}
+                onChange={(value) => handleResponseChange("overallInterest", value)}
+              />
+            </div>
+
+            {/* Contact information */}
+            <div>
+              <Label className="text-base font-medium">
+                10. Contact details and preferred communication method
+              </Label>
+              <div className="mt-4 grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={responses.name || ""}
+                    onChange={(e) => handleResponseChange("name", e.target.value)}
+                    placeholder="John Doe"
+                    className="bg-white/80"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="organization">Organization</Label>
+                  <Input
+                    id="organization"
+                    value={responses.organization || ""}
+                    onChange={(e) => handleResponseChange("organization", e.target.value)}
+                    placeholder="Your Company"
+                    className="bg-white/80"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={responses.email || ""}
+                    onChange={(e) => handleResponseChange("email", e.target.value)}
+                    placeholder="john@example.com"
+                    className="bg-white/80"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={responses.phone || ""}
+                    onChange={(e) => handleResponseChange("phone", e.target.value)}
+                    placeholder="+1 (555) 000-0000"
+                    className="bg-white/80"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                <Label>Preferred contact method</Label>
+                <RadioGroup
+                  value={responses.contactMethod}
+                  onValueChange={(value) => handleResponseChange("contactMethod", value)}
+                >
+                  <div className="flex flex-wrap gap-4">
+                    {["Email", "Phone", "Video call (Zoom/Teams)", "In-person meeting"].map((method) => (
+                      <div key={method} className="flex items-center space-x-2">
+                        <RadioGroupItem value={method} id={`contact-${method}`} />
+                        <Label htmlFor={`contact-${method}`} className="font-normal cursor-pointer">
+                          {method}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+
+            {/* Additional comments */}
+            <div>
+              <QuestionTextarea
+                id="additionalComments"
+                question="11. Any additional comments or questions?"
+                value={responses.additionalComments}
+                onChange={(value) => handleResponseChange("additionalComments", value)}
+                placeholder="Share any additional thoughts..."
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex flex-col items-center gap-3 pb-12">
+          <Button size="lg" onClick={handleSubmit} className="px-12 shadow-lg" disabled={isSubmitting || submitSuccess}>
+            {isSubmitting ? "Submitting..." : submitSuccess ? "Submitted!" : "Submit Survey"}
+          </Button>
+          {isSignedIn && (
+            <Button variant="link" size="sm" onClick={handleDismiss} className="text-muted-foreground">
+              Skip the survey. You can take it later from Settings.
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

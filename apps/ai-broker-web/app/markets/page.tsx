@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect } from "react"
 import { useSession } from "@/lib/auth/client"
+import { consumeSurveyPrompt } from "@/lib/survey/prompt"
 
 import { MarketScanner } from "@/components/investing/marketwatch/market-scanner"
 import { Card } from "@/components/ui/card"

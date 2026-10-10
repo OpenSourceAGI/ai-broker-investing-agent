@@ -134,6 +134,13 @@
       "when": 1787647567930,
       "tag": "0018_quote_cache_updated_at",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1791460428614,
+      "tag": "0019_survey_dismissed_at",
+      "breakpoints": true
     }
   ]
 }
