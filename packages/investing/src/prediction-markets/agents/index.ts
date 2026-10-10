@@ -10,7 +10,7 @@
 export { runEventAnalysisAgent } from "./event-analysis-agent.js";
 export { runBookmakerAgent } from "./bookmaker-agent.js";
 export { runMapperAgent, NoTradeError } from "./mapper-agent.js";
-export { runKalshiMomentumPaperAgent } from "./kalshi-momentum-agent.js";
+export { runKalshiMomentumPaperAgent, runKalshiMomentumPaperAgentWithResearch } from "./kalshi-momentum-agent.js";
 export { InMemoryPaperExecutor } from "../execution/paper.js";
 export type { InMemoryPaperExecutorConfig } from "../execution/paper.js";
 export {

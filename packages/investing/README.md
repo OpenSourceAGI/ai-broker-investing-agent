@@ -243,6 +243,23 @@ system. It assumes complementary YES/NO prices, does not model an order book,
 partial fills, fees, latency, settlement, or market resolution, and does not
 enable the existing unimplemented Kalshi live mapper.
 
+The recorded demo also runs actionable intents through the existing
+strategy-signal graph, research judge, Trader, risk review and proposal-bound
+FundManager before this same paper executor. It requires no keys or services.
+The original synchronous API remains direct strategy/paper replay.
+
+For graph review, use `runKalshiMomentumPaperAgentWithResearch` and
+`reviewPredictionMarketIntent`. Configure the existing graph with
+`riskReview: true`, and pass `{ fundManagerReview: true }` to the review
+adapter to require unchanged explicit approval. MODIFY, missing approval or
+a changed quantity becomes HOLD for this replay; the executor retains its
+own cash, inventory and combined market-position checks.
+
+After building, run `node scripts/verify-prediction-market-build.mjs` to check
+actual ESM/CommonJS subpaths and the packaged MIT notice. See the
+[walkthrough](../../devdocs/prediction-markets-agent-system-walkthrough.md) for
+the full flow and the recorded result of $100.50 cash and $0.50 realized P&L.
+
 ### Trading Agents Framework
 
 ```typescript

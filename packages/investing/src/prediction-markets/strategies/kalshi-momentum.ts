@@ -2,9 +2,11 @@
  * Deterministic Kalshi momentum strategy.
  *
  * Adapted from `kalshi-bot-api/examples/momentum_bot.py`, copyright (c) 2024,
- * distributed under the MIT License. This port extracts only the strategy
- * rules; it does not use PyKalshi, connect to Kalshi, or place live orders.
+ * distributed under the MIT License (see ./kalshi-momentum.LICENSE).
+ * This port extracts only the strategy rules; it does not use PyKalshi, connect to Kalshi, or place live orders.
  */
+
+import { validateKalshiMarketTick, validateMarketObservation, validatePriceCents } from "../validation.js";
 
 import type {
   KalshiMarketTick,
@@ -33,7 +35,7 @@ export function normalizeKalshiMomentumConfig(
 ): KalshiMomentumConfig {
   const normalized = { ...DEFAULT_KALSHI_MOMENTUM_CONFIG, ...config };
   for (const [name, value] of Object.entries(normalized)) {
-    if (!Number.isInteger(value) || value <= 0) {
+    if (!Number.isSafeInteger(value) || value <= 0) {
       throw new Error(`${name} must be a positive integer`);
     }
   }
@@ -43,13 +45,35 @@ export function normalizeKalshiMomentumConfig(
   return normalized;
 }
 
-function validateTick(tick: KalshiMarketTick): void {
-  if (!tick.ticker.trim()) throw new Error("tick.ticker is required");
-  if (!tick.timestamp.trim() || Number.isNaN(Date.parse(tick.timestamp))) {
-    throw new Error("tick.timestamp must be a valid date string");
+export function validateKalshiMomentumState(
+  state: KalshiMomentumStrategyState,
+  config: KalshiMomentumConfig,
+): void {
+  if (
+    !Array.isArray(state.directions) || state.directions.length > config.lookback ||
+    state.directions.some((direction) => direction !== -1 && direction !== 0 && direction !== 1) ||
+    !Number.isSafeInteger(state.tradesExecuted) || state.tradesExecuted < 0
+  ) {
+    throw new Error("Invalid momentum history or trade count");
   }
-  if (!Number.isInteger(tick.yesPriceCents) || tick.yesPriceCents < 0 || tick.yesPriceCents > 100) {
-    throw new Error("tick.yesPriceCents must be an integer from 0 through 100");
+  if (state.lastYesPriceCents !== undefined) {
+    validatePriceCents(state.lastYesPriceCents, "state.lastYesPriceCents");
+    validateMarketObservation(state.ticker!, state.lastTimestamp!);
+  } else if (state.directions.length || state.ticker || state.lastTimestamp) {
+    throw new Error("Momentum history requires a previous price, market and timestamp");
+  }
+  if (state.position) {
+    const position = state.position;
+    if (
+      !position.ticker || (state.ticker && position.ticker !== state.ticker) ||
+      (position.outcome !== "YES" && position.outcome !== "NO") ||
+      !Number.isSafeInteger(position.quantity) || position.quantity <= 0 ||
+      position.quantity > config.maxPosition ||
+      !Number.isFinite(position.entryPriceCents) ||
+      position.entryPriceCents < 0 || position.entryPriceCents > 100
+    ) {
+      throw new Error("Invalid momentum position");
+    }
   }
 }
 
@@ -75,7 +99,15 @@ export function evaluateKalshiMomentumTick(
   state: KalshiMomentumStrategyState,
   config: KalshiMomentumConfig,
 ): { state: KalshiMomentumStrategyState; intent: PredictionMarketTradeIntent } {
-  validateTick(tick);
+  validateKalshiMarketTick(tick);
+  normalizeKalshiMomentumConfig(config);
+  validateKalshiMomentumState(state, config);
+  if ((state.ticker && state.ticker !== tick.ticker) || (state.position && state.position.ticker !== tick.ticker)) {
+    throw new Error("Momentum state cannot be reused across markets");
+  }
+  if (state.lastTimestamp && Date.parse(tick.timestamp) <= Date.parse(state.lastTimestamp)) {
+    throw new Error("Market ticks must have strictly increasing timestamps");
+  }
   const direction: -1 | 0 | 1 = state.lastYesPriceCents === undefined
     ? 0
     : tick.yesPriceCents > state.lastYesPriceCents
@@ -89,14 +121,13 @@ export function evaluateKalshiMomentumTick(
   const nextState: KalshiMomentumStrategyState = {
     ...state,
     directions,
+    ticker: tick.ticker,
+    lastTimestamp: tick.timestamp,
     lastYesPriceCents: tick.yesPriceCents,
     position: state.position ? { ...state.position } : undefined,
   };
 
   if (state.position) {
-    if (state.position.ticker !== tick.ticker) {
-      return { state: nextState, intent: hold(tick, "Tick does not match the open position ticker") };
-    }
     const currentPrice = outcomePrice(tick.yesPriceCents, state.position.outcome);
     const pnlPerContract = currentPrice - state.position.entryPriceCents;
     const recent = directions.slice(-2);
@@ -160,20 +191,16 @@ export function applyMomentumExecution(
   execution: PaperExecutionResult,
 ): KalshiMomentumStrategyState {
   if (execution.status !== "FILLED" || !execution.fill || !execution.intent.outcome) return state;
-  if (execution.intent.action === "BUY") {
-    return {
-      ...state,
-      position: {
-        ticker: execution.intent.ticker,
-        outcome: execution.intent.outcome,
-        quantity: execution.fill.quantity,
-        entryPriceCents: execution.fill.priceCents,
-      },
-      tradesExecuted: state.tradesExecuted + 1,
-    };
-  }
-  if (execution.intent.action === "SELL") {
-    return { ...state, position: undefined, tradesExecuted: state.tradesExecuted + 1 };
-  }
-  return state;
+  if (execution.intent.action !== "BUY" && execution.intent.action !== "SELL") return state;
+  const position = execution.portfolio.positions[`${execution.intent.ticker}:${execution.intent.outcome}`];
+  return {
+    ...state,
+    position: position ? {
+      ticker: position.ticker,
+      outcome: position.outcome,
+      quantity: position.quantity,
+      entryPriceCents: position.averageEntryPriceCents,
+    } : undefined,
+    tradesExecuted: state.tradesExecuted + 1,
+  };
 }

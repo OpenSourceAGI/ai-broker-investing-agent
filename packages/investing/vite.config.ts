@@ -1,9 +1,20 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
+import { readFileSync } from "node:fs";
 import dts from "vite-plugin-dts";
 
 export default defineConfig({
   plugins: [
+    {
+      name: "kalshi-momentum-attribution",
+      generateBundle() {
+        this.emitFile({
+          type: "asset",
+          fileName: "prediction-markets/kalshi-momentum.LICENSE",
+          source: readFileSync(resolve(__dirname, "src/prediction-markets/strategies/kalshi-momentum.LICENSE"), "utf8"),
+        });
+      },
+    },
     dts({
       insertTypesEntry: true,
       include: ["src/**/*"],
@@ -18,11 +29,16 @@ export default defineConfig({
   build: {
     minify: "terser",
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: {
+        index: resolve(__dirname, "src/index.ts"),
+        "prediction-markets/index": resolve(__dirname, "src/prediction-markets/index.ts"),
+        "trading-agents/index": resolve(__dirname, "src/trading-agents/index.ts"),
+      },
       formats: ["es", "cjs"],
-      fileName: (format) => `index.${format === "es" ? "mjs" : "js"}`,
+      fileName: (format, entryName) => `${entryName}.${format === "es" ? "mjs" : entryName === "index" ? "js" : "cjs"}`,
     },
     rollupOptions: {
+      output: { interop: "auto" },
       external: [
         "react", "react-dom", "next",
         "axios", "csv-parse", "date-fns", "dotenv", "drizzle-orm",

@@ -1,4 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+// Export wiring does not require the unrelated native XGBoost runtime.
+vi.mock("../src/correlate/predict-statistics", () => ({}));
 import * as predictionMarkets from "../src/prediction-markets";
 import * as investing from "../src/index";
 
@@ -8,6 +11,9 @@ describe("prediction-markets module", () => {
     "runBookmakerAgent",
     "runMapperAgent",
     "runKalshiMomentumPaperAgent",
+    "runKalshiMomentumPaperAgentWithResearch",
+    "predictionMarketResearch",
+    "reviewPredictionMarketIntent",
     "createKalshiMomentumState",
     "findArbitrage",
     "getEvents",
