@@ -11,7 +11,14 @@ export interface Agent {
 export interface Strategy {
   id: string
   name: string
+  provider?: 'builtin' | 'tradingview'
   description?: string
+  source?: string
+  author?: string
+  created?: string
+  likes?: number
+  last30DaysPnL?: number
+  script_type?: string
   status?: string
   performance?: number
 }

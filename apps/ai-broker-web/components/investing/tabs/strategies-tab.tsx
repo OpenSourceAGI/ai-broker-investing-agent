@@ -141,6 +141,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
           const newStrategies: Strategy[] = scripts.map((script: any) => ({
             id: script.url || Math.random().toString(36).substring(7),
             name: script.name || 'Unnamed Strategy',
+            provider: script.provider,
             description: '', // Description is not loaded initially
             todayPnL: 0,
             last7DaysPnL: 0,
@@ -199,6 +200,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
             ...strategy,
             description: details.description,
             source: details.source,
+            provider: details.provider,
           }
           setSelectedStrategyForModal(updatedStrategy)
           setStrategies(prev => prev.map(s => s.id === strategyId ? updatedStrategy : s))
@@ -217,7 +219,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
     } else if (sortOption === 'name') {
       return a.name.localeCompare(b.name)
     } else {
-      return b.last30DaysPnL - a.last30DaysPnL
+      return (b.last30DaysPnL || 0) - (a.last30DaysPnL || 0)
     }
   })
 
@@ -1090,7 +1092,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                   </div>
                 )}
 
-                {selectedStrategyForModal?.id && !selectedStrategyForModal.id.startsWith('demo-') && (
+                {selectedStrategyForModal?.id && selectedStrategyForModal.provider === 'tradingview' && (
                   <div className="flex justify-end">
                     <Button
                       variant="outline"

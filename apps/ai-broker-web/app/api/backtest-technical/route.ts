@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { yahooFinance } from '@/packages/investing/src/stocks/yahoo-finance-wrapper'
-import { backtest, STRATEGY_INFOS, StrategyInfo } from 'indicatorts'
+import { backtest, STRATEGY_INFOS, type StrategyInfo } from 'indicatorts'
+import {
+  TECHNICAL_STRATEGY_ID_BY_NAME,
+  TECHNICAL_STRATEGY_NAME_BY_ID,
+} from '@/lib/technical-strategies'
 interface BacktestRequest {
   symbol: string
   startDate: string
@@ -36,34 +40,6 @@ interface BacktestResult {
     maxDrawdown: number
     signals: TradeSignal[]
   }[]
-}
-
-// Map strategy IDs to their names
-const STRATEGY_ID_MAP: Record<string, string> = {
-  'buy-hold': 'Buy Hold',
-  'awesome-oscillator': 'Awesome Oscillator',
-  'rsi-2': 'RSI 2',
-  'ichimoku-cloud': 'Ichimoku Cloud',
-  'stochastic-oscillator': 'Stochastic Oscillator',
-  'williams-r': 'Williams R',
-  'apo': 'Absolute Price Oscillator (APO)',
-  'aroon': 'Aroon Strategy',
-  'bop': 'Balance of Power (BOM)',
-  'cfo': 'Chande Forecast Oscillator (CFO)',
-  'kdj': 'KDJ Strategy',
-  'macd': 'MACD Strategy',
-  'psar': 'Parabolic SAR',
-  'typical-price': 'Typical Price',
-  'vortex': 'Vortex Strategy',
-  'acceleration-bands': 'Acceleration Bands',
-  'bollinger-bands': 'Bollinger Bands',
-  'projection-oscillator': 'Projection Oscillator',
-  'cmf': 'Chaikin Money Flow (CMF)',
-  'emv': 'Ease of Movement (EMV)',
-  'force-index': 'Force Index',
-  'mfi': 'Money Flow Index',
-  'nvi': 'Negative Volume Index (NVI)',
-  'vwap': 'Volume Weighted Average Price',
 }
 
 function calculateMetrics(actions: number[], closingPrices: number[], dates: Date[], initialCapital: number) {
@@ -236,7 +212,7 @@ export async function POST(request: NextRequest) {
     // Filter strategies if specific IDs are provided
     let strategiesToTest: StrategyInfo[] = STRATEGY_INFOS
     if (strategyIds.length > 0) {
-      const selectedNames = strategyIds.map(id => STRATEGY_ID_MAP[id]).filter(Boolean)
+      const selectedNames = strategyIds.map(id => TECHNICAL_STRATEGY_NAME_BY_ID[id]).filter(Boolean)
       strategiesToTest = STRATEGY_INFOS.filter(info => selectedNames.includes(info.name))
     }
 
@@ -252,9 +228,8 @@ export async function POST(request: NextRequest) {
       const metrics = calculateMetrics(actions, asset.closings, asset.dates, initialCapital)
 
       // Find strategy ID
-      const strategyId = Object.entries(STRATEGY_ID_MAP).find(
-        ([_, name]) => name === strategyInfo.name
-      )?.[0] || strategyInfo.name.toLowerCase().replace(/\s+/g, '-')
+      const strategyId = TECHNICAL_STRATEGY_ID_BY_NAME[strategyInfo.name]
+        || strategyInfo.name.toLowerCase().replace(/\s+/g, '-')
 
       return {
         strategyName: strategyInfo.name,
