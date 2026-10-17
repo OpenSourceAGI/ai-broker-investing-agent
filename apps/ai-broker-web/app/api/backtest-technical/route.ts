@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { yahooFinance } from '@/packages/investing/src/stocks/yahoo-finance-wrapper'
 import { backtest, STRATEGY_INFOS, StrategyInfo } from 'indicatorts'
+import { maxDrawdownPercent } from '@/lib/backtest-metrics'
 interface BacktestRequest {
   symbol: string
   startDate: string
@@ -72,8 +73,9 @@ function calculateMetrics(actions: number[], closingPrices: number[], dates: Dat
   let trades = 0
   let winningTrades = 0
   let losingTrades = 0
-  let maxValue = initialCapital
-  let minValue = initialCapital
+  // Portfolio value sampled each bar, seeded with the starting capital so the
+  // drawdown peak begins at initialCapital (matching the prior convention).
+  const equityCurve: number[] = [initialCapital]
   const returns: number[] = []
   const signals: TradeSignal[] = []
   let lastBuyPrice = 0
@@ -119,8 +121,7 @@ function calculateMetrics(actions: number[], closingPrices: number[], dates: Dat
     }
 
     const currentValue = cash + shares * price
-    maxValue = Math.max(maxValue, currentValue)
-    minValue = Math.min(minValue, currentValue)
+    equityCurve.push(currentValue)
 
     if (i > 0) {
       const dailyReturn = (currentValue - (cash + shares * closingPrices[i - 1])) / (cash + shares * closingPrices[i - 1])
@@ -152,7 +153,7 @@ function calculateMetrics(actions: number[], closingPrices: number[], dates: Dat
   const totalReturn = finalValue - initialCapital
   const totalReturnPercent = (totalReturn / initialCapital) * 100
   const winRate = trades > 0 ? (winningTrades / trades) * 100 : 0
-  const maxDrawdown = maxValue > 0 ? ((maxValue - minValue) / maxValue) * 100 : 0
+  const maxDrawdown = maxDrawdownPercent(equityCurve)
 
   // Calculate Sharpe Ratio (simplified)
   let sharpeRatio: number | undefined
