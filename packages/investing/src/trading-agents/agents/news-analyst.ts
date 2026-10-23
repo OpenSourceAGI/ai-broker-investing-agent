@@ -76,9 +76,17 @@ The current date is ${tradeDate}. The company is ${ticker}.`
 
         } catch (error) {
             console.error('News Analyst error:', error)
+            const message = error instanceof Error ? error.message : String(error)
+            // A news fetch exception is a degraded input, but news is supplementary
+            // (an empty result is a legitimate, non-error outcome handled above), so
+            // this failure is recorded as not required and does not force HOLD.
             return {
-                newsReport: `Error analyzing news for ${ticker}: ${error}`,
-                sender: 'NewsAnalyst'
+                newsReport: `NEWS DATA UNAVAILABLE for ${ticker}: ${message}. News analysis could not be performed.`,
+                sender: 'NewsAnalyst',
+                dataFailures: [
+                    ...(state.dataFailures ?? []),
+                    { analyst: 'news', message: `news data fetch failed: ${message}`, required: false }
+                ]
             }
         }
     }

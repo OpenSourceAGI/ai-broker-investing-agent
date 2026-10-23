@@ -102,9 +102,17 @@ Please analyze these indicators and provide a comprehensive market analysis repo
       }
     } catch (error) {
       console.error('Market Analyst error:', error)
+      const message = error instanceof Error ? error.message : String(error)
+      // Required market data could not be fetched. Record an explicit, typed
+      // failure (not a normal report) so the graph fails closed to HOLD instead
+      // of letting a degraded report drive an actionable BUY/SELL.
       return {
-        marketReport: `Error analyzing market data for ${ticker}: ${error}`,
-        sender: 'MarketAnalyst'
+        marketReport: `MARKET DATA UNAVAILABLE for ${ticker}: ${message}. Technical analysis could not be performed; this result is not actionable.`,
+        sender: 'MarketAnalyst',
+        dataFailures: [
+          ...(state.dataFailures ?? []),
+          { analyst: 'market', message: `market data fetch failed: ${message}`, required: true }
+        ]
       }
     }
   }

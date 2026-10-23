@@ -58,6 +58,21 @@ export interface RiskDebateState {
   count: number
 }
 
+/**
+ * Explicit, typed record that an analyst's input data could not be fetched.
+ * This is distinct from a normal analyst report string: a fetch exception is
+ * represented here so the graph can fail closed rather than let a degraded
+ * report become an actionable trade.
+ */
+export interface AnalystDataFailure {
+  /** Which analyst's data fetch failed. */
+  analyst: AnalystType
+  /** Human-readable cause. */
+  message: string
+  /** When true the data is required, so no actionable BUY/SELL may be derived. */
+  required: boolean
+}
+
 export interface AgentState {
   instrument?: Instrument
   eventMarket?: VenueMarket
@@ -69,6 +84,8 @@ export interface AgentState {
   fundManagerApproval?: FundManagerApproval
   approval?: ExecutionApproval
   riskReviewReason?: string
+  /** Analyst data-fetch failures recorded during analysis; a required one forces HOLD. */
+  dataFailures?: AnalystDataFailure[]
   /** Company that we are interested in trading */
   companyOfInterest: string
   /** Date we are trading at */

@@ -220,7 +220,18 @@ export class TradingAgentsGraph {
     state = { ...state, ...traderUpdate }
 
     // Extract final decision
-    const finalDecision = this.extractDecision(state.traderInvestmentPlan || '')
+    let finalDecision = this.extractDecision(state.traderInvestmentPlan || '')
+    // Fail closed: when required input data could not be fetched, no actionable
+    // BUY/SELL may be returned regardless of what the LLM trader proposed. Event
+    // flows skip these analysts, so this only affects the equity path.
+    const blockingFailure = (state.dataFailures ?? []).find(f => f.required)
+    if (blockingFailure && finalDecision !== 'HOLD') {
+      const reason = `required data unavailable, forced HOLD: ${blockingFailure.message}`
+      state.riskReviewReason = state.riskReviewReason
+        ? `${state.riskReviewReason}; ${reason}`
+        : reason
+      finalDecision = 'HOLD'
+    }
     state.finalTradeDecision = finalDecision
     if (this.options.riskReview && finalDecision !== 'HOLD') {
       state = await this.runRiskReview(state, finalDecision, instrument, evaluationTime, run)
