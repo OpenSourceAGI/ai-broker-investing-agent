@@ -228,3 +228,12 @@ describes what each one contributes.
 | [poly-bot-gabagool](third-party-trading-bots/poly-bot-gabagool) | TypeScript hedged-arbitrage bot for Polymarket 15-minute binaries |
 | [poly-bot-openclaw](third-party-trading-bots/poly-bot-openclaw) | OpenClaw agent framework with PnL-driven survival states and x402 machine payments |
 | [polymarket-exec-api](third-party-trading-bots/polymarket-exec-api) | pmxt — "the ccxt for prediction markets", one API over six venues in Python and TypeScript |
+
+## Contributors
+
+<a href="https://github.com/OpenSourceAGI/ai-broker-investing-agent/graphs/contributors">
+  <img
+    src="https://contrib.rocks/image?repo=OpenSourceAGI/ai-broker-investing-agent"
+    alt="Contributors to ai-broker-investing-agent"
+  />
+</a>
