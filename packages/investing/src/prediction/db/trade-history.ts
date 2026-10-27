@@ -3,7 +3,7 @@ import {
   polymarketTradeHistory,
   polymarketTradeSyncStatus,
 } from "../../db/schema";
-import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
+import { eq, desc, asc, and, gte, lte, sql } from "drizzle-orm";
 import type { TraderActivity } from "../api/leaderboard";
 
 /**
@@ -187,6 +187,44 @@ export async function getTraderTradeHistory(
     .orderBy(desc(polymarketTradeHistory.timestamp))
     .limit(limit)
     .offset(offset);
+}
+
+/**
+ * Loads every stored TRADE row for one Polymarket proxy wallet through an
+ * inclusive execution-time cutoff.
+ *
+ * This query intentionally has no pagination limit: position reconstruction
+ * needs the opening fills as well as the closing fills. Rows are ordered by
+ * execution time and then primary key so same-second activity has a stable
+ * caller order.
+ *
+ * This establishes only what is present in the local table. It does not prove
+ * that upstream activity synchronization captured the wallet's complete
+ * history.
+ */
+export async function getTraderTradesThroughCutoff(
+  traderId: string,
+  cutoff: Date,
+) {
+  if (typeof traderId !== "string" || traderId.length === 0)
+    throw new TypeError("traderId must be a non-empty Polymarket proxy wallet");
+  if (!(cutoff instanceof Date) || !Number.isFinite(cutoff.getTime()))
+    throw new RangeError("cutoff must be a valid Date");
+
+  return await db
+    .select()
+    .from(polymarketTradeHistory)
+    .where(
+      and(
+        eq(polymarketTradeHistory.traderId, traderId),
+        eq(polymarketTradeHistory.type, "TRADE"),
+        lte(polymarketTradeHistory.timestamp, cutoff),
+      ),
+    )
+    .orderBy(
+      asc(polymarketTradeHistory.timestamp),
+      asc(polymarketTradeHistory.id),
+    );
 }
 
 /**
