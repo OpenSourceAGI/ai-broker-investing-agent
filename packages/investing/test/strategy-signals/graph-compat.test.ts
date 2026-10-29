@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { TradingAgentsGraph } from "../../src/trading-agents/graph/trading-graph";
 import type { LLMClient } from "../../src/trading-agents/utils/llm-client";
 
-it("retains all eight pre-edit legacy prompts byte for byte", async () => {
+it("retains all eight pre-edit legacy prompts apart from newline encoding", async () => {
   const prompts: string[] = [];
   const llm: LLMClient = {
     async invoke(input) {
@@ -28,7 +28,7 @@ it("retains all eight pre-edit legacy prompts byte for byte", async () => {
       readFileSync(
         new URL(`./fixtures/legacy-prompts/${String(i).padStart(2, "0")}.txt`, import.meta.url),
         "utf8",
-      ),
+      ).replace(/\r\n/g, "\n"),
     ),
   );
 });

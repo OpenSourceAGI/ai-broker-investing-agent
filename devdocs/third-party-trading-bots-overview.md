@@ -1,5 +1,7 @@
 # Third-party trading bots: assessment and integration
 
+Follow-up: [spread-aware momentum](spread-aware-momentum.md) adds a quote-based entry filter to the existing PyKalshi port, with a local research-to-paper-execution demo. That note records its own scope, validation and current setup blockers; the assessment below is the earlier inventory.
+
 Assessed against the vendored files at commit `b877b41`, on 2026-10-05. All ten folders contribute to `packages/investing`. The runtime integration consists of pure TypeScript sources, mappings and a risk posture. It never imports or starts a vendored bot.
 
 Native assessment and the TypeScript integration are separate results. A successful native assessment below can mean a selected simulation, detector or model import; it does not mean the full live bot ran. All integrated consumers use fixtures, a scripted LLM and paper execution. No live provider, wallet or broker was connected.
