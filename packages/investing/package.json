@@ -76,7 +76,8 @@
     "sync:high-volume-markets": "tsx scripts/sync-high-volume-markets.ts",
     "sync:trade-history": "tsx scripts/sync-trade-history.ts",
     "test:coverage": "vitest run --coverage",
-    "demo:strategy-signals": "bun examples/strategy-signals-demo.ts"
+    "demo:strategy-signals": "bun examples/strategy-signals-demo.ts",
+    "demo:btc-live": "bun examples/btc15m-live-demo.ts"
   },
   "keywords": [
     "investing",
