@@ -18,12 +18,17 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { ThemeDropdown } from "@/components/theme/theme-dropdown"
+import { useSession } from "@/lib/auth/client"
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME;
 
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  // Once a session exists there is nothing to log in to, so the Login button
+  // is hidden on both the desktop bar and the mobile menu.
+  const { data: session } = useSession()
+  const isLoggedIn = Boolean(session?.user)
 
   const navLinkClasses = "flex items-center gap-1.5 text-sm uppercase tracking-wide text-muted-foreground transition-all hover:font-medium hover:text-foreground hover:bg-accent hover:text-accent-foreground hover:rounded-md px-2 py-1 -mx-2 -my-1"
   const mobileNavLinkClasses = "flex items-center gap-2 text-sm text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground hover:rounded-md px-2 py-1 -mx-2 -my-1"
@@ -87,18 +92,20 @@ export function Header() {
         <div className="hidden items-center gap-3 md:flex">
           <ThemeDropdown />
 
-          <Link href="/login" rel="noopener noreferrer">
-            <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
-              <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-              <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-green-600 dark:bg-green-700 px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl space-x-2">
-                <LogIn className="h-5 w-5" />
+          {!isLoggedIn && (
+            <Link href="/login" rel="noopener noreferrer">
+              <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
+                <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+                <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-green-600 dark:bg-green-700 px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl space-x-2">
+                  <LogIn className="h-5 w-5" />
 
-                {/* <Image src="/icons/icon-login.svg" alt="Algo Strategies" width={32} height={32} /> */}
+                  {/* <Image src="/icons/icon-login.svg" alt="Algo Strategies" width={32} height={32} /> */}
 
-                <span>Login</span>
-              </span>
-            </button>
-          </Link>
+                  <span>Login</span>
+                </span>
+              </button>
+            </Link>
+          )}
         </div>
 
         <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -171,17 +178,19 @@ export function Header() {
               Docs
             </Link>
 
-            <div className="pt-4">
-              <Link href="/login" className="block" onClick={() => setMobileMenuOpen(false)}>
-                <button className="relative inline-flex h-12 w-full overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
-                  <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-                  <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-green-600 dark:bg-green-700 px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl space-x-2">
-                    <LogIn className="h-5 w-5" />
-                    <span>Login</span>
-                  </span>
-                </button>
-              </Link>
-            </div>
+            {!isLoggedIn && (
+              <div className="pt-4">
+                <Link href="/login" className="block" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="relative inline-flex h-12 w-full overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
+                    <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+                    <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-green-600 dark:bg-green-700 px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl space-x-2">
+                      <LogIn className="h-5 w-5" />
+                      <span>Login</span>
+                    </span>
+                  </button>
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
       )}
