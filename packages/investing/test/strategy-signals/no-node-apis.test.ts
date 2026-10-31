@@ -1,6 +1,7 @@
 import { it, expect } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 it("keeps strategy modules independent of Node APIs and vendored runtime imports", () => {
   function scan(dir: string): void {
@@ -13,5 +14,5 @@ it("keeps strategy modules independent of Node APIs and vendored runtime imports
         );
     }
   }
-  scan(new URL("../../src/strategy-signals", import.meta.url).pathname);
+  scan(fileURLToPath(new URL("../../src/strategy-signals", import.meta.url)));
 });

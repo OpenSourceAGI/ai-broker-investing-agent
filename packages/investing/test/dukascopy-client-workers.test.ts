@@ -17,8 +17,44 @@ describe("dukascopy client on a runtime without code generation", () => {
     globalThis.Function = function () {
       throw new EvalError("Code generation from strings disallowed for this context");
     } as unknown as FunctionConstructor;
-    // An empty 200 body decodes to zero candles without touching the network.
-    fetchMock = vi.fn(async () => new Response(new ArrayBuffer(0), { status: 200 }));
+    // An empty candle payload decodes to zero candles without touching the
+    // network. dukascopy-node's jetta endpoints answer in JSON (and reject any
+    // other content type), so the mock mirrors that shape.
+    const emptyCandles = {
+      timestamp: 0,
+      multiplier: 0.001,
+      times: [],
+      opens: [],
+      highs: [],
+      lows: [],
+      closes: [],
+      volumes: [],
+    };
+    // dukascopy-node cannot aggregate a completely empty daily file, so daily
+    // URLs get one candle dated before any range these tests request. It is
+    // filtered out by date, leaving zero candles all the same.
+    const staleDailyCandle = {
+      timestamp: Date.UTC(2020, 0, 1),
+      multiplier: 0.001,
+      shift: 24 * 60 * 60e3,
+      open: 1.1,
+      high: 1.2,
+      low: 1.0,
+      close: 1.15,
+      times: [0],
+      opens: [0],
+      highs: [0],
+      lows: [0],
+      closes: [0],
+      volumes: [1],
+    };
+    fetchMock = vi.fn(
+      async (url: string | URL) =>
+        new Response(JSON.stringify(String(url).includes("/candles/day/") ? staleDailyCandle : emptyCandles), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+    );
     vi.stubGlobal("fetch", fetchMock);
   });
 
