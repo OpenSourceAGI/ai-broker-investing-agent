@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useTheme } from "next-themes"
 import {
   Brain,
@@ -28,6 +29,7 @@ import {
   SlidersHorizontal,
   ClipboardList,
   Search,
+  Sparkles,
 } from "lucide-react"
 
 import {
@@ -74,14 +76,19 @@ import { useTickerConfig, defaultTickerConfig, type TickerConfig } from "@/lib/u
 import { Checkbox } from "@/components/ui/checkbox"
 import { Slider } from "@/components/ui/slider"
 
-// The QwkSearch section pulls in research-agent-ui's settings schema, so it
-// loads when it is first shown rather than with every page's sidebar.
-const QwkSearchSettingsPanel = React.lazy(() => import("@/components/qwksearch/QwkSearchSettingsPanel"))
+// The QwkSearch sections pull in research-agent-ui's settings schema, so they
+// load when first shown rather than with every page's sidebar.
+const QwkSearchAccountCard = React.lazy(() =>
+  import("@/components/qwksearch/QwkSearchSettingsPanel").then((m) => ({ default: m.QwkSearchAccountCard })),
+)
+const QwkSearchPreferencesCard = React.lazy(() =>
+  import("@/components/qwksearch/QwkSearchSettingsPanel").then((m) => ({ default: m.QwkSearchPreferencesCard })),
+)
 
-function QwkSearchSettings() {
+function LazySection({ children }: { children: React.ReactNode }) {
   return (
     <React.Suspense fallback={<div className="py-6 text-center text-sm text-muted-foreground">Loading QwkSearch settings...</div>}>
-      <QwkSearchSettingsPanel />
+      {children}
     </React.Suspense>
   )
 }
@@ -257,34 +264,44 @@ const themeColors: Record<string, { primary: string; secondary: string }> = {
   "pastel-dreams": { primary: "#a78bfa", secondary: "#e9d8fd" }
 }
 
-const navItems = [
+export const settingsNavItems = [
   { name: "General", icon: Key, value: "general" },
   { name: "Config UI", icon: SlidersHorizontal, value: "configui" },
   { name: "LLM", icon: Brain, value: "llm" },
-  { name: "QwkSearch", icon: Search, value: "qwksearch" },
+  { name: "QwkSearch Account", icon: Search, value: "qwksearch" },
+  { name: "Research Agent", icon: Sparkles, value: "research" },
   { name: "Brokers", icon: TrendingUp, value: "brokers" },
   { name: "Data", icon: Database, value: "data" },
   { name: "Teams", icon: Users, value: "teams" },
   { name: "Third-Party Sync", icon: Database, value: "sync" },
 ]
 
-export function SettingsDialog({
-  trigger,
-  open: controlledOpen,
-  onOpenChange,
+/**
+ * All settings sections with their navigation. Rendered full page at
+ * `/settings` (`fullPage`), or inside <SettingsDialog />.
+ */
+export function SettingsPanel({
+  active = true,
   initialSection = "general",
+  onSectionChange,
+  onClose,
+  fullPage = false,
 }: {
-  trigger?: React.ReactNode
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-  /** The section shown when the dialog opens (a `navItems` value). */
+  /** Load the user's settings while true (the dialog passes its open state). */
+  active?: boolean
+  /** The section shown first (a `settingsNavItems` value). */
   initialSection?: string
+  onSectionChange?: (section: string) => void
+  /** Called before navigating away from settings (closes the dialog). */
+  onClose?: () => void
+  fullPage?: boolean
 }) {
-  const [internalOpen, setInternalOpen] = React.useState(false)
-  const isControlled = controlledOpen !== undefined
-  const open = isControlled ? controlledOpen : internalOpen
-  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen
-  const [activeSection, setActiveSection] = React.useState(initialSection)
+  const [activeSection, setActiveSectionState] = React.useState(initialSection)
+  useEffect(() => setActiveSectionState(initialSection), [initialSection])
+  const setActiveSection = (section: string) => {
+    setActiveSectionState(section)
+    onSectionChange?.(section)
+  }
   const [settings, setSettings] = useState<any>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -339,11 +356,11 @@ export function SettingsDialog({
 
   useEffect(() => {
     setMounted(true)
-    if (open) {
+    if (active) {
       fetchSettings()
       fetchKycStatus()
     }
-  }, [open])
+  }, [active])
 
   const fetchSettings = async () => {
     setLoading(true)
@@ -555,8 +572,8 @@ export function SettingsDialog({
             variant="outline"
             className="w-full"
             onClick={() => {
-              setOpen(false)
-              router.push("/survey?returnTo=/dashboard/settings")
+              onClose?.()
+              router.push("/survey?returnTo=/settings")
             }}
           >
             <ClipboardList className="mr-2 h-4 w-4" />
@@ -875,8 +892,6 @@ export function SettingsDialog({
         </CardContent>
       </Card>
 
-      {/* QwkSearch Research Agent: account link and agent settings, also its own section */}
-      <QwkSearchSettings />
     </div>
   )
 
@@ -1296,7 +1311,9 @@ export function SettingsDialog({
       case "llm":
         return renderLLMSection()
       case "qwksearch":
-        return <QwkSearchSettings />
+        return <LazySection><QwkSearchAccountCard /></LazySection>
+      case "research":
+        return <LazySection><QwkSearchPreferencesCard /></LazySection>
       case "brokers":
         return renderBrokersSection()
       case "data":
@@ -1310,7 +1327,150 @@ export function SettingsDialog({
     }
   }
 
-  const activeSectionName = navItems.find(item => item.value === activeSection)?.name || "Settings"
+  const activeSectionName = settingsNavItems.find(item => item.value === activeSection)?.name || "Settings"
+
+  const saveButton = (
+    <Button onClick={handleSave} disabled={saving} size="sm">
+      <Save className="mr-2 h-4 w-4" />
+      {saving ? "Saving..." : "Save"}
+    </Button>
+  )
+
+  const mobileNav = (
+    <div className="flex md:hidden overflow-x-auto px-2 pb-2 gap-1">
+      {settingsNavItems.map((item) => (
+        <button
+          key={item.value}
+          onClick={() => setActiveSection(item.value)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+            activeSection === item.value
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted hover:bg-muted/80"
+          }`}
+        >
+          <item.icon className="h-3.5 w-3.5" />
+          {item.name}
+        </button>
+      ))}
+    </div>
+  )
+
+  if (fullPage) {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col md:flex-row md:gap-6 md:p-6">
+        <nav className="hidden w-56 shrink-0 md:block" aria-label="Settings sections">
+          <h1 className="mb-4 px-3 text-2xl font-semibold">Settings</h1>
+          <ul className="space-y-1">
+            {settingsNavItems.map((item) => (
+              <li key={item.value}>
+                <button
+                  onClick={() => setActiveSection(item.value)}
+                  aria-current={activeSection === item.value ? "page" : undefined}
+                  className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                    activeSection === item.value
+                      ? "bg-accent font-medium text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.name}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <main className="flex min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-10 flex shrink-0 flex-col border-b bg-background">
+            <div className="flex h-14 items-center justify-between gap-2 px-4 md:px-0">
+              <h2 className="text-lg font-semibold">
+                <span className="md:hidden">Settings · </span>
+                {activeSectionName}
+              </h2>
+              {saveButton}
+            </div>
+            {mobileNav}
+          </header>
+          <div className="flex flex-1 flex-col gap-4 p-4 md:px-0">
+            {renderContent()}
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  return (
+    <SidebarProvider className="items-start">
+      <Sidebar collapsible="none" className="hidden md:flex">
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {settingsNavItems.map((item) => (
+                  <SidebarMenuItem key={item.name}>
+                    <SidebarMenuButton
+                      onClick={() => setActiveSection(item.value)}
+                      isActive={activeSection === item.value}
+                    >
+                      <item.icon />
+                      <span>{item.name}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+      <main className="flex h-[600px] flex-1 flex-col overflow-hidden">
+        <header className="flex shrink-0 flex-col border-b">
+          <div className="flex h-14 items-center gap-2 px-4">
+            <div className="flex items-center justify-between w-full">
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink asChild>
+                      <Link href={`/settings?section=${activeSection}`} onClick={() => onClose?.()}>Settings</Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{activeSectionName}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+              {saveButton}
+            </div>
+          </div>
+          {mobileNav}
+        </header>
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+          {renderContent()}
+        </div>
+      </main>
+    </SidebarProvider>
+  )
+}
+
+/**
+ * Settings in a dialog. The app's own entry points open the full page at
+ * `/settings` instead; this stays for callers that need settings in place.
+ */
+export function SettingsDialog({
+  trigger,
+  open: controlledOpen,
+  onOpenChange,
+  initialSection = "general",
+}: {
+  trigger?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  /** The section shown when the dialog opens (a `settingsNavItems` value). */
+  initialSection?: string
+}) {
+  const [internalOpen, setInternalOpen] = React.useState(false)
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : internalOpen
+  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -1324,72 +1484,7 @@ export function SettingsDialog({
         <DialogDescription className="sr-only">
           Customize your settings here.
         </DialogDescription>
-        <SidebarProvider className="items-start">
-          <Sidebar collapsible="none" className="hidden md:flex">
-            <SidebarContent>
-              <SidebarGroup>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {navItems.map((item) => (
-                      <SidebarMenuItem key={item.name}>
-                        <SidebarMenuButton
-                          onClick={() => setActiveSection(item.value)}
-                          isActive={activeSection === item.value}
-                        >
-                          <item.icon />
-                          <span>{item.name}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            </SidebarContent>
-          </Sidebar>
-          <main className="flex h-[600px] flex-1 flex-col overflow-hidden">
-            <header className="flex shrink-0 flex-col border-b">
-              <div className="flex h-14 items-center gap-2 px-4">
-                <div className="flex items-center justify-between w-full">
-                  <Breadcrumb>
-                    <BreadcrumbList>
-                      <BreadcrumbItem className="hidden md:block">
-                        <BreadcrumbLink href="#">Settings</BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator className="hidden md:block" />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage>{activeSectionName}</BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </BreadcrumbList>
-                  </Breadcrumb>
-                  <Button onClick={handleSave} disabled={saving} size="sm">
-                    <Save className="mr-2 h-4 w-4" />
-                    {saving ? "Saving..." : "Save"}
-                  </Button>
-                </div>
-              </div>
-              {/* Mobile navigation tabs */}
-              <div className="flex md:hidden overflow-x-auto px-2 pb-2 gap-1">
-                {navItems.map((item) => (
-                  <button
-                    key={item.value}
-                    onClick={() => setActiveSection(item.value)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                      activeSection === item.value
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted hover:bg-muted/80"
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5" />
-                    {item.name}
-                  </button>
-                ))}
-              </div>
-            </header>
-            <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-              {renderContent()}
-            </div>
-          </main>
-        </SidebarProvider>
+        <SettingsPanel active={open} initialSection={initialSection} onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   )

@@ -1,8 +1,8 @@
 "use client"
 
 /**
- * Settings → QwkSearch (also shown at the bottom of Settings → General): the
- * QwkSearch account the research agent runs as, and the agent's own settings.
+ * Settings → QwkSearch Account (the QwkSearch account the research agent
+ * runs as) and Settings → Research Agent (the agent's own settings).
  *
  * The account is linked through "Sign in with QwkSearch" or by pasting a
  * QwkSearch API key, and is managed apart from AI Broker's own API key and

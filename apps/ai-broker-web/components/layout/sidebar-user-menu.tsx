@@ -28,7 +28,6 @@ import {
   DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { SettingsDialog } from "@/components/settings/settings-dialog"
 import CinematicThemeSwitcher from "@/components/ui/cinematic-theme-switcher"
 import { themeNames, themeColors, formatThemeName } from "@/components/theme/theme-dropdown"
 
@@ -115,14 +114,10 @@ export function SidebarUserMenu() {
               </div>
             </div>
             <DropdownMenuSeparator />
-            <SettingsDialog
-              trigger={
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <User2 className="mr-2 h-4 w-4" />
-                  Profile
-                </DropdownMenuItem>
-              }
-            />
+            <DropdownMenuItem onSelect={() => router.push("/settings")}>
+              <User2 className="mr-2 h-4 w-4" />
+              Profile
+            </DropdownMenuItem>
             <DropdownMenuItem>
               <CreditCard className="mr-2 h-4 w-4" />
               Billing

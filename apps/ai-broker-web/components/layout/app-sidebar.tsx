@@ -19,7 +19,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { SettingsDialog } from "@/components/settings/settings-dialog"
 import { SidebarSearch } from "./sidebar-search"
 import { SidebarUserMenu } from "./sidebar-user-menu"
 import { useQwkSearchConnectOutcome } from "@/components/qwksearch/connect-auth"
@@ -138,14 +137,12 @@ function AppSidebarContent({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SettingsDialog
-                  trigger={
-                    <SidebarMenuButton tooltip="Settings">
-                      <SettingsIcon className="w-6 h-6 shrink-0" />
-                      <span className="group-data-[collapsible=icon]:hidden">Settings</span>
-                    </SidebarMenuButton>
-                  }
-                />
+                <SidebarMenuButton asChild isActive={pathname === '/settings'} tooltip="Settings">
+                  <Link href="/settings">
+                    <SettingsIcon className="w-6 h-6 shrink-0" />
+                    <span className="group-data-[collapsible=icon]:hidden">Settings</span>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton

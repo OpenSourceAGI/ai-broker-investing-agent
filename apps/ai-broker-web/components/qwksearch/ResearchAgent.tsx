@@ -9,7 +9,7 @@ import "react-reason-editor-sidebar/style.css"
 
 import { useCallback, useEffect, useState } from "react"
 import { MainViewProvider, ResearchWorkspaceView, configureResearchAgentUI } from "research-agent-ui/workspace"
-import { SettingsDialog } from "@/components/settings/settings-dialog"
+import { useRouter } from "next/navigation"
 import { prepareDocStorage } from "./doc-storage"
 import { syncSavedPreferences } from "./preferences"
 import { QwksearchProviders } from "./Providers"
@@ -17,17 +17,16 @@ import { QwksearchProviders } from "./Providers"
 /**
  * The research workspace (chat tabs, the REASON docs editor and its files
  * sidebar) with the agent's "settings" button opening AI Broker's settings
- * dialog on its QwkSearch section, instead of a `/settings` route this app
- * doesn't serve. The workspace itself keeps `?chat=` / `?docs=` in the URL
- * and handles opening chats from history.
+ * page on its Research Agent section. The workspace itself keeps `?chat=` /
+ * `?docs=` in the URL and handles opening chats from history.
  */
 function ResearchWorkspace() {
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const router = useRouter()
 
   const openSettings = useCallback(() => {
-    setSettingsOpen(true)
+    router.push("/settings?section=research")
     return true
-  }, [])
+  }, [router])
 
   useEffect(() => {
     configureResearchAgentUI({ onOpenSettings: openSettings })
@@ -35,10 +34,7 @@ function ResearchWorkspace() {
   }, [openSettings])
 
   return (
-    <>
-      <ResearchWorkspaceView />
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} initialSection="qwksearch" />
-    </>
+    <ResearchWorkspaceView />
   )
 }
 
