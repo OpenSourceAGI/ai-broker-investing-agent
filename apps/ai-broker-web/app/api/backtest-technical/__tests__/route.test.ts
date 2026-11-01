@@ -31,6 +31,7 @@ vi.mock("@/packages/investing/src/stocks/yahoo-finance-wrapper", () => ({
 import { backtest } from "indicatorts";
 import { yahooFinance } from "@/packages/investing/src/stocks/yahoo-finance-wrapper";
 import { POST } from "../route";
+import reference from "@/packages/investing/test/strategy-signals/golden/hedge-fund-technicals-reference.json";
 
 const mockBacktest = backtest as unknown as ReturnType<typeof vi.fn>;
 const mockGetHistorical = yahooFinance.getHistorical as unknown as ReturnType<
@@ -78,7 +79,7 @@ describe("POST /api/backtest-technical strategy selection", () => {
     ).toEqual(["bollinger-bands", "macd"]);
   });
 
-  it("ignores unknown catalog IDs without changing selection behavior", async () => {
+  it("reports unknown catalog IDs as skipped without changing selection behavior", async () => {
     const response = await POST(request(["tradingview-id", "macd"]) as never);
     const body = await response.json();
 
@@ -89,6 +90,59 @@ describe("POST /api/backtest-technical strategy selection", () => {
       strategyId: "macd",
       strategyName: "MACD Strategy",
     });
+    expect(body.skipped).toEqual([
+      { strategyId: "tradingview-id", reason: expect.stringContaining("TradingView") },
+    ]);
+  });
+
+  it("omits skipped when every selected strategy ran", async () => {
+    const body = await (await POST(request(["macd"]) as never)).json();
+    expect(body).not.toHaveProperty("skipped");
+  });
+
+  it("marks prediction-market sources as replay-demo only", async () => {
+    const body = await (await POST(request(["kalshi-vibe"]) as never)).json();
+    expect(body.results).toEqual([]);
+    expect(body.skipped).toEqual([
+      { strategyId: "kalshi-vibe", reason: expect.stringContaining("replay demo only") },
+    ]);
+  });
+
+  it("replays hedge-fund technicals walk-forward over the fetched daily bars", async () => {
+    const up = reference.cases.find((c) => c.name === "up")!.bars;
+    mockGetHistorical.mockResolvedValue({ success: true, data: up });
+    const body = await (await POST(request(["hedge-fund-technicals"]) as never)).json();
+
+    expect(body.skipped).toBeUndefined();
+    expect(body.results).toHaveLength(1);
+    const [result] = body.results;
+    expect(result).toMatchObject({
+      strategyId: "hedge-fund-technicals",
+      strategyName: "Hedge-fund technicals (ai-hedge-fund)",
+      totalTrades: 1,
+    });
+    // No trade before the 127-bar warmup; the uptrend's first decision is a BUY.
+    expect(result.signals[0].action).toBe("BUY");
+    expect(Date.parse(result.signals[0].date)).toBeGreaterThanOrEqual(Date.parse(up[126].date));
+  });
+
+  it("holds through warmup on a short history", async () => {
+    const body = await (await POST(request(["hedge-fund-technicals"]) as never)).json();
+    expect(body.results[0]).toMatchObject({ totalTrades: 0, totalReturn: 0 });
+  });
+
+  it("skips a replay whose bars are invalid instead of failing the request", async () => {
+    mockGetHistorical.mockResolvedValue({
+      success: true,
+      data: prices.map((p, i) => (i === 1 ? { ...p, volume: null } : p)),
+    });
+    const response = await POST(request(["hedge-fund-technicals", "macd"]) as never);
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body.results.map((r: { strategyId: string }) => r.strategyId)).toEqual(["macd"]);
+    expect(body.skipped).toEqual([
+      { strategyId: "hedge-fund-technicals", reason: expect.stringMatching(/^failed: invalid technicals volume/) },
+    ]);
   });
 
   it("runs all registered library strategies when no IDs are supplied", async () => {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { yahooFinance } from '@/packages/investing/src/stocks/yahoo-finance-wrapper'
 import { backtest, STRATEGY_INFOS, type StrategyInfo } from 'indicatorts'
 import {
+  BACKTESTABLE_STRATEGY_IDS,
   TECHNICAL_STRATEGY_ID_BY_NAME,
   TECHNICAL_STRATEGY_NAME_BY_ID,
 } from '@/lib/technical-strategies'
@@ -11,6 +12,8 @@ import {
   computeForecasterTrustScore,
   type TrustScoreReason,
 } from '@/packages/investing/src/prediction/analysis/trust-score'
+import { registeredSources, type RegisteredSource } from '@/packages/investing/src/strategy-signals/registry'
+import { replayDailyActions } from '@/packages/investing/src/strategy-signals/replay'
 
 interface BacktestRequest {
   symbol: string
@@ -50,10 +53,14 @@ interface BacktestResult {
     trustReason: TrustScoreReason
     signals: TradeSignal[]
   }[]
+  /** Selected ids that could not be backtested here, with the reason. */
+  skipped?: { strategyId: string; reason: string }[]
 }
 
 /** Trust is unreliable below this many closed trades (the paper's N >= 25). */
 const TRUST_MIN_TRADES = 25
+
+const registeredById = new Map(registeredSources.map((entry) => [entry.source.id, entry]))
 
 function calculateMetrics(actions: number[], closingPrices: number[], dates: Date[], initialCapital: number) {
   let cash = initialCapital
@@ -230,11 +237,35 @@ export async function POST(request: NextRequest) {
     // Filter strategies if specific IDs are provided
     let strategiesToTest: StrategyInfo[] = STRATEGY_INFOS
     let customToTest = CUSTOM_BACKTEST_STRATEGIES
+    const replays: RegisteredSource[] = []
+    const skipped: { strategyId: string; reason: string }[] = []
     if (strategyIds.length > 0) {
       const selectedNames = strategyIds.map(id => TECHNICAL_STRATEGY_NAME_BY_ID[id]).filter(Boolean)
       strategiesToTest = STRATEGY_INFOS.filter(info => selectedNames.includes(info.name))
       customToTest = CUSTOM_BACKTEST_STRATEGIES.filter(({ id }) => strategyIds.includes(id))
+      for (const id of strategyIds) {
+        if (BACKTESTABLE_STRATEGY_IDS.has(id)) continue
+        const entry = registeredById.get(id)
+        if (entry?.backtest === 'daily-bars') replays.push(entry)
+        else
+          skipped.push({
+            strategyId: id,
+            reason: entry
+              ? 'replay demo only: run `bun run demo:strategy-signals` in packages/investing'
+              : 'not backtestable here: TradingView Pine scripts are only converted offline',
+          })
+      }
     }
+
+    // Third-party equity sources replay walk-forward over the same (null-filtered) daily bars.
+    const dailyBars = replays.length === 0 ? [] : bars.map((p: any) => ({
+      date: new Date(p.date).toISOString().slice(0, 10),
+      open: p.open,
+      high: p.high,
+      low: p.low,
+      close: p.close,
+      volume: p.volume,
+    }))
 
     const runs: { strategyName: string; strategyId: string; run: () => number[] }[] = [
       // Run backtest
@@ -249,10 +280,15 @@ export async function POST(request: NextRequest) {
         strategyId: id,
         run: () => strategy(asset),
       })),
+      ...replays.map((entry) => ({
+        strategyName: `${entry.name} (${entry.upstreamRepo})`,
+        strategyId: entry.source.id,
+        run: () => replayDailyActions(entry.source, symbol, dailyBars),
+      })),
     ]
 
-    // Calculate metrics for each strategy. One failing strategy is skipped
-    // instead of failing the whole backtest.
+    // Calculate metrics for each strategy. One failing strategy is reported
+    // under `skipped` instead of failing the whole backtest.
     const results: BacktestResult['results'] = []
     for (const { strategyName, strategyId, run } of runs) {
       try {
@@ -260,6 +296,7 @@ export async function POST(request: NextRequest) {
         results.push({ strategyName, strategyId, ...metrics })
       } catch (error) {
         console.error(`[Backtest] ${strategyName} failed:`, error)
+        skipped.push({ strategyId, reason: `failed: ${(error as Error).message}` })
       }
     }
 
@@ -273,6 +310,7 @@ export async function POST(request: NextRequest) {
       endDate,
       initialCapital,
       results,
+      ...(skipped.length ? { skipped } : {}),
     }
 
     console.log(`[Backtest] ${symbol}: Tested ${results.length} strategies, returning results`)

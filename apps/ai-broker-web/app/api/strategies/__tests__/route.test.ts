@@ -7,6 +7,7 @@ import {
   TECHNICAL_STRATEGIES,
   TECHNICAL_STRATEGY_NAME_BY_ID,
 } from "@/lib/technical-strategies";
+import { registeredSources } from "@/packages/investing/src/strategy-signals/registry";
 import { GET } from "../route";
 
 const request = (query = "") =>
@@ -20,7 +21,7 @@ describe("GET /api/strategies", () => {
 
     expect(response.status).toBe(200);
     expect(strategies).toHaveLength(
-      algoStrategies.length + BACKTESTABLE_STRATEGIES.length,
+      algoStrategies.length + BACKTESTABLE_STRATEGIES.length + registeredSources.length,
     );
     expect(new Set(ids).size).toBe(ids.length);
     expect(
@@ -40,7 +41,32 @@ describe("GET /api/strategies", () => {
     delete existingSummary.source;
     expect(
       strategies.find((strategy: { url: string }) => strategy.url === existing.url),
-    ).toEqual({ ...existingSummary, source: "", provider: "tradingview" });
+    ).toEqual({ ...existingSummary, source: "", provider: "tradingview", backtestable: false });
+  });
+
+  it("lists every third-party source with provenance and an honest backtest flag", async () => {
+    const strategies = await (await GET(request())).json();
+    const thirdParty = strategies.filter(
+      (strategy: { provider: string }) => strategy.provider === "third-party",
+    );
+    expect(thirdParty.map((s: { url: string }) => s.url)).toEqual(
+      registeredSources.map((entry) => entry.source.id),
+    );
+    expect(
+      thirdParty.filter((s: { backtestable: boolean }) => s.backtestable).map((s: { url: string }) => s.url),
+    ).toEqual(["hedge-fund-technicals"]);
+    expect(strategies.filter((s: { provider: string }) => s.provider === "builtin").every(
+      (s: { backtestable: boolean }) => s.backtestable,
+    )).toBe(true);
+
+    const vibe = await (await GET(request("?id=kalshi-vibe"))).json();
+    expect(vibe).toMatchObject({
+      provider: "third-party",
+      backtestable: false,
+      author: "Kalshi-Vibe-Bot",
+      provenance: { license: "MIT (K-Jeez)", fidelity: "port", venue: "kalshi", backtest: "replay-demo" },
+    });
+    expect(vibe.description).toContain("third-party-trading-bots/Kalshi-Vibe-Bot/");
   });
 
   it("returns built-in details by the existing short ID", async () => {

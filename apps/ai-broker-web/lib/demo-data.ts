@@ -11,7 +11,10 @@ export interface Agent {
 export interface Strategy {
   id: string
   name: string
-  provider?: 'builtin' | 'tradingview'
+  provider?: 'builtin' | 'tradingview' | 'third-party'
+  /** False when /api/backtest-technical cannot run it; undefined means runnable. */
+  backtestable?: boolean
+  provenance?: { upstream: string; license: string; fidelity: string; venue: string; backtest: string }
   description?: string
   source?: string
   author?: string
