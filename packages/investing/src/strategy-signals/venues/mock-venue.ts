@@ -5,6 +5,7 @@ import type {
 } from '../../prediction-markets/types'
 import type { AccountSnapshot, ExecutionApproval, VenueAdapter, VenueMarket } from '../types'
 import { toExecutableCents, toPredictionMarketIntent } from '../execution'
+import { takerFeeCents } from '../fees'
 
 export class MockVenue implements VenueAdapter {
   private executor: InMemoryPaperExecutor
@@ -13,7 +14,8 @@ export class MockVenue implements VenueAdapter {
     public readonly venue: string,
     markets: VenueMarket[],
     initialCashCents = 10000,
-    maxPositionPerMarket = 50
+    maxPositionPerMarket = 50,
+    private readonly takerFeeBps = 0
   ) {
     this.executor = new InMemoryPaperExecutor({ initialCashCents, maxPositionPerMarket })
     for (const market of markets) this.setMarket(market)
@@ -76,7 +78,10 @@ export class MockVenue implements VenueAdapter {
       (intent.action === 'SELL' && cents < intent.priceCents)
     )
       return reject('quote outside approved limit')
-    return this.executor.execute({ ...intent, priceCents: cents })
+    return this.executor.execute(
+      { ...intent, priceCents: cents },
+      takerFeeCents(intent.quantity, cents, this.takerFeeBps)
+    )
   }
   snapshot(): AccountSnapshot {
     return { kind: 'event', venue: this.venue, portfolio: this.executor.snapshot() }

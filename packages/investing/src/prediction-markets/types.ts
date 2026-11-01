@@ -160,6 +160,8 @@ export interface PaperExecutionResult {
     quantity: number;
     cashChangeCents: number;
     realizedPnlCents: number;
+    /** Present only when the venue charged a fee on this fill. */
+    feeCents?: number;
   };
   reason?: string;
   portfolio: PaperPortfolioState;

@@ -68,13 +68,19 @@ export class InMemoryPaperExecutor {
     return this.snapshot();
   }
 
-  execute(intent: PredictionMarketTradeIntent): PaperExecutionResult {
+  /** `feeCents` is the venue's whole-cent fee for this fill; it is charged as realized P&L. */
+  execute(intent: PredictionMarketTradeIntent, feeCents = 0): PaperExecutionResult {
     try {
       validateMarketObservation(intent.ticker, intent.timestamp);
       validatePriceCents(intent.priceCents, "priceCents");
     } catch (error) {
       return this.reject(intent, (error as Error).message);
     }
+    if (!Number.isSafeInteger(feeCents) || feeCents < 0) {
+      return this.reject(intent, "feeCents must be a non-negative integer");
+    }
+    // Zero-fee fills keep their original shape (no feeCents key, realized 0 not -0).
+    const fee = feeCents ? { feeCents } : {};
     if (intent.action !== "BUY" && intent.action !== "SELL" && intent.action !== "HOLD") {
       return this.reject(intent, "action must be BUY, SELL or HOLD");
     }
@@ -98,7 +104,7 @@ export class InMemoryPaperExecutor {
       if (marketQuantity + intent.quantity > this.maxPositionPerMarket) return this.reject(intent, "Position limit exceeded");
       const cost = intent.priceCents * intent.quantity;
       if (!Number.isSafeInteger(cost)) return this.reject(intent, "Order cost exceeds safe integer cents");
-      if (cost > this.state.cashCents) return this.reject(intent, "Insufficient paper cash");
+      if (cost + feeCents > this.state.cashCents) return this.reject(intent, "Insufficient paper cash");
       const previousCost = existing ? existing.averageEntryPriceCents * existing.quantity : 0;
       const position: PaperPosition = {
         ticker: intent.ticker,
@@ -108,23 +114,31 @@ export class InMemoryPaperExecutor {
         markPriceCents: intent.priceCents,
         unrealizedPnlCents: 0,
       };
-      this.state.cashCents -= cost;
+      this.state.cashCents -= cost + feeCents;
+      this.state.realizedPnlCents -= feeCents;
       this.state.positions[key] = position;
       this.revalue();
       return {
         status: "FILLED",
         intent,
-        fill: { priceCents: intent.priceCents, quantity: intent.quantity, cashChangeCents: -cost, realizedPnlCents: 0 },
+        fill: {
+          priceCents: intent.priceCents,
+          quantity: intent.quantity,
+          cashChangeCents: -(cost + feeCents),
+          realizedPnlCents: feeCents ? -feeCents : 0,
+          ...fee,
+        },
         portfolio: this.snapshot(),
       };
     }
 
     if (!existing || existing.quantity < intent.quantity) return this.reject(intent, "Insufficient paper position");
-    const proceeds = intent.priceCents * intent.quantity;
+    const proceeds = intent.priceCents * intent.quantity - feeCents;
     if (!Number.isSafeInteger(this.state.cashCents + proceeds)) {
       return this.reject(intent, "Paper cash exceeds safe integer cents");
     }
-    const realized = (intent.priceCents - existing.averageEntryPriceCents) * intent.quantity;
+    if (this.state.cashCents + proceeds < 0) return this.reject(intent, "Insufficient paper cash");
+    const realized = (intent.priceCents - existing.averageEntryPriceCents) * intent.quantity - feeCents;
     existing.quantity -= intent.quantity;
     existing.markPriceCents = intent.priceCents;
     this.state.cashCents += proceeds;
@@ -134,7 +148,7 @@ export class InMemoryPaperExecutor {
     return {
       status: "FILLED",
       intent,
-      fill: { priceCents: intent.priceCents, quantity: intent.quantity, cashChangeCents: proceeds, realizedPnlCents: realized },
+      fill: { priceCents: intent.priceCents, quantity: intent.quantity, cashChangeCents: proceeds, realizedPnlCents: realized, ...fee },
       portfolio: this.snapshot(),
     };
   }
