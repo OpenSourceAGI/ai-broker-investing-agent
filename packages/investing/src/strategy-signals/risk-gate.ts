@@ -8,6 +8,7 @@ import type {
   TradeProposal
 } from './types'
 import { heldQuantity } from './proposal'
+import { affordableQuantity, takerFeeCents } from './fees'
 import {
   isQuantity,
   isUtcTime,
@@ -64,6 +65,12 @@ export function applyRiskGate(
     }
   }
   if (!posture.allowNewEntries) return deny('new entries blocked by posture')
+  if (i.type === 'event' && limits.maxQuoteAgeMs !== undefined) {
+    const quotedAt = context.event?.quotedAt
+    const age = Date.parse(context.evaluationTime) - Date.parse(quotedAt ?? '')
+    if (!isUtcTime(quotedAt) || !(age >= 0 && age <= limits.maxQuoteAgeMs))
+      return deny('stale or missing quote')
+  }
   const price = proposal.limitPriceCents
   if (
     (price !== undefined &&
@@ -80,11 +87,12 @@ export function applyRiskGate(
     positions.filter(p => p.quantity > 0).length >= limits.maxOpenPositions
   )
     return deny('open-position limit')
+  const feeBps = i.type === 'event' ? (limits.takerFeeBps ?? 0) : 0
   let maxQuantity = Math.floor(
     Math.min(
       proposal.quantity,
       Math.max(0, limits.maxPositionPerMarket - held),
-      price === undefined ? Number.MAX_SAFE_INTEGER : Math.floor(cash / price)
+      price === undefined ? Number.MAX_SAFE_INTEGER : affordableQuantity(cash, price, feeBps)
     ) * posture.sizeMultiplier
   )
   reasons.push('current cash, position cap and posture applied')
@@ -102,6 +110,31 @@ export function applyRiskGate(
         }
       } catch {
         return deny('source guard error')
+      }
+    }
+  }
+  if (
+    i.type === 'event' &&
+    (limits.maxKellyFraction !== undefined || limits.minNetEdgeCents !== undefined)
+  ) {
+    if (signal?.probability === undefined) reasons.push('forecast limits skipped: no P(YES)')
+    else {
+      if (signal.sourceId !== proposal.sourceId) return deny('signal identity mismatch')
+      const p = proposal.outcome === 'NO' ? 1 - signal.probability : signal.probability,
+        c = price! / 100,
+        // All-in cost per $1 payout: the taker fee is charged on entry.
+        cost = c + (feeBps / 10_000) * c * (1 - c)
+      if (limits.maxKellyFraction !== undefined) {
+        const kelly = (p - cost) / (1 - cost)
+        if (!(kelly > 0)) return deny('no positive Kelly edge after fees')
+        const cap = Math.floor((limits.maxKellyFraction * kelly * cash) / (cost * 100) + 1e-9)
+        maxQuantity = Math.min(maxQuantity, cap)
+        reasons.push(`fractional Kelly cap ${cap}`)
+      }
+      if (limits.minNetEdgeCents !== undefined && maxQuantity > 0) {
+        const edge = p * 100 - price! - takerFeeCents(maxQuantity, price!, feeBps) / maxQuantity
+        if (edge < limits.minNetEdgeCents)
+          return deny(`net edge ${edge.toFixed(2)}¢ below ${limits.minNetEdgeCents}¢ after fees`)
       }
     }
   }

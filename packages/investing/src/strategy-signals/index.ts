@@ -30,6 +30,7 @@ export {
 export { toStructuredReport, formatStructuredReport, renderStrategySignalsReport } from './report'
 export { selectProposal, proposalId } from './proposal'
 export { applyRiskGate } from './risk-gate'
+export { affordableQuantity, takerFeeCents } from './fees'
 export { toExecutableCents, toPredictionMarketIntent, toEquityOrder } from './execution'
 export type { EquityOrder, EquityOrderClient } from './execution'
 export { MockVenue } from './venues/mock-venue'
