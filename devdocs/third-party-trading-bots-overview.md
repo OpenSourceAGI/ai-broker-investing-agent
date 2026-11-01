@@ -153,6 +153,15 @@ Package-relative paths below start at `packages/investing/`. Full notices and fi
 - **Assessment:** genuine `EquityHistoricalData` import/construction with null volume succeeded offline. No provider fetch or full platform startup was attempted.
 - **Integration:** sort ascending, reject duplicate dates, normalize naive datetime as UTC, map null volume to zero with aggregate and per-bar missing flags. Volume-dependent sources refuse missing data. Mapped bars feed the technical stock BUY/SELL demo and actual mock broker fills.
 
+## Venue accuracy, sizing limits and dashboard (follow-up)
+
+- **Kalshi 2026 quotes:** the Market schema now carries `yes_bid_dollars`/`yes_ask_dollars`/`no_bid_dollars`/`no_ask_dollars` as fixed-point dollar strings (up to 6 decimals) and no longer lists the integer-cent fields, so `fromKalshiMarket` parses the strings digit by digit, falls back to legacy integers and throws when both disagree. `price_ranges` (the replacement for `tick_size`) is not mapped yet; nothing consumes `tickSizeCents`.
+- **Opt-in risk limits** on `RiskLimits`, applied to event BUYs only, defaults unchanged: `takerFeeBps` (cash cap includes `ceil(rate × C × P × (1 − P))`, Kalshi 700), `maxKellyFraction` (cap at a fraction of fee-adjusted Kelly `(P − cEff)/(1 − cEff)`, deny without edge), `minNetEdgeCents` (edge per contract after fees) and `maxQuoteAgeMs` (deny a missing, future or old `VenueMarket.quotedAt`). Forecast limits use the selected signal's genuine P(YES) and are skipped with a reason without one.
+- **Paper fees:** `MockVenue` takes an optional taker fee rate and `InMemoryPaperExecutor` charges it as realized P&L; fee-free fills keep their shape.
+- **Registry:** `registeredSources` records name, upstream folder, license, fidelity, venue and backtest mode for every source; `sourceRegistry()` builds `GraphRun.sources`. A contract test fails if an exported source is unregistered or its license claim disagrees with `THIRD_PARTY_NOTICES.md`.
+- **Replay and dashboard:** `replayDailyActions` replays an equity source walk-forward (bar i sees bars ≤ i, 127-bar warmup, trailing 252-bar window). `/api/strategies` lists third-party sources with provenance; `/api/backtest-technical` backtests `hedge-fund-technicals` on Yahoo daily bars and returns `skipped` reasons instead of dropping TradingView or replay-demo ids.
+- **Live data:** public market lists exclude closed and past-end-date rows, the daily cron retires them and refreshes the official data-api leaderboard (the only writer of `vol`, which `/leaders` sorts by), and the Sync button runs that source too.
+
 ## Monorepo setup and blockers
 
 Use the harness from the repository root:
@@ -182,4 +191,4 @@ Final test/coverage results and the initial baseline are recorded in [findings 0
 
 ## How to add another bot
 
-Follow [integrate-trading-bot](third-party-integration/skills/integrate-trading-bot/SKILL.md). Survey the folder and notice, assess its real safe entrypoint in Docker, implement only the selected pure core, and adapt to `StrategySource` or a venue/data mapping. Register the source for risk checks, pass actual account state and evaluation time, and preserve price precision and the P(YES) convention. Forecast guards belong only to sources with a genuine forecast. Add reviewed goldens, threshold/invalid-input cases and a filled or explicitly report-only consumer. Update this overview and shipped notices, then run the offline Docker gates. Live clients, ledger/concurrency work and published export repairs need their own design.
+Follow [integrate-trading-bot](third-party-integration/skills/integrate-trading-bot/SKILL.md). Survey the folder and notice, assess its real safe entrypoint in Docker, implement only the selected pure core, and adapt to `StrategySource` or a venue/data mapping. Add it to `registeredSources` in `src/strategy-signals/registry.ts` (the registry test enforces this), pass actual account state and evaluation time, and preserve price precision and the P(YES) convention. Forecast guards belong only to sources with a genuine forecast. Add reviewed goldens, threshold/invalid-input cases and a filled or explicitly report-only consumer. Update this overview and shipped notices, then run the offline Docker gates. Live clients, ledger/concurrency work and published export repairs need their own design.
