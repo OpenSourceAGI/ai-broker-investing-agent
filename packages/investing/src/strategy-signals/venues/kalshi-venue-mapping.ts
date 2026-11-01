@@ -12,11 +12,26 @@ export function fromKalshiMarket(raw: unknown): VenueMarket {
     (raw.market_type !== undefined && raw.market_type !== null && raw.market_type !== 'binary')
   )
     throw new Error('invalid Kalshi binary market')
-  const quote = (value: unknown): number | null => {
+  const legacyCents = (value: unknown): number | null => {
     if (value === null || value === undefined) return null
     if (typeof value !== 'number' || !Number.isInteger(value) || value < 0 || value > 100)
       throw new Error('Kalshi quotes must be integer cents or null')
     return value
+  }
+  // Kalshi removed integer-cent quotes in 2026; `<field>_dollars` is a fixed-point
+  // string (up to 6 decimals) parsed by digits, so no float error enters the price.
+  const fields = raw as Record<string, unknown>
+  const quote = (field: string): number | null => {
+    const dollars = fields[`${field}_dollars`]
+    const legacy = legacyCents(fields[field])
+    if (dollars === null || dollars === undefined) return legacy
+    if (typeof dollars !== 'string' || !/^(0|1)(\.\d{1,6})?$/.test(dollars))
+      throw new Error('Kalshi dollar quotes must be fixed-point strings like "0.5600"')
+    const [whole, fraction = ''] = dollars.split('.')
+    const cents = Number(whole) * 100 + Number(fraction.padEnd(6, '0')) / 10_000
+    if (cents > 100) throw new Error('Kalshi quote above $1')
+    if (legacy !== null && legacy !== cents) throw new Error('conflicting Kalshi quote fields')
+    return cents
   }
   if (
     raw.status !== undefined &&
@@ -66,16 +81,16 @@ export function fromKalshiMarket(raw: unknown): VenueMarket {
         outcomeId: `${ticker}:YES`,
         label: 'YES',
         side: 'YES',
-        bidCents: quote(raw.yes_bid),
-        askCents: quote(raw.yes_ask),
+        bidCents: quote('yes_bid'),
+        askCents: quote('yes_ask'),
         ...(typeof raw.tick_size === 'number' ? { tickSizeCents: raw.tick_size } : {})
       },
       {
         outcomeId: `${ticker}:NO`,
         label: 'NO',
         side: 'NO',
-        bidCents: quote(raw.no_bid),
-        askCents: quote(raw.no_ask),
+        bidCents: quote('no_bid'),
+        askCents: quote('no_ask'),
         ...(typeof raw.tick_size === 'number' ? { tickSizeCents: raw.tick_size } : {})
       }
     ]
