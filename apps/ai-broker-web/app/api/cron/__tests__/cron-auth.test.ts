@@ -8,11 +8,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const getSession = vi.hoisted(() => vi.fn())
 const syncMarketsIncremental = vi.hoisted(() => vi.fn())
 const syncLeadersAndCategories = vi.hoisted(() => vi.fn())
+const deactivateExpiredMarkets = vi.hoisted(() => vi.fn())
+const syncLeaderboard = vi.hoisted(() => vi.fn())
 
 vi.mock('@/lib/env/runtime', () => ({ serverEnv: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ auth: { api: { getSession } } }))
 vi.mock('next/headers', () => ({ headers: vi.fn(async () => new Headers()) }))
-vi.mock('@/packages/investing/src/prediction', () => ({ syncMarketsIncremental, syncLeadersAndCategories }))
+vi.mock('@/packages/investing/src/prediction', () => ({
+  syncMarketsIncremental,
+  syncLeadersAndCategories,
+  deactivateExpiredMarkets,
+  syncLeaderboard,
+}))
 
 import { serverEnv } from '@/lib/env/runtime'
 import { GET as syncMarketsGET } from '../sync-markets/route'
@@ -35,6 +42,8 @@ beforeEach(() => {
   getSession.mockResolvedValue(null)
   syncMarketsIncremental.mockResolvedValue({ markets: 3, pricePoints: 10, priceHistoryUpdates: 2, holders: 4, holderUpdates: 1 })
   syncLeadersAndCategories.mockResolvedValue({ leaders: 5, positions: 9 })
+  deactivateExpiredMarkets.mockResolvedValue(7)
+  syncLeaderboard.mockResolvedValue({ leaders: 100 })
 })
 
 describe('/api/cron/sync-markets', () => {
@@ -45,6 +54,20 @@ describe('/api/cron/sync-markets', () => {
     expect(body).toMatchObject({ success: true, markets: 3, cronJob: true })
     expect(syncMarketsIncremental).toHaveBeenCalledWith(1000, true, true)
     expect(getSession).not.toHaveBeenCalled()
+  })
+
+  it('retires markets that closed since the last sync and refreshes the leaderboard', async () => {
+    const res = await syncMarketsGET(cronRequest('/api/cron/sync-markets', 'Bearer worker-secret'))
+    expect(await res.json()).toMatchObject({ deactivated: 7, leaderboard: { leaders: 100 } })
+    expect(deactivateExpiredMarkets).toHaveBeenCalledOnce()
+    expect(syncLeaderboard).toHaveBeenCalledWith({ limit: 100 })
+  })
+
+  it('still succeeds when only the leaderboard refresh fails', async () => {
+    syncLeaderboard.mockRejectedValue(new Error('data-api 503'))
+    const res = await syncMarketsGET(cronRequest('/api/cron/sync-markets', 'Bearer worker-secret'))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ success: true, deactivated: 7, leaderboard: { error: 'data-api 503' } })
   })
 
   it('rejects an anonymous caller', async () => {
