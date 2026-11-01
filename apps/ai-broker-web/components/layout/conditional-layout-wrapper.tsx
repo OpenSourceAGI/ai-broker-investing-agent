@@ -1,7 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { MobileDock } from "@/components/layout/mobile-dock"
 import { StockTicker } from "@/components/investing/stock-ticker"
@@ -30,13 +30,23 @@ export function ConditionalLayoutWrapper({
   }
 
   if (isResearchPage) {
-    // The research agent (research-agent-ui) renders its own shell, so do not
-    // nest the app sidebar inside it — two sidebars would overlay each other.
+    // The research agent (research-agent-ui) brings its own files sidebar
+    // inside the page, so keep AI Broker's app sidebar as the outer nav,
+    // collapsed to its icon rail so the workspace keeps the width. On phones
+    // the agent's own bottom bar holds the message box, which the mobile dock
+    // would cover, so the app sidebar opens from a menu button instead.
     return (
-      <>
-        {children}
+      <SidebarProvider defaultOpen={false}>
+        <AppSidebar />
+        <SidebarInset className="md:pb-0 min-w-0 overflow-x-hidden">
+          {children}
+        </SidebarInset>
+        <SidebarTrigger
+          aria-label="Open AI Broker menu"
+          className="fixed left-11 top-2 z-50 bg-background/80 backdrop-blur md:hidden"
+        />
         <Toaster position="top-right" />
-      </>
+      </SidebarProvider>
     )
   }
 
