@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 // Bundled at build time: Cloudflare Workers has no filesystem to read from at
 // request time.
 import algoStrategies from '@/packages/investing/src/algo-stategies/algo-strategies.json';
-import { TECHNICAL_STRATEGIES } from '@/lib/technical-strategies';
+import { BACKTESTABLE_STRATEGIES, CUSTOM_TECHNICAL_STRATEGIES } from '@/lib/technical-strategies';
+
+const CUSTOM_IDS = new Set<string>(CUSTOM_TECHNICAL_STRATEGIES.map(({ id }) => id));
 
 interface AlgoStrategy {
   url: string;
@@ -18,12 +20,12 @@ interface CatalogStrategy extends AlgoStrategy {
   provider: StrategyProvider;
 }
 
-const builtinStrategies: CatalogStrategy[] = TECHNICAL_STRATEGIES.map(({ id, name, description }) => ({
+const builtinStrategies: CatalogStrategy[] = BACKTESTABLE_STRATEGIES.map(({ id, name, description }) => ({
   url: id,
   name,
   description,
   source: '',
-  author: 'Indicator TS',
+  author: CUSTOM_IDS.has(id) ? 'AI Broker (Pine port)' : 'Indicator TS',
   likes: 0,
   script_type: 'strategy',
   provider: 'builtin',

@@ -15,7 +15,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { MarkdownRenderer } from "@/components/investing/shared/markdown-renderer"
-import { demoStrategies, Strategy } from "@/lib/demo-data"
+import { Strategy } from "@/lib/demo-data"
+import {
+  BACKTESTABLE_STRATEGIES,
+  BACKTESTABLE_STRATEGY_IDS,
+  CUSTOM_TECHNICAL_STRATEGIES,
+} from "@/lib/technical-strategies"
 import {
   Play,
   Pause,
@@ -71,7 +76,57 @@ interface BacktestResult {
   winRate: number
   sharpeRatio?: number
   maxDrawdown: number
+  trustScore: number | null
+  trustReliable: boolean
+  trustReason: string
   signals: TradeSignal[]
+}
+
+const CUSTOM_STRATEGY_IDS = new Set<string>(CUSTOM_TECHNICAL_STRATEGIES.map(({ id }) => id))
+
+// Every strategy the backtest route can run, available before the catalog
+// request returns (and if it fails).
+const BUILTIN_STRATEGIES: Strategy[] = BACKTESTABLE_STRATEGIES.map(({ id, name, description }) => ({
+  id,
+  name,
+  description,
+  provider: 'builtin',
+  author: CUSTOM_STRATEGY_IDS.has(id) ? 'AI Broker (Pine port)' : 'Indicator TS',
+  likes: 0,
+  script_type: 'strategy',
+}))
+
+const isBacktestable = (strategy: Strategy) => BACKTESTABLE_STRATEGY_IDS.has(strategy.id)
+
+function TrustScoreBadge({ result }: { result: BacktestResult }) {
+  if (result.trustScore === null || result.trustScore === undefined) {
+    return (
+      <Badge variant="outline" className="text-xs" title="Trust needs at least two closed trades with different returns">
+        Trust: n/a
+      </Badge>
+    )
+  }
+  const score = result.trustScore
+  const tone = !result.trustReliable
+    ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400'
+    : score >= 2
+      ? 'border-green-500 text-green-600 dark:text-green-400'
+      : score > 0
+        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+        : 'border-red-500 text-red-600 dark:text-red-400'
+  return (
+    <Badge
+      variant="outline"
+      className={`text-xs ${tone}`}
+      title={
+        result.trustReliable
+          ? 'Trust = mean / std of per-trade returns × √trades'
+          : `Fewer than 25 closed trades (${result.totalTrades}), so treat this score as weak`
+      }
+    >
+      Trust: {score.toFixed(2)}{result.trustReliable ? '' : ' (low sample)'}
+    </Badge>
+  )
 }
 
 interface StrategiesTabProps {
@@ -90,8 +145,9 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
   const [activeTab, setActiveTab] = useState("debate-analyst")
 
   // -- Strategies Tab State --
-  const [strategies, setStrategies] = useState<Strategy[]>(demoStrategies)
+  const [strategies, setStrategies] = useState<Strategy[]>(BUILTIN_STRATEGIES)
   const [sortOption, setSortOption] = useState<'likes' | 'name' | 'pnl'>('likes')
+  const [catalogFilter, setCatalogFilter] = useState<'backtestable' | 'tradingview'>('backtestable')
   const [selectedStrategyForModal, setSelectedStrategyForModal] = useState<Strategy | null>(null)
   const [loadingDetails, setLoadingDetails] = useState<boolean>(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -213,7 +269,11 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
     }
   }
 
-  const sortedStrategies = [...strategies].sort((a, b) => {
+  const backtestableStrategies = strategies.filter(isBacktestable)
+
+  const sortedStrategies = strategies.filter((s) =>
+    catalogFilter === 'backtestable' ? isBacktestable(s) : !isBacktestable(s)
+  ).sort((a, b) => {
     if (sortOption === 'likes') {
       return (b.likes || 0) - (a.likes || 0)
     } else if (sortOption === 'name') {
@@ -226,6 +286,8 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
 
 
   const handleStrategyToggle = (strategyId: string) => {
+    // Only strategies the backtest route can run are selectable.
+    if (!BACKTESTABLE_STRATEGY_IDS.has(strategyId)) return
     setSelectedStrategies(prev =>
       prev.includes(strategyId)
         ? prev.filter(id => id !== strategyId)
@@ -234,10 +296,10 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
   }
 
   const handleSelectAll = () => {
-    if (selectedStrategies.length === strategies.length) {
+    if (selectedStrategies.length === backtestableStrategies.length) {
       setSelectedStrategies([])
     } else {
-      setSelectedStrategies(strategies.map(s => s.id))
+      setSelectedStrategies(backtestableStrategies.map(s => s.id))
     }
   }
 
@@ -675,10 +737,12 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <Label>Select Strategies to Backtest for {selectedStock}</Label>
+                  <Button variant="outline" size="sm" onClick={handleSelectAll}>
+                    {selectedStrategies.length === backtestableStrategies.length ? 'Deselect All' : 'Select All'}
+                  </Button>
                 </div>
                 <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4 max-h-60 overflow-y-auto border rounded-lg p-4">
-                  {strategies
-                    .sort((a, b) => (b.likes || 0) - (a.likes || 0))
+                  {backtestableStrategies
                     .map((strategy) => (
                       <div
                         key={strategy.id}
@@ -757,7 +821,10 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
                             Trades: {result.totalTrades} | Win Rate: {result.winRate.toFixed(1)}% |
-                            {result.sharpeRatio && ` Sharpe: ${result.sharpeRatio.toFixed(2)} |`} Max DD: {result.maxDrawdown.toFixed(2)}%
+                            {result.sharpeRatio !== undefined && result.sharpeRatio !== null && ` Sharpe: ${result.sharpeRatio.toFixed(2)} |`} Max DD: {result.maxDrawdown.toFixed(2)}%
+                          </div>
+                          <div className="mt-1">
+                            <TrustScoreBadge result={result} />
                           </div>
                         </div>
                         <div className="text-right">
@@ -789,8 +856,24 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                 </SelectContent>
               </Select>
 
+              <Select
+                value={catalogFilter}
+                onValueChange={(v) => {
+                  setCatalogFilter(v as 'backtestable' | 'tradingview')
+                  setCurrentPage(1)
+                }}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue placeholder="Catalog" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="backtestable">Backtestable ({backtestableStrategies.length})</SelectItem>
+                  <SelectItem value="tradingview">TradingView library (view only)</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Button variant="outline" size="sm" onClick={handleSelectAll}>
-                {selectedStrategies.length === strategies.length ? 'Deselect All' : 'Select All'}
+                {selectedStrategies.length === backtestableStrategies.length ? 'Deselect All' : 'Select All'}
               </Button>
             </div>
 
@@ -809,27 +892,34 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                           )}
 
                           <span className="font-bold text-xs">{strategy.author || 'N/A'}</span>
-                          <span className="font-semibold text-xs">{new Date(strategy.created || "")?.toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: '2-digit',
-                            year: 'numeric',
-                          })
-                          }</span>
+                          {strategy.created && (
+                            <span className="font-semibold text-xs">{new Date(strategy.created).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: '2-digit',
+                              year: 'numeric',
+                            })}</span>
+                          )}
 
                         </div>
                         <h3 className="text-lg font-bold mb-1">{strategy.name}</h3>
                       </div>
                       <div className="flex items-center gap-2">
 
-                        <Checkbox
-                          id={`card-checkbox-${strategy.id}`}
-                          checked={selectedStrategies.includes(strategy.id)}
-                          onCheckedChange={(checked) => {
-                            handleStrategyToggle(strategy.id)
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          className="ml-2 h-5 w-5"
-                        />
+                        {isBacktestable(strategy) ? (
+                          <Checkbox
+                            id={`card-checkbox-${strategy.id}`}
+                            checked={selectedStrategies.includes(strategy.id)}
+                            onCheckedChange={() => {
+                              handleStrategyToggle(strategy.id)
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="ml-2 h-5 w-5"
+                          />
+                        ) : (
+                          <Badge variant="outline" className="text-xs" title="This TradingView script can't be backtested here yet">
+                            View only
+                          </Badge>
+                        )}
                       </div>
                     </div>
 

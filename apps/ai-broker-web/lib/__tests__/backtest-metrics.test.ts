@@ -46,3 +46,28 @@ describe('maxDrawdownPercent', () => {
     expect(nonPositive).toBe(0)
   })
 })
+
+import { sharpeRatioFromEquityCurve } from '../backtest-metrics'
+
+describe('sharpeRatioFromEquityCurve', () => {
+  it('is undefined for a flat curve (a strategy that never traded)', () => {
+    expect(sharpeRatioFromEquityCurve([100, 100, 100, 100])).toBeUndefined()
+  })
+
+  it('is undefined with fewer than two returns', () => {
+    expect(sharpeRatioFromEquityCurve([100, 110])).toBeUndefined()
+  })
+
+  it('is positive for a curve that mostly rises and negative for one that mostly falls', () => {
+    expect(sharpeRatioFromEquityCurve([100, 101, 103, 102, 105, 107])).toBeGreaterThan(0)
+    expect(sharpeRatioFromEquityCurve([100, 99, 97, 98, 95, 93])).toBeLessThan(0)
+  })
+
+  it('annualizes the mean / std of bar returns by sqrt(periodsPerYear)', () => {
+    const curve = [100, 110, 99, 108.9]
+    const returns = [0.1, -0.1, 0.1]
+    const mean = returns.reduce((a, b) => a + b, 0) / 3
+    const std = Math.sqrt(returns.reduce((a, r) => a + (r - mean) ** 2, 0) / 3)
+    expect(sharpeRatioFromEquityCurve(curve, 1)).toBeCloseTo(mean / std, 6)
+  })
+})

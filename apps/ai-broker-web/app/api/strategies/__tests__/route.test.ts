@@ -3,6 +3,7 @@ import { STRATEGY_INFOS } from "indicatorts";
 
 import algoStrategies from "@/packages/investing/src/algo-stategies/algo-strategies.json";
 import {
+  BACKTESTABLE_STRATEGIES,
   TECHNICAL_STRATEGIES,
   TECHNICAL_STRATEGY_NAME_BY_ID,
 } from "@/lib/technical-strategies";
@@ -19,14 +20,14 @@ describe("GET /api/strategies", () => {
 
     expect(response.status).toBe(200);
     expect(strategies).toHaveLength(
-      algoStrategies.length + TECHNICAL_STRATEGIES.length,
+      algoStrategies.length + BACKTESTABLE_STRATEGIES.length,
     );
     expect(new Set(ids).size).toBe(ids.length);
     expect(
       strategies.filter(
         (strategy: { provider: string }) => strategy.provider === "builtin",
       ),
-    ).toHaveLength(24);
+    ).toHaveLength(26);
     expect(
       strategies.filter(
         (strategy: { provider: string }) => strategy.provider === "tradingview",
@@ -90,6 +91,18 @@ describe("GET /api/strategies", () => {
     expect(TECHNICAL_STRATEGY_NAME_BY_ID).toEqual(expectedMapping);
     expect(Object.values(TECHNICAL_STRATEGY_NAME_BY_ID).sort()).toEqual(
       STRATEGY_INFOS.map(({ name }) => name).sort(),
+    );
+  });
+
+  it("lists the recently ported EMA crossover and BB + RSI breakout strategies", async () => {
+    const response = await GET(request());
+    const strategies = await response.json();
+    const builtinIds = strategies
+      .filter((strategy: { provider: string }) => strategy.provider === "builtin")
+      .map((strategy: { url: string }) => strategy.url);
+
+    expect(builtinIds).toEqual(
+      expect.arrayContaining(["ema-crossover", "bb-rsi-breakout"]),
     );
   });
 

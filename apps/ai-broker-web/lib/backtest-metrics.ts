@@ -52,3 +52,36 @@ export function maxDrawdownPercent(equityCurve: readonly number[]): number {
 
   return maxDrawdown
 }
+
+/**
+ * Annualized Sharpe ratio (risk-free rate 0) of an equity curve sampled once
+ * per trading bar.
+ *
+ * Each return is the change in total equity from one bar to the next, so a
+ * bar on which a position is opened at the close counts no return (equity is
+ * unchanged by the trade), and the move on the following bar is credited to
+ * the position. Returns `undefined` when fewer than two points exist or the
+ * returns have no dispersion (e.g. a strategy that never traded).
+ *
+ * @param equityCurve Portfolio value at the close of each bar.
+ * @param periodsPerYear Bars per year used to annualize (252 trading days).
+ */
+export function sharpeRatioFromEquityCurve(
+  equityCurve: readonly number[],
+  periodsPerYear = 252,
+): number | undefined {
+  const returns: number[] = []
+  for (let i = 1; i < equityCurve.length; i++) {
+    const previous = equityCurve[i - 1]
+    if (previous > 0) returns.push(equityCurve[i] / previous - 1)
+  }
+  if (returns.length < 2) return undefined
+
+  const mean = returns.reduce((sum, r) => sum + r, 0) / returns.length
+  const variance = returns.reduce((sum, r) => sum + (r - mean) ** 2, 0) / returns.length
+  const stdDev = Math.sqrt(variance)
+  if (!(stdDev > 1e-12)) return undefined
+
+  const sharpe = (mean / stdDev) * Math.sqrt(periodsPerYear)
+  return Number.isFinite(sharpe) ? sharpe : undefined
+}

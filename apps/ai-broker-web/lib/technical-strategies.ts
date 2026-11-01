@@ -149,3 +149,33 @@ export const TECHNICAL_STRATEGY_NAME_BY_ID: Readonly<Record<string, string>> =
 
 export const TECHNICAL_STRATEGY_ID_BY_NAME: Readonly<Record<string, string>> =
   Object.fromEntries(TECHNICAL_STRATEGIES.map(({ id, name }) => [name, id]));
+
+/**
+ * Strategies ported in this repository (packages/investing/src/stocks/strategies)
+ * rather than supplied by `indicatorts`. They are backtested by the same
+ * technical backtest route, through `lib/custom-backtest-strategies.ts`.
+ */
+export const CUSTOM_TECHNICAL_STRATEGIES = [
+  {
+    id: "ema-crossover",
+    name: "EMA Crossover (9/20, 200 EMA Filter)",
+    description:
+      "Long-only: buys when EMA 9 crosses above EMA 20 while price is above EMA 200, and exits when price closes below EMA 20.",
+  },
+  {
+    id: "bb-rsi-breakout",
+    name: "BB + RSI Breakout",
+    description:
+      "Buys when price closes below the lower 30-period Bollinger Band with RSI(13) under 30, and takes profit 3% above entry. The short leg of the original Pine strategy is skipped because this backtest is long-only.",
+  },
+] as const satisfies readonly TechnicalStrategyDefinition[];
+
+/** Every strategy the Algo Strategies tab can backtest. */
+export const BACKTESTABLE_STRATEGIES: readonly TechnicalStrategyDefinition[] = [
+  ...TECHNICAL_STRATEGIES,
+  ...CUSTOM_TECHNICAL_STRATEGIES,
+];
+
+export const BACKTESTABLE_STRATEGY_IDS: ReadonlySet<string> = new Set(
+  BACKTESTABLE_STRATEGIES.map(({ id }) => id),
+);
