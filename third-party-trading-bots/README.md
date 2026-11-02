@@ -4,8 +4,8 @@ Vendored reference implementations of open-source trading bots, market-data
 services, and exchange clients. Nothing here is wired into the app's build or
 deploy — `turbo` does not fan out into this directory. These are read as
 prior art: how other people size positions, batch LLM calls, model prediction
-markets, and normalize venue APIs, so that the agents in `packages/investing`
-and `packages/predictos` do not have to rediscover it.
+markets, and normalize venue APIs, so that the agents in `packages/investing` and its Prediction Markets module
+(`packages/investing/src/prediction-markets`) do not have to rediscover it.
 
 Each subdirectory keeps its own upstream license and README.
 
@@ -59,7 +59,7 @@ signal that decodes Polygon calldata to front-run the public positions API by
 3–30 seconds — all share one execution core, one risk layer, and one adapter
 stack, so a new venue costs one adapter instead of a new bot. Seven venues run
 in production (Polymarket, Kalshi, Limitless, Drift BET, Augur, Azuro, Myriad).
-It is the clearest argument in this directory for the shape `packages/predictos`
+It is the clearest argument in this directory for the shape `packages/investing/src/prediction-markets`
 is going after: the venue-agnostic order-book abstraction is the reusable asset,
 and the strategies are configuration on top of it. The published latency budget
 (<1ms per event, <100ms order round trip, ~50MB baseline, semaphore rate
@@ -179,5 +179,5 @@ against any exchange, and trading is unified behind per-venue credentials.
 Alongside the SDKs it carries OpenAPI specs, a compliance matrix documenting
 exactly which features each adapter supports (the honest version of "unified"),
 an `ADDING_AN_EXCHANGE.md` guide, and a `dome-to-pmxt` codemod for migrating off
-Dome API. For cross-platform arbitrage work in `packages/predictos`, this is the
+Dome API. For cross-platform arbitrage work in `packages/investing/src/prediction-markets`, this is the
 normalization layer that makes two venues' prices comparable in the first place.
