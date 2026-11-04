@@ -1,20 +1,35 @@
 'use client';
 
-import { useEffect } from 'react';
-import { initAll } from '@amplitude/unified';
+import { useEffect, useRef } from 'react';
+import { useSession } from '@/lib/auth/client';
+import { clearUser, identifyUser, initializeAnalytics } from '@/lib/analytics/amplitude';
 
+/**
+ * Boots Amplitude (analytics + Session Replay) once the better-auth session
+ * has resolved, so a restored login is attached from the first event, and
+ * keeps the Amplitude user ID in step with sign-in and sign-out.
+ */
 export function Amplitude() {
+  const { data: session, isPending } = useSession();
+  const userId = session?.user?.id;
+  const previousUserId = useRef<string | undefined>(undefined);
+
   useEffect(() => {
-    const key = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY;
-    if (!key) {
-      console.error('[amplitude] NEXT_PUBLIC_AMPLITUDE_API_KEY is not set — no events will be sent');
-      return;
+    if (isPending) return;
+
+    const previous = previousUserId.current;
+    if (userId) {
+      // Switching accounts without an observed sign-out: rotate the device
+      // first so the new account doesn't inherit the old one's history.
+      void (previous && previous !== userId ? clearUser() : Promise.resolve())
+        .then(() => identifyUser(userId));
+    } else if (previous) {
+      void clearUser();
+    } else {
+      void initializeAnalytics();
     }
-    initAll(key, {
-      serverZone: 'US',
-      analytics: { autocapture: true },
-      sessionReplay: { sampleRate: 1 },
-    });
-  }, []);
+    previousUserId.current = userId;
+  }, [isPending, userId]);
+
   return null;
 }

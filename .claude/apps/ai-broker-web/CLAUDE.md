@@ -73,6 +73,15 @@ rule inside a route handler, it is in the wrong file.
   loads from the server itself, seeds `localStorage` from the account before
   mounting. `/api/doc/uploads` forwards file uploads to QwkSearch with the
   linked key.
+- **Amplitude is one integration: the Unified SDK** (`@amplitude/unified`,
+  analytics + Session Replay). Don't add `@amplitude/analytics-browser` or the
+  replay plugin alongside it. All calls go through `lib/analytics/amplitude.ts`
+  (`initializeAnalytics`, `identifyUser`, `trackEvent`, `clearUser`), which
+  calls `initAll` once and no-ops when `NEXT_PUBLIC_AMPLITUDE_API_KEY` is unset.
+  `app/amplitude.tsx` waits for the better-auth session, then sets the user ID
+  to `user.id` (never email); sign-out resets it. Replay masks inputs
+  (`defaultMaskLevel: 'medium'`); sample rate comes from
+  `NEXT_PUBLIC_AMPLITUDE_REPLAY_SAMPLE_RATE` (default 1).
 
 ## Layout
 

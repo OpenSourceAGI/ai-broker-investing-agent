@@ -11,6 +11,7 @@ import {
   Palette
 } from 'lucide-react'
 import { useSession, signOut } from "@/lib/auth/client"
+import { clearUser } from "@/lib/analytics/amplitude"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -175,6 +176,7 @@ export function SidebarUserMenu() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={async () => {
               await signOut()
+              await clearUser()
               router.push("/")
             }}>
               <LogOut className="mr-2 h-4 w-4" />

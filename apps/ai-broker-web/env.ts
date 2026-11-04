@@ -56,6 +56,9 @@ export const env = createEnv({
         NEXT_PUBLIC_APP_URL: z.string().optional(),
         NEXT_PUBLIC_APP_DOMAIN: z.string().optional(),
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: z.string().optional(),
+        // Amplitude analytics + Session Replay (lib/analytics/amplitude.ts)
+        NEXT_PUBLIC_AMPLITUDE_API_KEY: z.string().optional(),
+        NEXT_PUBLIC_AMPLITUDE_REPLAY_SAMPLE_RATE: z.string().optional(),
     },
     runtimeEnv: {
         CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
@@ -79,6 +82,8 @@ export const env = createEnv({
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
         NEXT_PUBLIC_APP_DOMAIN: process.env.NEXT_PUBLIC_APP_DOMAIN,
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        NEXT_PUBLIC_AMPLITUDE_API_KEY: process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY,
+        NEXT_PUBLIC_AMPLITUDE_REPLAY_SAMPLE_RATE: process.env.NEXT_PUBLIC_AMPLITUDE_REPLAY_SAMPLE_RATE,
     },
     skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     emptyStringAsUndefined: true,
