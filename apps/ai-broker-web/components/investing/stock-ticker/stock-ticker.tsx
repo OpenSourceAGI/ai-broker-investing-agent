@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react"
 import { Plus, X, Settings, Play, Pause } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -15,9 +15,18 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { StockIntervalDelta } from "./stock-deltas"
 import { fetchTickerData } from "./utils"
-import { defaultWatchlist, BATCH_SIZE, BATCH_DELAY } from "./constants"
+import { defaultWatchlist, BATCH_SIZE } from "./constants"
+import {
+  readTickerCache,
+  writeTickerCache,
+  mergeTickerData,
+  msUntilStale,
+} from "@/lib/stock-ticker-cache"
 import { useTickerConfig } from "@/lib/ui-config"
 import type { TickerData, WatchlistItem, TickerItemProps } from "./types"
+
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect
 
 export function StockTicker({
   showIcon: showIconProp,
@@ -55,85 +64,88 @@ export function StockTicker({
   const [newType, setNewType] = useState<"index" | "stock">("stock")
   const [dialogOpen, setDialogOpen] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const batchLoadRef = useRef<NodeJS.Timeout | null>(null)
-  const [currentBatchIndex, setCurrentBatchIndex] = useState(0)
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // When the full watchlist was last fetched; drives the stale-while-revalidate cache.
+  const savedAtRef = useRef<number | null>(null)
+  const refreshingRef = useRef(false)
+  const tickerDataRef = useRef<TickerData[]>([])
+  tickerDataRef.current = tickerData
 
-  const updateTickerDataInBatches = useCallback(async () => {
-    const symbols = watchlist.map((item) => item.symbol)
-    const totalBatches = Math.ceil(symbols.length / BATCH_SIZE)
+  // Paint cached quotes before the first frame, even if they are stale.
+  useIsomorphicLayoutEffect(() => {
+    const cached = readTickerCache<TickerData>()
+    if (!cached) return
+    savedAtRef.current = cached.savedAt
+    setTickerData(
+      mergeTickerData([], cached.data, defaultWatchlist.map((item) => item.symbol))
+    )
+  }, [])
 
-    // Reset ticker data when starting fresh
-    setTickerData([])
-    setCurrentBatchIndex(0)
-
-    const loadBatch = async (batchIndex: number) => {
-      const startIdx = batchIndex * BATCH_SIZE
-      const endIdx = Math.min(startIdx + BATCH_SIZE, symbols.length)
-      const batchSymbols = symbols.slice(startIdx, endIdx)
-
-      if (batchSymbols.length > 0) {
-        const data = await fetchTickerData(batchSymbols)
-        if (data.length > 0) {
-          setTickerData((prev) => [...prev, ...data])
+  const refresh = useCallback(
+    async (symbols: string[], complete: boolean) => {
+      if (refreshingRef.current) return
+      refreshingRef.current = true
+      const order = watchlist.map((item) => item.symbol)
+      try {
+        let gotAny = false
+        for (let i = 0; i < symbols.length; i += BATCH_SIZE) {
+          const data = await fetchTickerData(symbols.slice(i, i + BATCH_SIZE))
+          if (data.length === 0) continue
+          gotAny = true
+          // Replace quotes in place as each batch arrives; never blank the banner.
+          const merged = mergeTickerData(tickerDataRef.current, data, order)
+          tickerDataRef.current = merged
+          setTickerData(merged)
+          writeTickerCache(merged, savedAtRef.current ?? 0)
         }
-      }
-
-      // Schedule next batch if there are more
-      const nextBatchIndex = (batchIndex + 1) % totalBatches
-      setCurrentBatchIndex(nextBatchIndex)
-
-      if (batchLoadRef.current) {
-        clearTimeout(batchLoadRef.current)
-      }
-
-      // If we've completed all batches, wait before starting over
-      // Otherwise, wait the delay before loading the next batch
-      batchLoadRef.current = setTimeout(() => {
-        if (nextBatchIndex === 0) {
-          // Starting over - reload all batches
-          setTickerData([])
+        if (complete && gotAny) {
+          savedAtRef.current = Date.now()
+          writeTickerCache(tickerDataRef.current, savedAtRef.current)
         }
-        loadBatch(nextBatchIndex)
-      }, BATCH_DELAY)
-    }
+      } finally {
+        refreshingRef.current = false
+      }
+    },
+    [watchlist]
+  )
 
-    // Start loading the first batch
-    loadBatch(0)
-  }, [watchlist])
-
-  const updateTickerData = useCallback(async () => {
-    const symbols = watchlist.map((item) => item.symbol)
-    const data = await fetchTickerData(symbols)
-    if (data.length > 0) {
-      setTickerData(data)
-    }
-  }, [watchlist])
-
+  // Refresh when the cache is stale or missing symbols, then again whenever
+  // it goes stale (TICKER_CACHE_TTL: hourly by default).
   useEffect(() => {
-    // Start batched loading on mount
-    updateTickerDataInBatches()
+    if (isPaused) return
+    let cancelled = false
 
+    const run = async () => {
+      const symbols = watchlist.map((item) => item.symbol)
+      const entry = savedAtRef.current === null ? null : { savedAt: savedAtRef.current }
+      const wait = msUntilStale(entry)
+      if (wait === 0) {
+        await refresh(symbols, true)
+      } else {
+        const have = new Set(tickerDataRef.current.map((d) => d.symbol))
+        const missing = symbols.filter((s) => !have.has(s))
+        if (missing.length > 0) await refresh(missing, false)
+      }
+      if (cancelled) return
+      const next = savedAtRef.current === null ? null : { savedAt: savedAtRef.current }
+      // If every fetch failed, retry in a minute rather than waiting a full TTL.
+      const delay = msUntilStale(next) || 60_000
+      refreshTimerRef.current = setTimeout(run, delay)
+    }
+
+    run()
     return () => {
-      // Cleanup batch loading timeout
-      if (batchLoadRef.current) {
-        clearTimeout(batchLoadRef.current)
-      }
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
+      cancelled = true
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current)
     }
-  }, [updateTickerDataInBatches])
+  }, [isPaused, watchlist, refresh])
 
-  // Pause/Resume batch loading
+  // Drop removed symbols immediately.
   useEffect(() => {
-    if (isPaused && batchLoadRef.current) {
-      clearTimeout(batchLoadRef.current)
-    } else if (!isPaused) {
-      // Resume batch loading when unpaused
-      updateTickerDataInBatches()
-    }
-  }, [isPaused, updateTickerDataInBatches])
+    setTickerData((prev) =>
+      mergeTickerData(prev, [], watchlist.map((item) => item.symbol))
+    )
+  }, [watchlist])
 
   // Auto-scroll effect with seamless loop
   useEffect(() => {

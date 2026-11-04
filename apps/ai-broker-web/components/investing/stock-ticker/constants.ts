@@ -2,8 +2,9 @@ import type { WatchlistItem } from "./types";
 
 export const showPercentSign = false;
 
-export const BATCH_SIZE = 5; // Load 5 symbols at a time
-export const BATCH_DELAY = 20000; // 20 seconds between batches
+export const BATCH_SIZE = 5; // Symbols per quote request when refreshing
+/** @deprecated No longer used: the ticker now refreshes on TICKER_CACHE_TTL (lib/stock-ticker-cache.ts). */
+export const BATCH_DELAY = 20000;
 
 export const defaultWatchlist: WatchlistItem[] = [
   // Major Indexes
