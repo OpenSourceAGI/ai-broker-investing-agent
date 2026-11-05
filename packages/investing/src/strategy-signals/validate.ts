@@ -128,7 +128,13 @@ export function validateLimits(x: unknown): string[] {
   return !isRecord(x) ||
     !isQuantity(x.maxPositionPerMarket) ||
     x.maxPositionPerMarket === 0 ||
-    (x.maxOpenPositions !== undefined && !isQuantity(x.maxOpenPositions))
+    (x.maxOpenPositions !== undefined && !isQuantity(x.maxOpenPositions)) ||
+    (x.takerFeeBps !== undefined && (!isQuantity(x.takerFeeBps) || x.takerFeeBps > 10_000)) ||
+    (x.minNetEdgeCents !== undefined &&
+      (!finite(x.minNetEdgeCents) || x.minNetEdgeCents < 0 || x.minNetEdgeCents > 100)) ||
+    (x.maxKellyFraction !== undefined &&
+      (!finite(x.maxKellyFraction) || x.maxKellyFraction <= 0 || x.maxKellyFraction > 1)) ||
+    (x.maxQuoteAgeMs !== undefined && !isQuantity(x.maxQuoteAgeMs))
     ? ['invalid risk limits']
     : []
 }

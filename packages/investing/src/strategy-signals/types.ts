@@ -64,6 +64,14 @@ export interface StrategySource<I = unknown> {
 export interface RiskLimits {
   maxPositionPerMarket: number
   maxOpenPositions?: number
+  /** Event entries only. Taker fee rate in basis points (Kalshi 700). */
+  takerFeeBps?: number
+  /** Event entries with a P(YES) forecast: minimum edge per contract after fees. */
+  minNetEdgeCents?: number
+  /** Event entries with a P(YES) forecast: fraction of full Kelly, in (0, 1]. */
+  maxKellyFraction?: number
+  /** Event entries: deny when the market quote is older than this. */
+  maxQuoteAgeMs?: number
 }
 export interface RiskPosture {
   label: string
@@ -100,6 +108,8 @@ export interface VenueMarket {
   question?: string
   status: 'open' | 'closed'
   closesAt?: string
+  /** ISO UTC time the quotes below were observed. */
+  quotedAt?: string
   outcomes: Array<{
     outcomeId: string
     label: string

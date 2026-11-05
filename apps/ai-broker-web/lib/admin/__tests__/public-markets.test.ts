@@ -123,6 +123,28 @@ describe('public market queries respect admin publishing', () => {
     expect(grouped.Elections.map((m: { id: string }) => m.id)).toEqual(['b'])
   })
 
+  it('leaves out closed and expired markets that sync never re-fetched', async () => {
+    const db = holder.db as AdminDB
+    await db.insert(polymarketMarkets).values([
+      market('closed', 40, { closed: true }),
+      market('expired', 35, { endDate: '2020-01-01T00:00:00Z' }),
+      market('future', 1, { endDate: '2999-01-01T00:00:00Z' }),
+    ])
+    expect((await getMarkets()).map((m) => m.id)).toEqual(['a', 'b', 'c', 'future'])
+    expect((await searchMarketsInDB('question')).map((m) => m.id)).toEqual(['a', 'b', 'c', 'future'])
+    const grouped = await getMarketsByCategory()
+    expect(grouped.Elections.map((m: { id: string }) => m.id)).toEqual(['a', 'b', 'c', 'future'])
+    expect((await getMarkets({ activeOnly: false })).map((m) => m.id)).toEqual([
+      'closed',
+      'expired',
+      'a',
+      'b',
+      'c',
+      'd',
+      'future',
+    ])
+  })
+
   it('ignores a stock decision that happens to share the market id', async () => {
     await adminDb.insert(listingControls).values({
       id: 'stock:A',

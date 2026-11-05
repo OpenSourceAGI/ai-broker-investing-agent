@@ -1,6 +1,6 @@
 import { db } from "../../db";
 import { listingControls, polymarketMarkets } from "../../db/schema";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, or, gt, isNull, sql } from "drizzle-orm";
 import {
   categorizeMarket,
   categorizeMarketSubcategory,
@@ -143,6 +143,20 @@ export function publishedMarketCondition() {
 }
 
 /**
+ * Condition matching markets still open for trading. `active` alone goes stale:
+ * the incremental sync only re-fetches open markets, so a market that closed
+ * between syncs keeps `active=true` until `deactivateExpiredMarkets` runs.
+ * `end_date` is ISO-8601 text, which sorts lexically in time order.
+ */
+export function openMarketCondition(now = new Date()) {
+  return and(
+    eq(polymarketMarkets.active, true),
+    or(isNull(polymarketMarkets.closed), eq(polymarketMarkets.closed, false)),
+    or(isNull(polymarketMarkets.endDate), gt(polymarketMarkets.endDate, now.toISOString())),
+  )!;
+}
+
+/**
  * Retrieves markets from the database with filtering and sorting options.
  * @param options - Query configuration options
  * @param options.limit - Maximum number of markets to retrieve (default: 50)
@@ -176,7 +190,7 @@ export async function getMarkets(
   // Build where conditions
   const conditions = [];
   if (activeOnly) {
-    conditions.push(eq(polymarketMarkets.active, true));
+    conditions.push(openMarketCondition());
   }
   if (category && category !== "Overall" && category !== "all") {
     conditions.push(eq(polymarketMarkets.category, category));
@@ -248,7 +262,7 @@ export async function searchMarketsInDB(
   // Build where conditions
   const conditions = [];
   if (activeOnly) {
-    conditions.push(eq(polymarketMarkets.active, true));
+    conditions.push(openMarketCondition());
   }
   if (category && category !== "Overall" && category !== "all") {
     conditions.push(eq(polymarketMarkets.category, category));
@@ -292,7 +306,7 @@ export async function getMarketsByCategory() {
   const markets = await db
     .select()
     .from(polymarketMarkets)
-    .where(and(eq(polymarketMarkets.active, true), publishedMarketCondition()))
+    .where(and(openMarketCondition(), publishedMarketCondition()))
     .orderBy(desc(polymarketMarkets.volume24hr))
     .limit(100);
 

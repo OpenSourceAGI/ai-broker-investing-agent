@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { syncMarketsIncremental } from '@/packages/investing/src/prediction'
+import {
+  deactivateExpiredMarkets,
+  syncLeaderboard,
+  syncMarketsIncremental
+} from '@/packages/investing/src/prediction'
 import { auth } from '@/lib/auth'
 import { isCronRequest } from '@/lib/auth/cron'
 import { headers } from 'next/headers'
@@ -31,6 +35,12 @@ export async function GET(request: NextRequest) {
 
     // Incrementally sync top 1000 markets with price history and holders
     const result = await syncMarketsIncremental(1000, true, true)
+    // The incremental sync only fetches open markets, so retire the ones that closed since.
+    const deactivated = await deactivateExpiredMarkets()
+    // The leaderboard is independent: its failure must not fail the market sync.
+    const leaderboard = await syncLeaderboard({ limit: 100 }).catch((error: Error) => ({
+      error: error.message
+    }))
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2)
     const message = `Successfully synced ${result.markets} markets with ${result.pricePoints} price data points (${result.priceHistoryUpdates} markets updated) and ${result.holders} holders (${result.holderUpdates} markets updated) in ${duration}s`
@@ -44,6 +54,8 @@ export async function GET(request: NextRequest) {
       priceHistoryUpdates: result.priceHistoryUpdates || 0,
       holders: result.holders || 0,
       holderUpdates: result.holderUpdates || 0,
+      deactivated,
+      leaderboard,
       duration: `${duration}s`,
       message,
       cronJob: true,

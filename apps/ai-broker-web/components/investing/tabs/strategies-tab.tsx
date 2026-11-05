@@ -96,7 +96,10 @@ const BUILTIN_STRATEGIES: Strategy[] = BACKTESTABLE_STRATEGIES.map(({ id, name, 
   script_type: 'strategy',
 }))
 
-const isBacktestable = (strategy: Strategy) => BACKTESTABLE_STRATEGY_IDS.has(strategy.id)
+// Built-in ids are known statically; third-party sources are flagged by the
+// catalog (only hedge-fund-technicals replays over daily bars).
+const isBacktestable = (strategy: Strategy) =>
+  BACKTESTABLE_STRATEGY_IDS.has(strategy.id) || strategy.backtestable === true
 
 function TrustScoreBadge({ result }: { result: BacktestResult }) {
   if (result.trustScore === null || result.trustScore === undefined) {
@@ -147,7 +150,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
   // -- Strategies Tab State --
   const [strategies, setStrategies] = useState<Strategy[]>(BUILTIN_STRATEGIES)
   const [sortOption, setSortOption] = useState<'likes' | 'name' | 'pnl'>('likes')
-  const [catalogFilter, setCatalogFilter] = useState<'backtestable' | 'tradingview'>('backtestable')
+  const [catalogFilter, setCatalogFilter] = useState<'backtestable' | 'third-party' | 'tradingview'>('backtestable')
   const [selectedStrategyForModal, setSelectedStrategyForModal] = useState<Strategy | null>(null)
   const [loadingDetails, setLoadingDetails] = useState<boolean>(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -162,6 +165,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
   const [backtestResults, setBacktestResults] = useState<BacktestResult[]>([])
   const [isBacktesting, setIsBacktesting] = useState(false)
   const [backtestError, setBacktestError] = useState<string | null>(null)
+  const [backtestSkipped, setBacktestSkipped] = useState<{ strategyId: string; reason: string }[]>([])
   const [selectedBacktestSignals, setSelectedBacktestSignals] = useState<TradeSignal[]>([])
 
   // -- Agent Data State --
@@ -198,6 +202,8 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
             id: script.url || Math.random().toString(36).substring(7),
             name: script.name || 'Unnamed Strategy',
             provider: script.provider,
+            backtestable: script.backtestable,
+            provenance: script.provenance,
             description: '', // Description is not loaded initially
             todayPnL: 0,
             last7DaysPnL: 0,
@@ -257,6 +263,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
             description: details.description,
             source: details.source,
             provider: details.provider,
+            provenance: details.provenance,
           }
           setSelectedStrategyForModal(updatedStrategy)
           setStrategies(prev => prev.map(s => s.id === strategyId ? updatedStrategy : s))
@@ -270,9 +277,14 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
   }
 
   const backtestableStrategies = strategies.filter(isBacktestable)
+  const thirdPartyStrategies = strategies.filter((s) => s.provider === 'third-party')
 
   const sortedStrategies = strategies.filter((s) =>
-    catalogFilter === 'backtestable' ? isBacktestable(s) : !isBacktestable(s)
+    catalogFilter === 'backtestable'
+      ? isBacktestable(s)
+      : catalogFilter === 'third-party'
+        ? s.provider === 'third-party'
+        : !isBacktestable(s) && s.provider !== 'third-party'
   ).sort((a, b) => {
     if (sortOption === 'likes') {
       return (b.likes || 0) - (a.likes || 0)
@@ -287,7 +299,8 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
 
   const handleStrategyToggle = (strategyId: string) => {
     // Only strategies the backtest route can run are selectable.
-    if (!BACKTESTABLE_STRATEGY_IDS.has(strategyId)) return
+    const strategy = strategies.find((s) => s.id === strategyId)
+    if (!strategy || !isBacktestable(strategy)) return
     setSelectedStrategies(prev =>
       prev.includes(strategyId)
         ? prev.filter(id => id !== strategyId)
@@ -311,6 +324,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
 
     setIsBacktesting(true)
     setBacktestError(null)
+    setBacktestSkipped([])
     setSelectedBacktestSignals([])
 
     try {
@@ -332,6 +346,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
 
       if (data.success) {
         setBacktestResults(data.results)
+        setBacktestSkipped(data.skipped ?? [])
       } else {
         setBacktestError(data.error || 'Backtest failed')
       }
@@ -789,6 +804,22 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                 </Button>
               </div>
 
+              {backtestSkipped.length > 0 && (
+                <div className="border rounded-lg p-4 text-sm" role="status">
+                  <h3 className="font-semibold mb-2">Not run ({backtestSkipped.length})</h3>
+                  <ul className="space-y-1 text-muted-foreground">
+                    {backtestSkipped.map(({ strategyId, reason }) => (
+                      <li key={strategyId}>
+                        <span className="font-medium text-foreground">
+                          {strategies.find(s => s.id === strategyId)?.name ?? strategyId}
+                        </span>
+                        : {reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {backtestResults.length > 0 && (
                 <div className="border rounded-lg p-4">
                   <h3 className="font-semibold mb-4">Backtest Results - {selectedStock}</h3>
@@ -859,7 +890,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
               <Select
                 value={catalogFilter}
                 onValueChange={(v) => {
-                  setCatalogFilter(v as 'backtestable' | 'tradingview')
+                  setCatalogFilter(v as 'backtestable' | 'third-party' | 'tradingview')
                   setCurrentPage(1)
                 }}
               >
@@ -868,6 +899,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="backtestable">Backtestable ({backtestableStrategies.length})</SelectItem>
+                  <SelectItem value="third-party">Third-party sources ({thirdPartyStrategies.length})</SelectItem>
                   <SelectItem value="tradingview">TradingView library (view only)</SelectItem>
                 </SelectContent>
               </Select>
@@ -891,6 +923,11 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                             </Badge>
                           )}
 
+                          {strategy.provider === 'third-party' && (
+                            <Badge variant="outline" className="text-xs">
+                              Third-party · {strategy.provenance?.venue}
+                            </Badge>
+                          )}
                           <span className="font-bold text-xs">{strategy.author || 'N/A'}</span>
                           {strategy.created && (
                             <span className="font-semibold text-xs">{new Date(strategy.created).toLocaleDateString('en-US', {
@@ -915,6 +952,10 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                             onClick={(e) => e.stopPropagation()}
                             className="ml-2 h-5 w-5"
                           />
+                        ) : strategy.provider === 'third-party' ? (
+                          <Badge variant="outline" className="text-xs" title="Replay demo only: run `bun run demo:strategy-signals` in packages/investing">
+                            Replay demo
+                          </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs" title="This TradingView script can't be backtested here yet">
                             View only
@@ -1170,6 +1211,27 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                     <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                       {selectedStrategyForModal.description}
                     </p>
+                  </div>
+                )}
+
+                {selectedStrategyForModal?.provenance && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Provenance</h3>
+                    <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
+                      <dt className="text-muted-foreground">Upstream</dt>
+                      <dd className="font-mono text-xs break-all">third-party-trading-bots/{selectedStrategyForModal.provenance.upstream}</dd>
+                      <dt className="text-muted-foreground">License</dt>
+                      <dd>{selectedStrategyForModal.provenance.license}</dd>
+                      <dt className="text-muted-foreground">Fidelity</dt>
+                      <dd>{selectedStrategyForModal.provenance.fidelity}</dd>
+                      <dt className="text-muted-foreground">Venue</dt>
+                      <dd>{selectedStrategyForModal.provenance.venue}</dd>
+                    </dl>
+                    {selectedStrategyForModal.provenance.backtest === 'replay-demo' && (
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Replay demo only: run <code>bun run demo:strategy-signals</code> in packages/investing to see it drive the agent pipeline.
+                      </p>
+                    )}
                   </div>
                 )}
 
