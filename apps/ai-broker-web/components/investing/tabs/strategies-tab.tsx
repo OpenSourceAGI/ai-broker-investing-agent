@@ -56,6 +56,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { setStateInURL } from "@/lib/utils"
+import { readJson } from "@/lib/api/read-json"
 
 interface TradeSignal {
   date: string
@@ -342,7 +343,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
         }),
       })
 
-      const data = await response.json()
+      const data = await readJson(response)
 
       if (data.success) {
         setBacktestResults(data.results)

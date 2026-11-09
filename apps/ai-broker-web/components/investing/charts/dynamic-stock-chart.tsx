@@ -9,6 +9,7 @@ import { Loader2, CandlestickChart, TrendingUp, ChevronDown, ChevronRight } from
 import { setStateInURL } from "@/lib/utils"
 import { type IChartApi, type Time, type LogicalRange } from "lightweight-charts"
 import grab from 'grab-url';
+import { readJson } from "@/lib/api/read-json"
 
 interface DynamicStockChartProps {
   symbol: string
@@ -236,12 +237,17 @@ export function DynamicStockChart({
 
     try {
       const endDate = currentOldestTime;
+      // One more year of daily/weekly bars, or a span the intraday sizes can
+      // serve (Yahoo keeps 1h for ~2 years and 5m/15m for ~60 days).
       const startDate = new Date(currentOldestDate);
-      startDate.setFullYear(startDate.getFullYear() - 1);
+      const lookbackDays: Record<string, number> = { "5m": 5, "15m": 10, "1h": 60 };
+      const days = lookbackDays[loadedInterval.current]
+      if (days) startDate.setDate(startDate.getDate() - days);
+      else startDate.setFullYear(startDate.getFullYear() - 1);
       const startDateTimestamp = Math.floor(startDate.getTime() / 1000);
 
-      const res = await fetch(`/api/stocks/historical/${symbol}?interval=1d&period1=${startDateTimestamp}&period2=${endDate}`);
-      const json = await res.json();
+      const res = await fetch(`/api/stocks/historical/${encodeURIComponent(symbol)}?interval=${loadedInterval.current}&period1=${startDateTimestamp}&period2=${endDate}`);
+      const json = await readJson(res);
 
       // Handle both nested data structure (data.data) and flat structure (data)
       const dataArray = Array.isArray(json.data?.data) ? json.data.data :
@@ -311,7 +317,7 @@ export function DynamicStockChart({
         `/api/stocks/historical/${encodeURIComponent(symbol)}?interval=${nextInterval}&period1=${Math.floor(fromSec)}&period2=${Math.ceil(toSec)}`,
         { signal: controller.signal }
       )
-      const json = await res.json()
+      const json = await readJson(res)
       if (controller.signal.aborted) return
 
       const dataArray = Array.isArray(json.data?.data) ? json.data.data :
@@ -332,6 +338,16 @@ export function DynamicStockChart({
           // Replacing the series re-runs the indicator memos against the new
           // bars, so RSI/MACD/etc. are recomputed at the zoomed resolution.
           setChartData(rebased.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()))
+          // Keep the window the user zoomed to, now that it is filled. The
+          // wrapper's ref exposes the chart through api(); guard both shapes.
+          requestAnimationFrame(() => {
+            try {
+              const api = chartRef.current?.api?.() ?? chartRef.current
+              api?.timeScale?.().setVisibleRange({ from: Math.floor(fromSec) as Time, to: Math.ceil(toSec) as Time })
+            } catch {
+              // The range can be outside the new bars; the default view is fine.
+            }
+          })
         }
       }
     } catch (e) {
@@ -343,38 +359,59 @@ export function DynamicStockChart({
   }, [symbol])
 
   // Handler for visible range changes
+  const lastZoomRequest = useRef<string>("")
   const onVisibleRangeChange = (range: LogicalRange | null) => {
     if (!range || !candlestickSeriesRef.current || chartData.length === 0) return;
 
-    // barsInLogicalRange tells us indices
-    // Safely access barsInLogicalRange if it exists on the series API
-    const seriesApi = candlestickSeriesRef.current;
-    if (seriesApi && seriesApi.barsInLogicalRange) {
-      const barsInfo = seriesApi.barsInLogicalRange(range);
+    const count = chartData.length
+    const timeAt = (i: number) => new Date(chartData[i].date).getTime() / 1000
+    const firstSec = timeAt(0)
+    const lastSec = timeAt(count - 1)
+    // Average seconds per bar, used to put a date on the empty space beyond
+    // either end of the loaded data.
+    const barSec = count > 1 ? (lastSec - firstSec) / (count - 1) : 86400
 
-      if (barsInfo && barsInfo.barsBefore !== null && barsInfo.barsBefore < 50) {
-        const firstTime = Math.floor(new Date(chartData[0].date).getTime() / 1000);
-        fetchMoreData(firstTime);
-      }
-    }
-
-    // Re-resolve the data to the zoom level, once the zooming settles. Wheel
-    // events fire continuously, so without the delay this would issue a request
-    // per notch.
-    const firstIndex = Math.max(0, Math.floor(range.from))
-    const lastIndex = Math.min(chartData.length - 1, Math.ceil(range.to))
-    if (lastIndex <= firstIndex) return
-
-    const fromSec = new Date(chartData[firstIndex].date).getTime() / 1000
-    const toSec = new Date(chartData[lastIndex].date).getTime() / 1000
+    // Zooming out past the loaded bars leaves `range.from` negative. Clamping
+    // that to the first bar (as this used to) made a zoomed-out window look
+    // exactly like the one already loaded, so nothing was refetched and the
+    // chart sat on its old 1Y of bars with blank space around it. Extrapolate
+    // instead, so the window reflects what is actually on screen.
+    const nowSec = Date.now() / 1000
+    const fromSec = range.from < 0
+      ? firstSec + range.from * barSec
+      : timeAt(Math.min(count - 1, Math.floor(range.from)))
+    const toSec = Math.min(
+      nowSec,
+      range.to > count - 1
+        ? lastSec + (range.to - (count - 1)) * barSec
+        : timeAt(Math.max(0, Math.ceil(range.to))),
+    )
     const spanDays = (toSec - fromSec) / 86400
     if (!Number.isFinite(spanDays) || spanDays <= 0) return
 
     const nextInterval = intervalForSpan(spanDays)
-    if (nextInterval === loadedInterval.current) return
+    // Blank space on the left worth more than a couple of bars: load it.
+    const gapOnLeft = range.from < -2
+    if (nextInterval === loadedInterval.current && !gapOnLeft) {
+      // Close to the left edge but not past it: prefetch the previous stretch.
+      const seriesApi = candlestickSeriesRef.current;
+      const barsInfo = seriesApi?.barsInLogicalRange?.(range);
+      if (barsInfo && barsInfo.barsBefore !== null && barsInfo.barsBefore < 50) {
+        fetchMoreData(Math.floor(firstSec));
+      }
+      return
+    }
+
+    // Re-resolve the data to the zoom level, once the zooming settles. Wheel
+    // events fire continuously, so without the delay this would issue a request
+    // per notch. The same window is not asked for twice in a row, so a symbol
+    // with no older history cannot loop on its own empty space.
+    const key = `${nextInterval}:${Math.floor(fromSec / 86400)}:${Math.floor(toSec / 86400)}`
+    if (key === lastZoomRequest.current) return
 
     if (zoomFetchTimer.current) clearTimeout(zoomFetchTimer.current)
     zoomFetchTimer.current = setTimeout(() => {
+      lastZoomRequest.current = key
       refetchForZoom(fromSec, toSec, nextInterval)
     }, 400)
   };

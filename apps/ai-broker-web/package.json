@@ -104,7 +104,7 @@
     "fuse.js": "^7.1.0",
     "grab-url": "^1.0.20",
     "hast-util-to-jsx-runtime": "latest",
-    "indicatorts": "^2.2.2",
+    "indicatorts": "2.2.2",
     "investing": "*",
     "jszip": "^3.10.1",
     "katex": "^0.16.28",

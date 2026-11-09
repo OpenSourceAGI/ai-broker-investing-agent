@@ -5,6 +5,7 @@
  */
 
 import YahooFinance from "yahoo-finance2";
+import type { YahooChartInterval } from "./finnhub-utils";
 
 /**
  * Options that make yahoo-finance2 safe to share across requests on
@@ -248,7 +249,7 @@ export class YahooFinanceWrapper {
     options?: {
       period1: Date | string | number;
       period2?: Date | string | number;
-      interval?: "1d" | "1wk" | "1mo";
+      interval?: YahooChartInterval;
     },
   ) {
     try {

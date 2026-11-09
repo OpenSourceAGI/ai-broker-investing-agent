@@ -120,12 +120,47 @@ describe('GET /api/stocks/historical/[symbol] — range handling', () => {
     expect(spanDays).toBeLessThan(days + 3)
   })
 
-  it('prefers explicit period1/period2 over range', async () => {
-    await call('AAPL', '?period1=1704067200&period2=1735689600&interval=1d&cache=false')
+  it('prefers explicit period1/period2 over range, read as Unix seconds', async () => {
+    await call('AAPL', '?period1=1704067200&period2=1735689600&range=5y&interval=1d&cache=false')
 
-    expect(getHistoricalData).toHaveBeenCalledWith(
-      expect.objectContaining({ period1: '1704067200', period2: '1735689600' }),
-    )
+    const { period1, period2 } = getHistoricalData.mock.calls[0][0]
+    expect(period1).toEqual(new Date('2024-01-01T00:00:00Z'))
+    expect(period2).toEqual(new Date('2025-01-01T00:00:00Z'))
+  })
+
+  it('accepts ISO dates for period1/period2', async () => {
+    await call('AAPL', '?period1=2024-01-01&period2=2024-06-01&interval=1d&cache=false')
+
+    const { period1, period2 } = getHistoricalData.mock.calls[0][0]
+    expect(period1).toEqual(new Date('2024-01-01T00:00:00Z'))
+    expect(period2).toEqual(new Date('2024-06-01T00:00:00Z'))
+  })
+
+  it('passes a zoomed-in intraday window through as valid dates', async () => {
+    // The exact request the chart sends when zooming to a few days of 15m bars.
+    const res = await call('NVDA', '?interval=15m&period1=1791504000&period2=1791763200')
+
+    expect(res.status).toBe(200)
+    const { period1, period2, interval } = getHistoricalData.mock.calls[0][0]
+    expect(interval).toBe('15m')
+    expect(period1.getTime()).toBe(1791504000 * 1000)
+    expect(period2.getTime()).toBe(1791763200 * 1000)
+    expect(mockGetCached).not.toHaveBeenCalled()
+  })
+
+  it('reads the daily cache for a Unix-second window', async () => {
+    mockGetCached.mockResolvedValue([])
+    await call('AAPL', '?period1=1704067200&period2=1735689600&interval=1d')
+
+    expect(mockGetCached).toHaveBeenCalledWith('AAPL', '2024-01-01', '2025-01-01')
+  })
+
+  it('answers 400 for an unparseable period', async () => {
+    const res = await call('AAPL', '?period1=yesterday&period2=today&interval=1d')
+
+    expect(res.status).toBe(400)
+    expect((await res.json()).code).toBe('INVALID_PERIOD')
+    expect(getHistoricalData).not.toHaveBeenCalled()
   })
 
   it('falls back to one month for an unrecognized range', async () => {

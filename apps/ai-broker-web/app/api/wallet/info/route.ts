@@ -8,7 +8,8 @@ import { walletAddresses } from "@/lib/db/schema"
 /**
  * GET /api/wallet/info
  * The signed-in user's primary wallet and every wallet linked through
- * Sign-In with Ethereum. Read by `<WalletInfo />` from `crypto-wallet/components`.
+ * Sign-In with Ethereum, or `null` when none is linked. Read by `<WalletInfo />`
+ * from `crypto-wallet/components`.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -20,11 +21,10 @@ export async function GET(request: NextRequest) {
     const rows = await db.query.walletAddresses.findMany({
       where: eq(walletAddresses.userId, session.user.id),
     })
-    const info = summarizeWallets(rows)
-    if (!info) {
-      return NextResponse.json({ error: "No wallet found" }, { status: 404 })
-    }
-    return NextResponse.json(info)
+    // No linked wallet is a normal state for a signed-in user, not a missing
+    // resource: answer 200 with `null` so the browser doesn't log a failed
+    // request on every page load. `<WalletInfo />` renders its fallback for it.
+    return NextResponse.json(summarizeWallets(rows) ?? null)
   } catch (error) {
     console.error("Error fetching wallet info:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

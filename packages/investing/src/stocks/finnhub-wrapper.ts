@@ -31,6 +31,7 @@ import {
   formatDateRFC3339,
   formatDateYYYYMMDD,
   getFinnhubApiKey,
+  PROVIDER_TIMEOUT_MS,
 } from "./finnhub-utils";
 
 export type { HistoricalDataOptions, QuoteOptions };
@@ -225,8 +226,8 @@ export class FinnhubWrapper {
     // Map interval to Alpaca timeframe format
     const timeframe = mapIntervalToAlpacaTimeframe(interval);
 
-    const startDate = typeof period1 === "string" ? new Date(period1) : period1;
-    const endDate = typeof period2 === "string" ? new Date(period2) : period2;
+    const startDate = typeof period1 === "string" ? new Date(toUnixTimestamp(period1) * 1000) : period1;
+    const endDate = typeof period2 === "string" ? new Date(toUnixTimestamp(period2) * 1000) : period2;
 
     // Try direct HTTP API first (more reliable than SDK)
     try {
@@ -385,6 +386,7 @@ export class FinnhubWrapper {
               "APCA-API-SECRET-KEY": secretKey,
               Accept: "application/json",
             },
+            signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
           });
 
           if (!response.ok) {

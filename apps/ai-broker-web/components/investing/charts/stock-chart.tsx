@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react"
 import { setStateInURL } from "@/lib/utils"
 // Import types from lightweight-charts to avoid conflicts
 import { type IChartApi, type Time, type LogicalRange } from "lightweight-charts"
+import { readJson } from "@/lib/api/read-json"
 
 interface ChartData {
   date: string
@@ -205,7 +206,7 @@ export function StockChart({ data: initialData, symbol, onRangeChange, tradeSign
 
       // Use generic API which accepts periods
       const res = await fetch(`/api/stocks/historical/${symbol}?interval=1d&period1=${startDateTimestamp}&period2=${endDate}`);
-      const json = await res.json();
+      const json = await readJson(res);
 
       if (json.success && json.data && json.data.length > 0) {
         const newPoints: ChartData[] = json.data.map((d: any) => ({

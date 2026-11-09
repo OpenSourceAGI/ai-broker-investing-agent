@@ -28,12 +28,10 @@ vi.mock("@/packages/investing/src/stocks/yahoo-finance-wrapper", () => ({
   },
 }));
 
-import { backtest } from "indicatorts";
 import { yahooFinance } from "@/packages/investing/src/stocks/yahoo-finance-wrapper";
 import { POST } from "../route";
 import reference from "@/packages/investing/test/strategy-signals/golden/hedge-fund-technicals-reference.json";
 
-const mockBacktest = backtest as unknown as ReturnType<typeof vi.fn>;
 const mockGetHistorical = yahooFinance.getHistorical as unknown as ReturnType<
   typeof vi.fn
 >;
@@ -68,10 +66,9 @@ describe("POST /api/backtest-technical strategy selection", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(mockBacktest.mock.calls[0][1]).toEqual([
-      mockStrategies[1],
-      mockStrategies[2],
-    ]);
+    expect(mockStrategies[0].strategy).not.toHaveBeenCalled();
+    expect(mockStrategies[1].strategy).toHaveBeenCalledTimes(1);
+    expect(mockStrategies[2].strategy).toHaveBeenCalledTimes(1);
     expect(
       body.results
         .map((result: { strategyId: string }) => result.strategyId)
@@ -84,7 +81,8 @@ describe("POST /api/backtest-technical strategy selection", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(mockBacktest.mock.calls[0][1]).toEqual([mockStrategies[1]]);
+    expect(mockStrategies[1].strategy).toHaveBeenCalledTimes(1);
+    expect(mockStrategies[2].strategy).not.toHaveBeenCalled();
     expect(body.results).toHaveLength(1);
     expect(body.results[0]).toMatchObject({
       strategyId: "macd",
@@ -149,6 +147,10 @@ describe("POST /api/backtest-technical strategy selection", () => {
     const response = await POST(request([]) as never);
 
     expect(response.status).toBe(200);
-    expect(mockBacktest.mock.calls[0][1]).toEqual(mockStrategies);
+    // Each strategy runs exactly once: the route no longer pre-runs them all
+    // through indicatorts' backtest() just to rank them.
+    for (const info of mockStrategies) {
+      expect(info.strategy).toHaveBeenCalledTimes(1);
+    }
   });
 });

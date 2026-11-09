@@ -106,7 +106,7 @@
     "dukascopy-node": "^1.46.3",
     "ethers": "^6.16.0",
     "grab-url": "^1.0.20",
-    "indicatorts": "^2.2.2",
+    "indicatorts": "2.2.2",
     "langchain": "^1.2.3",
     "nanoid": "5.1.6",
     "node-fetch": "^3.3.2",

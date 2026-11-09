@@ -21,6 +21,7 @@ import { useSession } from "@/lib/auth/client"
 import { DynamicStockChart } from "@/components/investing/charts/dynamic-stock-chart"
 import { useDebouncedSymbol } from "@/lib/stocks/use-debounced-symbol"
 import { TradeModal } from "@/components/investing/trading/trade-modal"
+import { readJson } from "@/lib/api/read-json"
 
 // Helper function to get stock logo URLs
 function getStockLogoUrl(symbol: string, useGithub: boolean = true): string {
@@ -372,7 +373,7 @@ export function QuoteView({ symbol: inputSymbol, showBackButton = true, tradeSig
             `/api/stocks/historical/${encodeURIComponent(symbol)}?range=${range}&interval=1d`,
             { signal: controller.signal },
           )
-          return res.json()
+          return readJson(res)
         }
 
         // Shorter ranges are a fallback for symbols whose history does not go

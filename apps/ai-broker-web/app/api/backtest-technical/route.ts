@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { yahooFinance } from '@/packages/investing/src/stocks/yahoo-finance-wrapper'
-import { backtest, STRATEGY_INFOS, type StrategyInfo } from 'indicatorts'
+import { STRATEGY_INFOS, type StrategyInfo } from 'indicatorts'
 import {
   BACKTESTABLE_STRATEGY_IDS,
   TECHNICAL_STRATEGY_ID_BY_NAME,
@@ -268,8 +268,10 @@ export async function POST(request: NextRequest) {
     }))
 
     const runs: { strategyName: string; strategyId: string; run: () => number[] }[] = [
-      // Run backtest
-      ...backtest(asset, strategiesToTest).map(({ info }) => ({
+      // indicatorts' `backtest()` would run every strategy once just to rank
+      // them, and each one runs again below, doubling the CPU time the Worker
+      // spends (heavy requests were hitting Cloudflare's limit as a 503).
+      ...strategiesToTest.map((info) => ({
         strategyName: info.name,
         strategyId: TECHNICAL_STRATEGY_ID_BY_NAME[info.name]
           || info.name.toLowerCase().replace(/\s+/g, '-'),

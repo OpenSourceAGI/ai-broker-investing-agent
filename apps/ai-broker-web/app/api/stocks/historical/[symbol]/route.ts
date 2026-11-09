@@ -6,6 +6,18 @@ import { validateSymbol } from '@/lib/stocks/symbol';
 
 const finnhub = new FinnhubWrapper();
 
+/**
+ * Parse a period bound. Digits are Unix time (seconds, or milliseconds when
+ * the number is that large); anything else is handed to `Date`.
+ */
+function parsePeriod(value: string): Date | null {
+    const trimmed = value.trim();
+    const date = /^\d+$/.test(trimmed)
+        ? new Date(Number(trimmed) < 1e11 ? Number(trimmed) * 1000 : Number(trimmed))
+        : new Date(trimmed);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ symbol: string }> }
@@ -47,10 +59,25 @@ export async function GET(
             interval: interval as any
         };
 
-        // If period1 and period2 are provided, use them
+        // If period1 and period2 are provided, use them. Charts send them as
+        // Unix seconds ("1791504000"), which `new Date(string)` cannot parse:
+        // every provider then got an Invalid Date and the route answered 404.
         if (period1Param && period2Param) {
-            queryOptions.period1 = period1Param;
-            queryOptions.period2 = period2Param;
+            const start = parsePeriod(period1Param);
+            const end = parsePeriod(period2Param);
+            if (!start || !end) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: 'period1 and period2 must be Unix timestamps or ISO dates',
+                        code: 'INVALID_PERIOD',
+                        timestamp: new Date().toISOString()
+                    },
+                    { status: 400 }
+                );
+            }
+            queryOptions.period1 = start;
+            queryOptions.period2 = end;
         } else {
             // Calculate start date based on range
             const now = new Date();
@@ -106,12 +133,8 @@ export async function GET(
         // Try to get cached data first (only for 1d interval)
         let cachedQuotes: any[] = [];
         if (useCache && interval === '1d') {
-            const startDateStr = typeof queryOptions.period1 === 'string'
-                ? queryOptions.period1
-                : queryOptions.period1.toISOString().split('T')[0];
-            const endDateStr = typeof endDate === 'string'
-                ? endDate
-                : endDate.toISOString().split('T')[0];
+            const startDateStr = (queryOptions.period1 as Date).toISOString().split('T')[0];
+            const endDateStr = (endDate as Date).toISOString().split('T')[0];
 
             cachedQuotes = await quoteCacheService.getCachedHistoricalQuotes(
                 symbol,

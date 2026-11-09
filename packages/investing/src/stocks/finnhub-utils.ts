@@ -3,6 +3,9 @@
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY || "";
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 
+/** Per-request timeout for upstream market-data providers. */
+export const PROVIDER_TIMEOUT_MS = 10_000;
+
 /**
  * Map interval from various formats to Finnhub format
  */
@@ -29,6 +32,11 @@ export function mapInterval(interval?: string): string {
  */
 export function toUnixTimestamp(date: string | Date): number {
   if (typeof date === "string") {
+    // Digits are already Unix time; `new Date("1791504000")` is Invalid Date.
+    if (/^\d+$/.test(date.trim())) {
+      const n = Number(date);
+      return n < 1e11 ? n : Math.floor(n / 1000);
+    }
     return Math.floor(new Date(date).getTime() / 1000);
   }
   return Math.floor(date.getTime() / 1000);
@@ -48,7 +56,11 @@ export async function finnhubFetch<T>(
     url.searchParams.set(key, value);
   }
 
-  const response = await fetch(url.toString());
+  // Bounded so a slow upstream cannot hold the request until Cloudflare
+  // gives up on it (524) before the Alpaca and Yahoo fallbacks get a turn.
+  const response = await fetch(url.toString(), {
+    signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+  });
 
   if (!response.ok) {
     throw new Error(
@@ -84,15 +96,34 @@ export function mapIntervalToAlpacaTimeframe(interval: string): string {
   return mapping[interval] || "1Day";
 }
 
+/** Bar sizes Yahoo's chart endpoint accepts. */
+export type YahooChartInterval =
+  | "1m" | "2m" | "5m" | "15m" | "30m" | "60m" | "90m" | "1h"
+  | "1d" | "1wk" | "1mo";
+
 /**
- * Map interval to Yahoo Finance's historical() interval format.
- * Yahoo's historical endpoint only supports daily/weekly/monthly bars, so
- * intraday intervals (1m/5m/15m/30m/60m) have no equivalent and return null.
+ * Map interval to a Yahoo Finance chart() interval.
+ * `yahooFinance.getHistorical` is built on chart(), which also serves
+ * intraday bars, so a zoomed-in chart (5m/15m/1h) can still fall back to
+ * Yahoo when Finnhub and Alpaca have nothing. Unknown intervals return null.
  */
 export function mapIntervalToYahoo(
   interval?: string,
-): "1d" | "1wk" | "1mo" | null {
-  const mapping: Record<string, "1d" | "1wk" | "1mo"> = {
+): YahooChartInterval | null {
+  const mapping: Record<string, YahooChartInterval> = {
+    "1": "1m",
+    "5": "5m",
+    "15": "15m",
+    "30": "30m",
+    "60": "60m",
+    "1m": "1m",
+    "2m": "2m",
+    "5m": "5m",
+    "15m": "15m",
+    "30m": "30m",
+    "60m": "60m",
+    "90m": "90m",
+    "1h": "1h",
     D: "1d",
     W: "1wk",
     M: "1mo",

@@ -37,11 +37,11 @@ describe('GET /api/wallet/info', () => {
     expect(res.status).toBe(401)
   })
 
-  it('answers 404 when the user has no linked wallet', async () => {
+  it('answers 200 with null when the user has no linked wallet', async () => {
     setupDb([])
     const res = await GET(request())
-    expect(res.status).toBe(404)
-    await expect(res.json()).resolves.toEqual({ error: 'No wallet found' })
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toBeNull()
   })
 
   it('returns the primary wallet and the full list', async () => {

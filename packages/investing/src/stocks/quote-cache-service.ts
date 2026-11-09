@@ -203,21 +203,37 @@ export class QuoteCacheService {
         return;
       }
 
-      // Insert historical quotes in batches (ignore conflicts for existing dates)
-      const batchSize = 50;
-      for (let i = 0; i < values.length; i += batchSize) {
-        const batch = values.slice(i, i + batchSize);
+      // Multi-row inserts, sent together. One INSERT per bar meant a 5y
+      // window awaited ~1,260 sequential D1 round-trips before the route could
+      // answer, which is what pushed `range=5y` past Cloudflare's 100s limit
+      // (524). D1 caps a statement at 100 bound parameters and a row binds up
+      // to 10, so 9 rows go in each statement.
+      const rowsPerStatement = 9;
+      const statements = [];
+      for (let i = 0; i < values.length; i += rowsPerStatement) {
+        statements.push(
+          db
+            .insert(schema.stockHistoricalQuotes)
+            .values(values.slice(i, i + rowsPerStatement))
+            .onConflictDoNothing(),
+        );
+      }
 
-        for (const value of batch) {
+      try {
+        // D1's batch runs every statement in one round-trip.
+        await db.batch(statements as [any, ...any[]]);
+      } catch (batchError: any) {
+        console.warn(
+          `[QuoteCache] Batch insert failed for ${symbol}, inserting statement by statement:`,
+          batchError?.message || batchError,
+        );
+        for (const statement of statements) {
           try {
-            await db
-              .insert(schema.stockHistoricalQuotes)
-              .values(value)
-              .onConflictDoNothing();
+            await statement;
           } catch (insertError: any) {
-            // Log individual insert errors but don't fail the entire batch
+            // Log and keep going: one bad chunk shouldn't drop the rest.
             console.error(
-              `[QuoteCache] Failed to insert historical quote for ${symbol} on ${value.date}:`,
+              `[QuoteCache] Failed to insert historical quotes for ${symbol}:`,
               insertError.message || insertError
             );
           }
