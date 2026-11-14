@@ -26,6 +26,7 @@ export * from "./analysis/categories";
 export * from "./analysis/greeks";
 export * from "./analysis/detector";
 export * from "./analysis/trust-score";
+export * from "./analysis/market-relative-skill";
 export * from "./analysis/r-multiple";
 export * from "./analysis/position-reconstruction";
 export * from "./analysis/position-settlement";
