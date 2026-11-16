@@ -1,289 +1,145 @@
+/**
+ * Per-stock backtests. This route only validates the request, loads daily
+ * bars and hands both to packages/investing, which owns every strategy, the
+ * simulator and the cost model. It never touches a broker.
+ *
+ * GET  → the strategy catalog with availability for stocks, cost defaults
+ *        and limits, and the symbols covered by demo mode.
+ * POST → run the selected strategies (or "all") for one symbol.
+ *
+ * Demo mode (`demo: true` in the body, or BACKTEST_DEMO=1) reads recorded
+ * bars instead of calling Yahoo Finance, so it works offline without keys.
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { yahooFinance } from '@/packages/investing/src/stocks/yahoo-finance-wrapper'
-import { backtest, STRATEGY_INFOS, StrategyInfo } from 'indicatorts'
-interface BacktestRequest {
-  symbol: string
-  startDate: string
-  endDate: string
-  initialCapital?: number
-  strategyIds?: string[]
-}
+import {
+  COST_LIMITS,
+  DEFAULT_COSTS,
+  describeCatalog,
+  runBacktests,
+  validateCosts,
+  type Bar,
+  type CostModel,
+} from '@/packages/investing/src/backtest'
+import { normalizeBars } from '@/packages/investing/src/backtest/bars'
+import { FIXTURE_SYMBOLS, loadFixtureBars } from '@/packages/investing/src/backtest/fixtures'
 
-interface TradeSignal {
-  date: string
-  time: number
-  action: 'BUY' | 'SELL'
-  price: number
-}
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+const DEFAULT_CAPITAL = 100_000
+/** Bounds the CPU one request can spend (about 2,500 daily bars). */
+const MAX_RANGE_YEARS = 10
 
-interface BacktestResult {
-  success: boolean
+interface ParsedRequest {
   symbol: string
   startDate: string
   endDate: string
   initialCapital: number
-  results: {
-    strategyName: string
-    strategyId: string
-    finalValue: number
-    totalReturn: number
-    totalReturnPercent: number
-    totalTrades: number
-    winningTrades: number
-    losingTrades: number
-    winRate: number
-    sharpeRatio?: number
-    maxDrawdown: number
-    signals: TradeSignal[]
-  }[]
+  strategyIds: string[] | 'all'
+  costs: CostModel
+  params: Record<string, Record<string, number>>
+  demo: boolean
 }
 
-// Map strategy IDs to their names
-const STRATEGY_ID_MAP: Record<string, string> = {
-  'buy-hold': 'Buy Hold',
-  'awesome-oscillator': 'Awesome Oscillator',
-  'rsi-2': 'RSI 2',
-  'ichimoku-cloud': 'Ichimoku Cloud',
-  'stochastic-oscillator': 'Stochastic Oscillator',
-  'williams-r': 'Williams R',
-  'apo': 'Absolute Price Oscillator (APO)',
-  'aroon': 'Aroon Strategy',
-  'bop': 'Balance of Power (BOM)',
-  'cfo': 'Chande Forecast Oscillator (CFO)',
-  'kdj': 'KDJ Strategy',
-  'macd': 'MACD Strategy',
-  'psar': 'Parabolic SAR',
-  'typical-price': 'Typical Price',
-  'vortex': 'Vortex Strategy',
-  'acceleration-bands': 'Acceleration Bands',
-  'bollinger-bands': 'Bollinger Bands',
-  'projection-oscillator': 'Projection Oscillator',
-  'cmf': 'Chaikin Money Flow (CMF)',
-  'emv': 'Ease of Movement (EMV)',
-  'force-index': 'Force Index',
-  'mfi': 'Money Flow Index',
-  'nvi': 'Negative Volume Index (NVI)',
-  'vwap': 'Volume Weighted Average Price',
+function badRequest(error: string) {
+  return NextResponse.json({ success: false, error }, { status: 400 })
 }
 
-function calculateMetrics(actions: number[], closingPrices: number[], dates: Date[], initialCapital: number) {
-  let cash = initialCapital
-  let shares = 0
-  let trades = 0
-  let winningTrades = 0
-  let losingTrades = 0
-  let maxValue = initialCapital
-  let minValue = initialCapital
-  const returns: number[] = []
-  const signals: TradeSignal[] = []
-  let lastBuyPrice = 0
+function parse(body: Record<string, unknown>): ParsedRequest | { error: string } {
+  const symbol = typeof body.symbol === 'string' ? body.symbol.trim().toUpperCase() : ''
+  if (!symbol) return { error: 'symbol is required' }
 
-  for (let i = 0; i < actions.length; i++) {
-    const action = actions[i]
-    const price = closingPrices[i]
-    const date = dates[i]
+  const { startDate, endDate } = body
+  if (typeof startDate !== 'string' || !ISO_DATE.test(startDate)) return { error: 'startDate must be YYYY-MM-DD' }
+  if (typeof endDate !== 'string' || !ISO_DATE.test(endDate)) return { error: 'endDate must be YYYY-MM-DD' }
+  if (startDate > endDate) return { error: 'startDate must be on or before endDate' }
+  const years = (Date.parse(endDate) - Date.parse(startDate)) / (365.25 * 86_400_000)
+  if (years > MAX_RANGE_YEARS) return { error: `The date range can be at most ${MAX_RANGE_YEARS} years` }
 
-    if (action === 1 && shares === 0) {
-      // Buy signal
-      shares = Math.floor(cash / price)
-      if (shares > 0) {
-        cash -= shares * price
-        lastBuyPrice = price
-        signals.push({
-          date: date.toISOString(),
-          time: Math.floor(date.getTime() / 1000),
-          action: 'BUY',
-          price: price
-        })
-      }
-    } else if (action === -1 && shares > 0) {
-      // Sell signal
-      const revenue = shares * price
-      cash += revenue
-      trades++
-
-      if (price > lastBuyPrice) {
-        winningTrades++
-      } else if (price < lastBuyPrice) {
-        losingTrades++
-      }
-
-      signals.push({
-        date: date.toISOString(),
-        time: Math.floor(date.getTime() / 1000),
-        action: 'SELL',
-        price: price
-      })
-
-      shares = 0
-    }
-
-    const currentValue = cash + shares * price
-    maxValue = Math.max(maxValue, currentValue)
-    minValue = Math.min(minValue, currentValue)
-
-    if (i > 0) {
-      const dailyReturn = (currentValue - (cash + shares * closingPrices[i - 1])) / (cash + shares * closingPrices[i - 1])
-      returns.push(dailyReturn)
-    }
+  const initialCapital = body.initialCapital ?? DEFAULT_CAPITAL
+  if (typeof initialCapital !== 'number' || !Number.isFinite(initialCapital) || initialCapital <= 0) {
+    return { error: 'initialCapital must be a positive number' }
   }
 
-  // Close any open positions
-  if (shares > 0) {
-    const lastPrice = closingPrices[closingPrices.length - 1]
-    const lastDate = dates[dates.length - 1]
-    cash += shares * lastPrice
-    trades++
-    if (lastPrice > lastBuyPrice) {
-      winningTrades++
-    } else if (lastPrice < lastBuyPrice) {
-      losingTrades++
-    }
-    signals.push({
-      date: lastDate.toISOString(),
-      time: Math.floor(lastDate.getTime() / 1000),
-      action: 'SELL',
-      price: lastPrice
-    })
-    shares = 0
+  const ids = body.strategyIds ?? 'all'
+  if (ids !== 'all' && !(Array.isArray(ids) && ids.every((id) => typeof id === 'string'))) {
+    return { error: 'strategyIds must be a list of strategy ids or "all"' }
   }
+  const strategyIds = ids === 'all' || (ids as string[]).length === 0 ? 'all' : (ids as string[])
 
-  const finalValue = cash
-  const totalReturn = finalValue - initialCapital
-  const totalReturnPercent = (totalReturn / initialCapital) * 100
-  const winRate = trades > 0 ? (winningTrades / trades) * 100 : 0
-  const maxDrawdown = maxValue > 0 ? ((maxValue - minValue) / maxValue) * 100 : 0
+  const costResult = validateCosts((body.costs ?? {}) as Partial<CostModel>)
+  if ('error' in costResult) return { error: costResult.error }
 
-  // Calculate Sharpe Ratio (simplified)
-  let sharpeRatio: number | undefined
-  if (returns.length > 0) {
-    const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length
-    const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length
-    const stdDev = Math.sqrt(variance)
-    sharpeRatio = stdDev > 0 ? (avgReturn / stdDev) * Math.sqrt(252) : undefined // Annualized
-  }
+  const params = body.params && typeof body.params === 'object' ? (body.params as ParsedRequest['params']) : {}
+  const demo = body.demo === true || process.env.BACKTEST_DEMO === '1'
 
-  return {
-    finalValue,
-    totalReturn,
-    totalReturnPercent,
-    totalTrades: trades,
-    winningTrades,
-    losingTrades,
-    winRate,
-    sharpeRatio,
-    maxDrawdown,
-    signals,
-  }
+  return { symbol, startDate, endDate, initialCapital, strategyIds, costs: costResult.costs, params, demo }
+}
+
+async function loadYahooBars(symbol: string, startDate: string, endDate: string): Promise<Bar[] | null> {
+  const result = await yahooFinance.getHistorical(symbol, {
+    period1: new Date(startDate),
+    period2: new Date(`${endDate}T23:59:59Z`),
+    interval: '1d',
+  })
+  if (!result.success || !result.data) return null
+  const rows = Array.isArray(result.data) ? result.data : (result.data as { quotes?: unknown[] }).quotes ?? []
+  return normalizeBars(rows).filter((b) => b.date >= startDate && b.date <= endDate)
+}
+
+export async function GET() {
+  return NextResponse.json({
+    strategies: describeCatalog('equity'),
+    costs: { defaults: DEFAULT_COSTS, limits: COST_LIMITS },
+    demoSymbols: FIXTURE_SYMBOLS,
+  })
 }
 
 export async function POST(request: NextRequest) {
+  let body: unknown
   try {
-    const body: BacktestRequest = await request.json()
-    const {
-      symbol,
-      startDate,
-      endDate,
-      initialCapital = 100000,
-      strategyIds = []
-    } = body
-
-    if (!symbol || !startDate || !endDate) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required parameters: symbol, startDate, endDate' },
-        { status: 400 }
-      )
-    }
-
-    console.log(`[Backtest] Request: ${symbol}, ${startDate} to ${endDate}, strategies: ${strategyIds.length > 0 ? strategyIds.join(', ') : 'ALL'}`)
-
-    // Fetch historical data
-    const historicalData = await yahooFinance.getHistorical(symbol, {
-      period1: new Date(startDate),
-      period2: new Date(endDate),
-      interval: '1d'
-    })
-
-    if (!historicalData.success || !historicalData.data) {
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch historical data for ' + symbol },
-        { status: 500 }
-      )
-    }
-
-    // Handle both nested (Alpaca/Finnhub) and flat array formats
-    const prices = Array.isArray(historicalData.data)
-      ? historicalData.data
-      : historicalData.data.quotes || []
-
-    if (prices.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No historical data available for ' + symbol },
-        { status: 500 }
-      )
-    }
-
-    // Convert to Asset format for indicatorts
-    const asset = {
-      dates: prices.map((p: any) => new Date(p.date)),
-      openings: prices.map((p: any) => p.open),
-      closings: prices.map((p: any) => p.close),
-      highs: prices.map((p: any) => p.high),
-      lows: prices.map((p: any) => p.low),
-      volumes: prices.map((p: any) => p.volume),
-    }
-
-    // Filter strategies if specific IDs are provided
-    let strategiesToTest: StrategyInfo[] = STRATEGY_INFOS
-    if (strategyIds.length > 0) {
-      const selectedNames = strategyIds.map(id => STRATEGY_ID_MAP[id]).filter(Boolean)
-      strategiesToTest = STRATEGY_INFOS.filter(info => selectedNames.includes(info.name))
-    }
-
-    // Run backtest
-    const backtestResults = backtest(asset, strategiesToTest)
-
-    // Calculate metrics for each strategy
-    const results = backtestResults.map((result) => {
-      const strategyInfo = result.info
-
-      // Run strategy to get actions
-      const actions = strategyInfo.strategy(asset)
-      const metrics = calculateMetrics(actions, asset.closings, asset.dates, initialCapital)
-
-      // Find strategy ID
-      const strategyId = Object.entries(STRATEGY_ID_MAP).find(
-        ([_, name]) => name === strategyInfo.name
-      )?.[0] || strategyInfo.name.toLowerCase().replace(/\s+/g, '-')
-
-      return {
-        strategyName: strategyInfo.name,
-        strategyId,
-        ...metrics,
-      }
-    })
-
-    // Sort by total return
-    results.sort((a, b) => b.totalReturnPercent - a.totalReturnPercent)
-
-    const response: BacktestResult = {
-      success: true,
-      symbol,
-      startDate,
-      endDate,
-      initialCapital,
-      results,
-    }
-
-    console.log(`[Backtest] ${symbol}: Tested ${results.length} strategies, returning results`)
-
-    return NextResponse.json(response)
-
-  } catch (error: any) {
-    console.error('Technical backtest error:', error)
-    return NextResponse.json(
-      { success: false, error: error.message || 'Technical backtest failed' },
-      { status: 500 }
-    )
+    body = await request.json()
+  } catch {
+    return badRequest('Request body must be JSON')
   }
+  if (!body || typeof body !== 'object') return badRequest('Request body must be a JSON object')
+
+  const parsed = parse(body as Record<string, unknown>)
+  if ('error' in parsed) return badRequest(parsed.error)
+  const { symbol, startDate, endDate, initialCapital, strategyIds, costs, params, demo } = parsed
+
+  let bars: Bar[] | null
+  if (demo) {
+    bars = loadFixtureBars(symbol, startDate, endDate)
+    if (!bars) {
+      return badRequest(`Demo data only covers ${FIXTURE_SYMBOLS.join(', ')}; turn demo mode off to use live data for ${symbol}.`)
+    }
+  } else {
+    try {
+      bars = await loadYahooBars(symbol, startDate, endDate)
+    } catch (error) {
+      console.error('[backtest] Yahoo Finance request failed:', error)
+      bars = null
+    }
+    if (!bars) {
+      return NextResponse.json(
+        { success: false, error: `Could not load daily bars for ${symbol} from Yahoo Finance. Try again, or turn on demo mode.` },
+        { status: 502 },
+      )
+    }
+  }
+  if (bars.length === 0) return badRequest(`No daily bars for ${symbol} between ${startDate} and ${endDate}.`)
+
+  const results = runBacktests({ assetClass: 'equity', bars, initialCapital, costs, strategyIds, params })
+
+  return NextResponse.json({
+    success: true,
+    symbol,
+    startDate,
+    endDate,
+    initialCapital,
+    costs,
+    dataSource: demo ? 'demo' : 'yahoo',
+    barCount: bars.length,
+    results,
+  })
 }
