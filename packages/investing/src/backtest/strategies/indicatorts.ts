@@ -6,7 +6,7 @@ import type { Action, Bar } from "../types";
  * The indicatorts strategies the stock page has always offered, keyed by the
  * short ids the UI already uses.
  */
-const INDICATORTS_STRATEGIES: { id: string; name: string; description: string }[] = [
+const INDICATORTS_STRATEGIES: { id: string; name: string; description: string; walkForward?: boolean }[] = [
   { id: "buy-hold", name: "Buy Hold", description: "Buy on the first bar and hold to the end; the baseline every other strategy is compared to." },
   { id: "awesome-oscillator", name: "Awesome Oscillator", description: "Momentum from the gap between 5- and 34-period averages of the median price." },
   { id: "rsi-2", name: "RSI 2", description: "Two-period RSI mean reversion: buy deeply oversold, sell overbought." },
@@ -16,7 +16,9 @@ const INDICATORTS_STRATEGIES: { id: string; name: string; description: string }[
   { id: "apo", name: "Absolute Price Oscillator (APO)", description: "Difference between fast and slow EMAs; trades its sign changes." },
   { id: "aroon", name: "Aroon Strategy", description: "Aroon up and down lines to time new highs and lows." },
   { id: "bop", name: "Balance of Power (BOM)", description: "Buyer versus seller strength from each bar's open, close and range." },
-  { id: "cfo", name: "Chande Forecast Oscillator (CFO)", description: "Distance between the close and its linear-regression forecast." },
+  // indicatorts fits one regression over the whole series, so a single run
+  // would let every bar see later prices. Evaluate it walk-forward instead.
+  { id: "cfo", name: "Chande Forecast Oscillator (CFO)", description: "Distance between the close and its linear-regression forecast, refit each day on the history to date.", walkForward: true },
   { id: "kdj", name: "KDJ Strategy", description: "Stochastic variant using the K, D and J lines." },
   { id: "macd", name: "MACD Strategy", description: "MACD line crossing its signal line." },
   { id: "psar", name: "Parabolic SAR", description: "Trailing stop-and-reverse points that flip with the trend." },
@@ -44,17 +46,24 @@ function toAsset(bars: Bar[]): Asset {
   };
 }
 
-export const indicatortsStrategies: BacktestStrategy[] = INDICATORTS_STRATEGIES.map(({ id, name, description }) => {
-  const info = STRATEGY_INFOS.find((s) => s.name === name);
-  if (!info) throw new Error(`indicatorts has no strategy named "${name}"`);
-  return {
-    id,
-    name,
-    description,
-    provider: "builtin",
-    assetClasses: ["equity"],
-    minBars: 2,
-    params: [],
-    signals: (bars) => info.strategy(toAsset(bars)).map((a) => (a === 1 ? 1 : a === -1 ? -1 : 0) as Action),
-  };
-});
+const toAction = (a: number): Action => (a === 1 ? 1 : a === -1 ? -1 : 0);
+
+export const indicatortsStrategies: BacktestStrategy[] = INDICATORTS_STRATEGIES.map(
+  ({ id, name, description, walkForward }) => {
+    const info = STRATEGY_INFOS.find((s) => s.name === name);
+    if (!info) throw new Error(`indicatorts has no strategy named "${name}"`);
+    const run = (bars: Bar[]) => info.strategy(toAsset(bars)).map(toAction);
+    return {
+      id,
+      name,
+      description,
+      provider: "builtin",
+      assetClasses: ["equity"],
+      minBars: 2,
+      params: [],
+      signals: walkForward
+        ? (bars) => bars.map((_, i) => run(bars.slice(0, i + 1)).at(-1) ?? 0)
+        : run,
+    };
+  },
+);
