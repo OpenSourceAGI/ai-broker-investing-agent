@@ -5,7 +5,11 @@ import {
   hedgeFundTechnicals,
 } from "../../src/backtest/strategies/hedge-fund-technicals";
 import { checkAvailability } from "../../src/backtest/strategy";
+import { FIXTURE_SYMBOLS, loadFixtureBars } from "../../src/backtest/fixtures";
 import type { Bar } from "../../src/backtest/types";
+// Daily actions from running upstream technicals.py (pandas) on every prefix
+// of each demo fixture; see `generatedBy` in the file.
+import golden from "./golden/hedge-fund-technicals-upstream.json";
 
 function linear(n: number, start: number, slope: number): Bar[] {
   return Array.from({ length: n }, (_, i) => {
@@ -80,6 +84,16 @@ describe("hedgeFundTechnicals strategy", () => {
     expect(actions).toHaveLength(200);
     expect(actions.slice(0, 126).every((a) => a === 0)).toBe(true);
     expect(actions[126]).toBe(1);
+  });
+
+  it("matches upstream ai-hedge-fund's daily actions on the AAPL, MSFT and SPY fixtures", () => {
+    for (const symbol of FIXTURE_SYMBOLS) {
+      const bars = loadFixtureBars(symbol, "2022-01-01", "2024-12-31")!;
+      const actions = hedgeFundTechnicals.signals(bars, { threshold: 0.2 });
+      const expected = golden.actions[symbol as keyof typeof golden.actions];
+      const mismatches = actions.flatMap((a, i) => (a === expected[i] ? [] : [`${bars[i].date}: ${a} vs ${expected[i]}`]));
+      expect(mismatches, symbol).toEqual([]);
+    }
   });
 
   it("126 bars is insufficient history", () => {
