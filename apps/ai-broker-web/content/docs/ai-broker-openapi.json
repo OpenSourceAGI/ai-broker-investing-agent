@@ -1192,29 +1192,37 @@
       }
     },
     "/backtest-technical": {
+      "get": {
+        "tags": [
+          "Backtesting"
+        ],
+        "summary": "List backtest strategies",
+        "description": "Every strategy in the packages/investing backtest catalog (built-in indicators and ported third-party bots) with its availability for stocks, plus cost defaults and limits and the symbols covered by demo mode.",
+        "responses": {
+          "200": {
+            "description": "Catalog, cost defaults and limits, demo symbols"
+          }
+        }
+      },
       "post": {
         "tags": [
           "Backtesting"
         ],
-        "summary": "Run technical strategy backtest",
-        "description": "Backtest technical analysis strategies",
+        "summary": "Run per-stock strategy backtests",
+        "description": "Runs the selected strategies, or all of them, over one symbol's daily bars with shared fee, slippage and position-size assumptions. Each strategy returns metrics, the reason it could not run, or its error. Never places orders.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "symbol",
+                  "startDate",
+                  "endDate"
+                ],
                 "properties": {
                   "symbol": {
                     "type": "string"
-                  },
-                  "strategy": {
-                    "type": "string",
-                    "enum": [
-                      "momentum",
-                      "mean-reversion",
-                      "breakout",
-                      "day-scalp"
-                    ]
                   },
                   "startDate": {
                     "type": "string",
@@ -1223,6 +1231,64 @@
                   "endDate": {
                     "type": "string",
                     "format": "date"
+                  },
+                  "initialCapital": {
+                    "type": "number",
+                    "default": 100000
+                  },
+                  "strategyIds": {
+                    "description": "Strategy ids from GET /backtest-technical, or \"all\"",
+                    "oneOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "all"
+                        ]
+                      }
+                    ]
+                  },
+                  "costs": {
+                    "type": "object",
+                    "properties": {
+                      "feeBps": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 500,
+                        "default": 5
+                      },
+                      "slippageBps": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 500,
+                        "default": 5
+                      },
+                      "positionSizePct": {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 100
+                      }
+                    }
+                  },
+                  "params": {
+                    "type": "object",
+                    "description": "Parameter overrides keyed by strategy id",
+                    "additionalProperties": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "demo": {
+                    "type": "boolean",
+                    "description": "Use recorded bars (AAPL, MSFT, SPY) instead of Yahoo Finance"
                   }
                 }
               }
@@ -1231,7 +1297,13 @@
         },
         "responses": {
           "200": {
-            "description": "Successful response"
+            "description": "One result per requested strategy: ok, unavailable or failed"
+          },
+          "400": {
+            "description": "Invalid request, or no bars for the symbol and range"
+          },
+          "502": {
+            "description": "Yahoo Finance did not return bars"
           }
         }
       }

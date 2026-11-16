@@ -157,6 +157,55 @@ system. It assumes complementary YES/NO prices, does not model an order book,
 partial fills, fees, latency, settlement, or market resolution, and does not
 enable the existing unimplemented Kalshi live mapper.
 
+### Per-Stock Backtesting
+
+`src/backtest` runs every strategy over the same daily bars with the same
+costs, so results are comparable. The catalog holds the 24 `indicatorts`
+strategies, a port of ai-hedge-fund's technical analyst
+(`hedge-fund-technicals`, MIT), and the Kalshi momentum rules above
+(`kalshi-momentum`, prediction markets only). The technicals port matches the
+Python agent's daily verdicts bar for bar on the recorded fixtures, including
+upstream's Hurst exponent, which is always 0 because of pandas index alignment.
+It is used from source inside the
+monorepo, the way the web app imports it (`@/packages/investing/src/backtest`).
+
+```typescript
+import { DEFAULT_COSTS, describeCatalog, runBacktests } from "./src/backtest";
+import { loadFixtureBars } from "./src/backtest/fixtures";
+
+// Recorded AAPL, MSFT and SPY daily bars for 2022–2024; no network needed.
+const bars = loadFixtureBars("AAPL", "2023-01-01", "2023-12-31")!;
+
+const results = runBacktests({
+  assetClass: "equity",
+  bars,
+  initialCapital: 100_000,
+  costs: { ...DEFAULT_COSTS, feeBps: 10 }, // fee and slippage in basis points
+  strategyIds: "all",                      // or ["macd", "hedge-fund-technicals"]
+  params: { "hedge-fund-technicals": { threshold: 0.3 } },
+});
+
+// Every requested strategy gets exactly one result:
+//   { status: "ok", metrics, latestSignal }   metrics include trades and drawdown
+//   { status: "unavailable", reason, message } e.g. unsupported-asset, insufficient-history
+//   { status: "failed", error }                 one failure never stops the others
+console.log(describeCatalog("equity").map((s) => [s.id, s.availability]));
+```
+
+The simulator is long-only. Buys and sells fill at the daily close, moved
+against the trader by `slippageBps`, and pay `feeBps` of the fill's value.
+`positionSizePct` sets how much cash each entry commits. A position still open
+on the last bar is closed there. Defaults are 5 bps, 5 bps and 100 %, with
+limits of 0–500 bps and 1–100 %.
+
+To add a strategy, implement `BacktestStrategy` in `src/backtest/strategies/`
+(one action per bar, using only bars up to that bar), add it to
+`BACKTEST_CATALOG`, and give it an `unsupportedReason` for asset classes it
+cannot trade. The web app's `/api/backtest-technical` route lists the catalog
+(`GET`) and runs backtests (`POST`); its demo mode uses the same fixtures.
+See `devdocs/third-party-trading-bots-assessment.md` for which vendored bots
+are ported and how the rest could be.
+
 ### Trading Agents Framework
 
 ```typescript
