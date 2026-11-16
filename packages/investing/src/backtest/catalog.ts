@@ -1,9 +1,11 @@
 import { checkAvailability, type Availability, type BacktestStrategy } from "./strategy";
+import { hedgeFundTechnicals } from "./strategies/hedge-fund-technicals";
 import { indicatortsStrategies } from "./strategies/indicatorts";
+import { kalshiMomentum } from "./strategies/kalshi-momentum";
 import type { AssetClass } from "./types";
 
 /** Every strategy the backtest engine can run, built-in and third-party. */
-export const BACKTEST_CATALOG: BacktestStrategy[] = [...indicatortsStrategies];
+export const BACKTEST_CATALOG: BacktestStrategy[] = [...indicatortsStrategies, hedgeFundTechnicals, kalshiMomentum];
 
 export function getStrategy(id: string): BacktestStrategy | undefined {
   return BACKTEST_CATALOG.find((s) => s.id === id);
