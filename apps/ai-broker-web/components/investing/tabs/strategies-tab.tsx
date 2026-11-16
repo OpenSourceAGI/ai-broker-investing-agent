@@ -51,28 +51,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { setStateInURL } from "@/lib/utils"
-
-interface TradeSignal {
-  date: string
-  time: number
-  action: 'BUY' | 'SELL'
-  price: number
-}
-
-interface BacktestResult {
-  strategyName: string
-  strategyId: string
-  finalValue: number
-  totalReturn: number
-  totalReturnPercent: number
-  totalTrades: number
-  winningTrades: number
-  losingTrades: number
-  winRate: number
-  sharpeRatio?: number
-  maxDrawdown: number
-  signals: TradeSignal[]
-}
+import { BacktestPanel, type ChartTradeSignal } from "@/components/investing/backtest-panel"
 
 interface StrategiesTabProps {
   symbol?: string;
@@ -97,16 +76,8 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 9
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [backtestParams, setBacktestParams] = useState({
-    startDate: '2022-01-01',
-    endDate: '2024-12-01',
-    initialCapital: 100000,
-  })
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>([])
-  const [backtestResults, setBacktestResults] = useState<BacktestResult[]>([])
-  const [isBacktesting, setIsBacktesting] = useState(false)
-  const [backtestError, setBacktestError] = useState<string | null>(null)
-  const [selectedBacktestSignals, setSelectedBacktestSignals] = useState<TradeSignal[]>([])
+  const [selectedBacktestSignals, setSelectedBacktestSignals] = useState<ChartTradeSignal[]>([])
 
   // -- Agent Data State --
   const [loadingAgent, setLoadingAgent] = useState(false)
@@ -236,45 +207,6 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
       setSelectedStrategies([])
     } else {
       setSelectedStrategies(strategies.map(s => s.id))
-    }
-  }
-
-  const runBacktest = async () => {
-    if (selectedStrategies.length === 0) {
-      setBacktestError('Please select at least one strategy')
-      return
-    }
-
-    setIsBacktesting(true)
-    setBacktestError(null)
-    setSelectedBacktestSignals([])
-
-    try {
-      const response = await fetch('/api/backtest-technical', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          symbol: selectedStock,
-          startDate: backtestParams.startDate,
-          endDate: backtestParams.endDate,
-          initialCapital: backtestParams.initialCapital,
-          strategyIds: selectedStrategies,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setBacktestResults(data.results)
-      } else {
-        setBacktestError(data.error || 'Backtest failed')
-      }
-    } catch (error: any) {
-      setBacktestError(error.message || 'Failed to run backtest')
-    } finally {
-      setIsBacktesting(false)
     }
   }
 
@@ -636,146 +568,17 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
         {/* --- Tab 3: Algo Strategies (Existing Logic) --- */}
         <TabsContent value="algo-strategies" className="space-y-4 mt-4">
           <Card className="p-6">
-            {/* Backtest Controls */}
-            <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-4">
-                {/* Note: Symbol is global now, but kept display consistent with previous design if needed, 
-                            though simpler to just use the global selectedStock for backtest params too. */}
-                <div>
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={backtestParams.startDate}
-                    onChange={(e) => setBacktestParams({ ...backtestParams, startDate: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="endDate">End Date</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={backtestParams.endDate}
-                    onChange={(e) => setBacktestParams({ ...backtestParams, endDate: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="capital">Initial Capital</Label>
-                  <Input
-                    id="capital"
-                    type="number"
-                    value={backtestParams.initialCapital}
-                    onChange={(e) => setBacktestParams({ ...backtestParams, initialCapital: parseInt(e.target.value) })}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <Label>Select Strategies to Backtest for {selectedStock}</Label>
-                </div>
-                <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4 max-h-60 overflow-y-auto border rounded-lg p-4">
-                  {strategies
-                    .sort((a, b) => (b.likes || 0) - (a.likes || 0))
-                    .map((strategy) => (
-                      <div
-                        key={strategy.id}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`strategy-${strategy.id}`}
-                          checked={selectedStrategies.includes(strategy.id)}
-                          onCheckedChange={() => handleStrategyToggle(strategy.id)}
-                        />
-                        <label
-                          htmlFor={`strategy-${strategy.id}`}
-                          className="flex flex-col space-y-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          <span>{strategy.name}</span>
-                        </label>
-                      </div>
-                    ))}
-                </div>
-                <div className="text-sm text-muted-foreground mt-2">
-                  {selectedStrategies.length} strateg{selectedStrategies.length === 1 ? 'y' : 'ies'} selected
-                </div>
-              </div>
-
-              {backtestError && (
-                <div className="p-4 border border-red-500 bg-red-50 dark:bg-red-950 rounded-lg text-red-600 dark:text-red-400">
-                  {backtestError}
-                </div>
-              )}
-
-              <div className="flex justify-end">
-                <Button onClick={runBacktest} disabled={isBacktesting} size="lg">
-                  {isBacktesting ? (
-                    <>
-                      <Activity className="h-4 w-4 mr-2 animate-spin" />
-                      Running Backtest...
-                    </>
-                  ) : (
-                    <>
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      Run Backtest
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              {backtestResults.length > 0 && (
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-semibold mb-4">Backtest Results - {selectedStock}</h3>
-                  <div className="text-sm text-muted-foreground mb-4">
-                    Period: {backtestParams.startDate} to {backtestParams.endDate} | Initial Capital: ${backtestParams.initialCapital.toLocaleString()}
-                    <br />
-                    <span className="italic">Click on a strategy below to display buy/sell indicators on the chart above</span>
-                    {selectedBacktestSignals.length > 0 && (
-                      <span className="ml-4 text-primary font-medium">
-                        • {selectedBacktestSignals.length} trade signals displayed
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {backtestResults.map((result, index) => (
-                      <div
-                        key={`${result.strategyId}-${index}`}
-                        onClick={() => setSelectedBacktestSignals(result.signals)}
-                        className={`flex items-center justify-between p-3 rounded-lg transition-colors cursor-pointer border-2 ${selectedBacktestSignals === result.signals
-                          ? 'bg-primary/10 border-primary'
-                          : 'bg-muted border-transparent hover:bg-muted/80 hover:border-muted-foreground/20'
-                          }`}
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <div className="font-medium">{index + 1}. {result.strategyName}</div>
-                            <Badge variant={result.totalReturnPercent >= 0 ? 'default' : 'destructive'}>
-                              {result.totalReturnPercent >= 0 ? '+' : ''}{result.totalReturnPercent.toFixed(2)}%
-                            </Badge>
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Trades: {result.totalTrades} | Win Rate: {result.winRate.toFixed(1)}% |
-                            {result.sharpeRatio && ` Sharpe: ${result.sharpeRatio.toFixed(2)} |`} Max DD: {result.maxDrawdown.toFixed(2)}%
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className={`text-lg font-bold ${result.totalReturnPercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            ${result.finalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </div>
-                          <div className={`text-xs ${result.totalReturnPercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {result.totalReturnPercent >= 0 ? '+' : ''}${result.totalReturn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <BacktestPanel symbol={selectedStock} onShowSignals={setSelectedBacktestSignals} />
           </Card>
 
           {/* Strategy List Card */}
           <div className="space-y-4">
+            <div>
+              <h3 className="font-semibold">TradingView strategy library</h3>
+              <p className="text-sm text-muted-foreground">
+                Community Pine scripts for reference. They are not converted to TypeScript, so they can't be backtested above.
+              </p>
+            </div>
             <div className="flex gap-2">
               <Select value={sortOption} onValueChange={(v: any) => setSortOption(v as any)}>
                 <SelectTrigger className="w-[180px]">
