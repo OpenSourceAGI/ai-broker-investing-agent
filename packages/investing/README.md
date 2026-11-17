@@ -198,6 +198,11 @@ against the trader by `slippageBps`, and pay `feeBps` of the fill's value.
 on the last bar is closed there. Defaults are 5 bps, 5 bps and 100 %, with
 limits of 0–500 bps and 1–100 %.
 
+`toAgentTradeSignal(result, asOf)` turns an `ok` result into the trading
+agents' `TradeSignal` (`action`, `confidence`, `reasoning`, `timestamp`), so a
+backtest can feed the agent pipeline. Confidence is the share of the strategy's
+round trips that made money on that symbol and window.
+
 To add a strategy, implement `BacktestStrategy` in `src/backtest/strategies/`
 (one action per bar, using only bars up to that bar), add it to
 `BACKTEST_CATALOG`, and give it an `unsupportedReason` for asset classes it
