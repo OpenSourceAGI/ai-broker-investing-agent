@@ -62,6 +62,18 @@ describe('toTradeMarkers', () => {
     expect(outside).toBe(2)
   })
 
+  it('keeps fills on the final day of an intraday chart', () => {
+    // Hourly bars: the last two share a calendar day.
+    const hourly = [
+      { date: '2025-11-17T19:30:00.000Z', time: t('2025-11-17T19:30:00Z') },
+      { date: '2025-11-18T14:30:00.000Z', time: t('2025-11-18T14:30:00Z') },
+      { date: '2025-11-18T15:30:00.000Z', time: t('2025-11-18T15:30:00Z') },
+    ]
+    const { markers, outside } = toTradeMarkers([{ date: '2025-11-18', action: 'SELL' }], hourly)
+    expect(outside).toBe(0)
+    expect(markers.map((m) => m.time)).toEqual([t('2025-11-18T15:30:00Z')])
+  })
+
   it('returns markers in time order, as the chart requires', () => {
     const { markers } = toTradeMarkers(
       [

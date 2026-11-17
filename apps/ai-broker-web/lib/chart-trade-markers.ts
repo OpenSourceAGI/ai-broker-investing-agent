@@ -33,8 +33,10 @@ export function toTradeMarkers(
     .filter((p) => !Number.isNaN(p.start))
     .sort((a, b) => a.start - b.start)
   const last = periods.at(-1)
-  const prev = periods.at(-2)
-  const lastEnd = last ? last.start + (prev ? last.start - prev.start : DAY_MS) : NaN
+  // The last period runs as long as the gap to the previous distinct day (a
+  // week for weekly bars), and at least one day, since intraday bars share a day.
+  const prevDay = last ? periods.findLast((p) => p.start < last.start) : undefined
+  const lastEnd = last ? last.start + Math.max(DAY_MS, prevDay ? last.start - prevDay.start : DAY_MS) : NaN
 
   const markers: SeriesMarker<Time>[] = []
   let outside = 0
