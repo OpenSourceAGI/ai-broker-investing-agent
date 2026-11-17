@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react"
-import { Chart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries, TimeScale, TimeScaleFitContentTrigger, Pane } from "lightweight-charts-react-components"
+import { Chart, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries, Markers, TimeScale, TimeScaleFitContentTrigger, Pane } from "lightweight-charts-react-components"
 import { Button } from "@/components/ui/button"
 import { rsi, macd, atr, stochasticOscillator, cci, obv } from "indicatorts"
 import { TagInput, Tag } from "@/components/ui/tag-input"
 import { Loader2, CandlestickChart, TrendingUp, ChevronDown, ChevronRight } from "lucide-react"
 import { setStateInURL } from "@/lib/utils"
+import { toTradeMarkers, type TradeMarkerInput } from "@/lib/chart-trade-markers"
 import { type IChartApi, type Time, type LogicalRange } from "lightweight-charts"
 import grab from 'grab-url';
 
@@ -24,6 +25,8 @@ interface DynamicStockChartProps {
     year5: number | null
     ytd: number | null
   }
+  /** Backtest fills to mark on the price series. */
+  tradeSignals?: TradeMarkerInput[]
 }
 
 interface ChartData {
@@ -57,7 +60,8 @@ export function DynamicStockChart({
   symbol,
   initialRange = "1y",
   interval = "1d",
-  performance
+  performance,
+  tradeSignals,
 }: DynamicStockChartProps) {
   const [activeTags, setActiveTags] = useState<Tag[]>([])
   const [showVolume, setShowVolume] = useState(true)
@@ -390,6 +394,25 @@ export function DynamicStockChart({
 
   const times = useMemo(() => chartData.map(d => Math.floor(new Date(d.date).getTime() / 1000) as Time), [chartData])
 
+  const { markers: tradeMarkers, outside: tradesOutside } = useMemo(
+    () => toTradeMarkers(tradeSignals ?? [], chartData.map((d, i) => ({ date: d.date, time: times[i] as number }))),
+    [tradeSignals, chartData, times],
+  )
+
+  // Bring a newly selected backtest's trades into view once their markers are
+  // on the chart (which may be after "Show 5Y" loads more history).
+  const [chartApi, setChartApi] = useState<IChartApi | null>(null)
+  const focusedSignals = useRef<TradeMarkerInput[] | null>(null)
+  useEffect(() => {
+    if (!chartApi || !tradeSignals?.length || tradeMarkers.length === 0 || focusedSignals.current === tradeSignals) return
+    focusedSignals.current = tradeSignals
+    const pad = 15 * 86_400
+    chartApi.timeScale().setVisibleRange({
+      from: ((tradeMarkers[0].time as number) - pad) as Time,
+      to: ((tradeMarkers[tradeMarkers.length - 1].time as number) + pad) as Time,
+    })
+  }, [chartApi, tradeSignals, tradeMarkers])
+
   const candlestickData = useMemo(() => chartData.map((item, i) => ({
     time: times[i],
     open: item.open,
@@ -696,6 +719,19 @@ export function DynamicStockChart({
             )}
           </Button>
         </div>
+
+        {tradesOutside > 0 && !loadingData && (
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground" role="status">
+            <span>
+              {tradesOutside} of {tradeSignals?.length} backtest buy/sell points fall outside this chart&apos;s range.
+            </span>
+            {selectedRange !== "5y" && (
+              <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => setSelectedRange("5y")}>
+                Show 5Y
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {(loadingData || loadingMore) && (
@@ -716,6 +752,7 @@ export function DynamicStockChart({
             ref={chartRef}
             key={`chart-${showVolume}-${activeTags.length}-${chartType}-${visiblePanes.length}`}
             options={chartOptions}
+            onInit={setChartApi}
           >
 
             {/* Main price pane (Pane 0) */}
@@ -725,14 +762,18 @@ export function DynamicStockChart({
                   ref={candlestickSeriesRef}
                   data={candlestickData}
                   options={candlestickOptions}
-                />
+                >
+                  <Markers markers={tradeMarkers} />
+                </CandlestickSeries>
               )}
               {chartType === "line" && (
                 <LineSeries
                   ref={lineSeriesRef}
                   data={lineData}
                   options={{ color: "#2196F3", lineWidth: 2 as any }}
-                />
+                >
+                  <Markers markers={tradeMarkers} />
+                </LineSeries>
               )}
               {chartType === "area" && (
                 <AreaSeries
@@ -744,7 +785,9 @@ export function DynamicStockChart({
                     lineColor: "#2196F3",
                     lineWidth: 2 as any
                   }}
-                />
+                >
+                  <Markers markers={tradeMarkers} />
+                </AreaSeries>
               )}
 
               {overlaySeries.map(series => (

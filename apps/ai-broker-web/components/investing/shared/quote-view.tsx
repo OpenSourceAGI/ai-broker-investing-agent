@@ -635,6 +635,7 @@ export function QuoteView({ symbol: inputSymbol, showBackButton = true, tradeSig
           initialRange="1y"
           interval="1d"
           performance={performance}
+          tradeSignals={tradeSignals}
         />
 
         {/* Key Stats Grid */}
