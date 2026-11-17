@@ -103,6 +103,25 @@ describe('POST /api/backtest-technical', () => {
     expect((await res.json()).error).toMatch(/strategyIds/)
   })
 
+  it('more than 50 strategy ids → 400 before any work', async () => {
+    const ids = Array.from({ length: 51 }, (_, i) => `strategy-${i}`)
+    const res = await post({ ...demo2023, strategyIds: ids })
+    expect(res.status).toBe(400)
+    expect((await res.json()).error).toMatch(/at most 50/)
+  })
+
+  it('a strategy id longer than 64 characters → 400', async () => {
+    const res = await post({ ...demo2023, strategyIds: ['x'.repeat(65)] })
+    expect(res.status).toBe(400)
+    expect((await res.json()).error).toMatch(/64 characters/)
+  })
+
+  it('duplicate ids count once toward the limit', async () => {
+    const res = await post({ ...demo2023, strategyIds: Array.from({ length: 60 }, () => 'buy-hold') })
+    expect(res.status).toBe(200)
+    expect((await res.json()).results).toHaveLength(1)
+  })
+
   it('demo with TSLA → 400 listing AAPL, MSFT, SPY', async () => {
     const res = await post({ ...demo2023, symbol: 'TSLA' })
     expect(res.status).toBe(400)

@@ -28,6 +28,9 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 const DEFAULT_CAPITAL = 100_000
 /** Bounds the CPU one request can spend (about 2,500 daily bars). */
 const MAX_RANGE_YEARS = 10
+/** Bounds the request and response size; the catalog has far fewer strategies. */
+const MAX_STRATEGY_IDS = 50
+const MAX_STRATEGY_ID_LENGTH = 64
 
 interface ParsedRequest {
   symbol: string
@@ -64,7 +67,12 @@ function parse(body: Record<string, unknown>): ParsedRequest | { error: string }
   if (ids !== 'all' && !(Array.isArray(ids) && ids.every((id) => typeof id === 'string'))) {
     return { error: 'strategyIds must be a list of strategy ids or "all"' }
   }
-  const strategyIds = ids === 'all' || (ids as string[]).length === 0 ? 'all' : (ids as string[])
+  const unique = ids === 'all' ? [] : [...new Set(ids as string[])]
+  if (unique.length > MAX_STRATEGY_IDS) return { error: `strategyIds can list at most ${MAX_STRATEGY_IDS} strategies` }
+  if (unique.some((id) => id.length > MAX_STRATEGY_ID_LENGTH)) {
+    return { error: `strategy ids can be at most ${MAX_STRATEGY_ID_LENGTH} characters` }
+  }
+  const strategyIds = unique.length === 0 ? 'all' : unique
 
   const costResult = validateCosts((body.costs ?? {}) as Partial<CostModel>)
   if ('error' in costResult) return { error: costResult.error }
