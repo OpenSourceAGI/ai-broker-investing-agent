@@ -66,6 +66,26 @@ describe("simulate", () => {
     expect(result.maxDrawdownPercent).toBeCloseTo(25, 6);
   });
 
+  it("Sharpe counts entry costs: a run that only loses to fees has a negative Sharpe", () => {
+    // Flat prices with a 1% fee: equity goes 10000 -> 9901 (entry) -> 9802 (exit).
+    const costs: CostModel = { feeBps: 100, slippageBps: 0, positionSizePct: 100 };
+    const result = simulate(barsFromCloses([100, 100]), [1, 0], 10000, costs);
+    expect(result.totalReturn).toBeLessThan(0);
+    expect(result.sharpeRatio).not.toBeNull();
+    expect(result.sharpeRatio!).toBeLessThan(0);
+  });
+
+  it("Sharpe has the same sign as the return when entry costs dominate a small gain", () => {
+    // Prices drift up 0.02% a day (about +0.58% in all), less than the 1% lost to
+    // 50 bps of slippage on entry and exit, but more than the exit cost alone.
+    const closes = Array.from({ length: 30 }, (_, i) => 100 * (1 + 0.0002 * i));
+    const costs: CostModel = { feeBps: 0, slippageBps: 50, positionSizePct: 100 };
+    const actions = closes.map((_, i) => (i === 0 ? 1 : 0)) as (0 | 1)[];
+    const result = simulate(barsFromCloses(closes), actions, 100000, costs);
+    expect(result.totalReturn).toBeLessThan(0);
+    expect(result.sharpeRatio!).toBeLessThan(0);
+  });
+
   it("mismatched lengths throw", () => {
     expect(() => simulate(barsFromCloses([100, 110]), [1], 1000, NO_COSTS)).toThrow(/length/);
   });

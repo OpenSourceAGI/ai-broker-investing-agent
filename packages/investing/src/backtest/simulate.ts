@@ -101,7 +101,8 @@ export function simulate(
     losingTrades,
     winRate: totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0,
     maxDrawdownPercent: maxDrawdownPercent([initialCapital, ...equity]),
-    sharpeRatio: annualizedSharpe(equity),
+    // Start from the opening capital so the first fill's fee and slippage count.
+    sharpeRatio: annualizedSharpe([initialCapital, ...equity]),
     trades,
   };
 }
