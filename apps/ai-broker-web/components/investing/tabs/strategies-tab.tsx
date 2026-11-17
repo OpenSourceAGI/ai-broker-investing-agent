@@ -79,6 +79,12 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>([])
   const [selectedBacktestSignals, setSelectedBacktestSignals] = useState<ChartTradeSignal[]>([])
 
+  // Backtest trades belong to the stock they were run on. The backtest panel
+  // unmounts when another tab is open, so clear them here when the stock changes.
+  useEffect(() => {
+    setSelectedBacktestSignals([])
+  }, [selectedStock])
+
   // -- Agent Data State --
   const [loadingAgent, setLoadingAgent] = useState(false)
   const [newsResearcherData, setNewsResearcherData] = useState<NewsResearcherAnalysisResponse | null>(null)
