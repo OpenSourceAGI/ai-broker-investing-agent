@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { TradingAgentsGraph } from '@/packages/investing/src/trading-agents/graph/trading-graph'
+import type { TradingConfig } from '@/packages/investing/src/trading-agents/types'
+import { resolveDebateAnalystUrl } from '@/lib/debate-analyst-url'
 
 interface GroqDebateRequest {
   symbol: string
@@ -40,56 +43,38 @@ export async function POST(request: NextRequest) {
     const body: GroqDebateRequest = await request.json()
     const { symbol, date, max_debate_rounds = 2 } = body
 
-    if (!symbol) {
+    if (!symbol || typeof symbol !== 'string') {
       return NextResponse.json(
         { success: false, error: 'Missing required parameter: symbol' },
         { status: 400 }
       )
     }
 
-    // Get debate-analyst URL from environment
-    const debateAnalystUrl = process.env.NEXT_PUBLIC_DEBATE_ANALYST_URL || 'http://localhost:8001'
-
-    // Use unified API gateway if available
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
-    const analyzeUrl = apiBaseUrl
-      ? `${apiBaseUrl}/debate-analyst/analyze`
-      : `${debateAnalystUrl}/analyze`
-
-    console.log(`Calling Groq debate analysis for ${symbol}...`)
-
-    // Call the debate-analyst service
-    const response = await fetch(analyzeUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        symbol,
-        date: date || new Date().toISOString().split('T')[0],
-        max_debate_rounds,
-      }),
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Debate analyst error:', errorText)
+    const ticker = symbol.trim().toUpperCase()
+    if (!/^[A-Z0-9._-]{1,15}$/.test(ticker)) {
       return NextResponse.json(
-        {
-          success: false,
-          error: `Debate analyst service error: ${response.status} ${response.statusText}`
-        },
-        { status: response.status }
+        { success: false, error: 'Invalid ticker format' },
+        { status: 400 }
       )
     }
 
-    const result = await response.json()
+    const tradeDate = date || new Date().toISOString().split('T')[0]
+
+    // An external debate-analyst service is optional. Without one (or with a
+    // localhost / bare-IP URL, which Workers reject with "error code: 1003"),
+    // run the debate in-process with packages/investing.
+    const analyzeUrl = resolveDebateAnalystUrl(process.env)
+    const result = analyzeUrl
+      ? await callExternalAnalyst(analyzeUrl, ticker, tradeDate, max_debate_rounds)
+      : await runInProcessDebate(ticker, tradeDate)
+
+    if (result instanceof NextResponse) return result
 
     // Transform the response to a more user-friendly format
     const analysis: GroqDebateResponse = {
       success: true,
-      symbol: result.symbol || symbol,
-      date: result.date || date || new Date().toISOString().split('T')[0],
+      symbol: result.symbol || ticker,
+      date: result.date || tradeDate,
       analysis: {
         bull_arguments: extractBullArguments(result),
         bear_arguments: extractBearArguments(result),
@@ -113,6 +98,70 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     )
+  }
+}
+
+async function callExternalAnalyst(
+  analyzeUrl: string,
+  symbol: string,
+  date: string,
+  maxDebateRounds: number
+): Promise<any> {
+  const response = await fetch(analyzeUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ symbol, date, max_debate_rounds: maxDebateRounds }),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error('Debate analyst error:', errorText)
+    return NextResponse.json(
+      {
+        success: false,
+        error: `Debate analyst service error: ${response.status} ${response.statusText}`
+      },
+      { status: 502 }
+    )
+  }
+
+  return response.json()
+}
+
+/**
+ * Runs the bull/bear debate with the in-repo TradingAgentsGraph on Groq and
+ * maps its state onto the field names the external service used, so the
+ * extract* helpers below work for both paths.
+ */
+async function runInProcessDebate(symbol: string, date: string): Promise<any> {
+  const groqKey = process.env.GROQ_API_KEY
+  if (!groqKey) {
+    return NextResponse.json(
+      { success: false, error: 'GROQ_API_KEY not configured' },
+      { status: 503 }
+    )
+  }
+
+  const config: TradingConfig = {
+    llmProvider: 'groq',
+    deepThinkLLM: process.env.NEXT_PUBLIC_GROQ_DEEP_THINK_MODEL || 'llama-3.3-70b-versatile',
+    quickThinkLLM: process.env.NEXT_PUBLIC_GROQ_QUICK_THINK_MODEL || 'llama-3.1-8b-instant',
+    temperature: 0.3,
+    apiKeys: { groq: groqKey },
+  }
+
+  const graph = new TradingAgentsGraph(['market', 'news'], false, config)
+  const { state, signal } = await graph.propagate(symbol, date)
+
+  return {
+    symbol,
+    date,
+    bull_case: state.investmentDebateState?.bullHistory || '',
+    bear_case: state.investmentDebateState?.bearHistory || '',
+    risk_assessment: state.riskDebateState?.judgeDecision || '',
+    final_decision: signal.action,
+    confidence: String(signal.confidence),
+    reasoning: signal.reasoning || state.investmentDebateState?.judgeDecision || '',
   }
 }
 
