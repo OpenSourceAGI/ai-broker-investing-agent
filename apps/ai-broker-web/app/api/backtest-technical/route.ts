@@ -7,6 +7,7 @@ import {
   TECHNICAL_STRATEGY_NAME_BY_ID,
 } from '@/lib/technical-strategies'
 import { maxDrawdownPercent, sharpeRatioFromEquityCurve } from '@/lib/backtest-metrics'
+import { validateBacktestRequest } from '@/lib/backtest-request'
 import { CUSTOM_BACKTEST_STRATEGIES, type BacktestAsset } from '@/lib/custom-backtest-strategies'
 import {
   computeForecasterTrustScore,
@@ -14,14 +15,6 @@ import {
 } from '@/packages/investing/src/prediction/analysis/trust-score'
 import { registeredSources, type RegisteredSource } from '@/packages/investing/src/strategy-signals/registry'
 import { replayDailyActions } from '@/packages/investing/src/strategy-signals/replay'
-
-interface BacktestRequest {
-  symbol: string
-  startDate: string
-  endDate: string
-  initialCapital?: number
-  strategyIds?: string[]
-}
 
 interface TradeSignal {
   date: string
@@ -174,21 +167,24 @@ function calculateMetrics(actions: number[], closingPrices: number[], dates: Dat
 
 export async function POST(request: NextRequest) {
   try {
-    const body: BacktestRequest = await request.json()
-    const {
-      symbol,
-      startDate,
-      endDate,
-      initialCapital = 100000,
-      strategyIds = []
-    } = body
-
-    if (!symbol || !startDate || !endDate) {
+    let rawBody: unknown
+    try {
+      rawBody = await request.json()
+    } catch {
       return NextResponse.json(
-        { success: false, error: 'Missing required parameters: symbol, startDate, endDate' },
+        { success: false, error: 'Request body must be valid JSON' },
         { status: 400 }
       )
     }
+
+    const validation = validateBacktestRequest(rawBody)
+    if (!validation.ok) {
+      return NextResponse.json(
+        { success: false, error: validation.errors.join('; '), errors: validation.errors },
+        { status: 400 }
+      )
+    }
+    const { symbol, startDate, endDate, initialCapital, strategyIds } = validation.value
 
     console.log(`[Backtest] Request: ${symbol}, ${startDate} to ${endDate}, strategies: ${strategyIds.length > 0 ? strategyIds.join(', ') : 'ALL'}`)
 

@@ -154,3 +154,50 @@ describe("POST /api/backtest-technical strategy selection", () => {
     }
   });
 });
+
+describe("POST /api/backtest-technical request validation", () => {
+  const post = (body: string) =>
+    POST(
+      new Request("http://localhost/api/backtest-technical", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body,
+      }) as never,
+    );
+  const base = { symbol: "AAPL", startDate: "2024-01-01", endDate: "2024-01-05" };
+
+  it("returns 400 for a body that is not JSON, without fetching data", async () => {
+    const response = await post("{not json");
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toBe("Request body must be valid JSON");
+    expect(mockGetHistorical).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 with every problem listed, without fetching data", async () => {
+    const response = await post(
+      JSON.stringify({ ...base, startDate: "2024-02-01", initialCapital: -5 }),
+    );
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.success).toBe(false);
+    expect(body.errors).toEqual([
+      "startDate must be before endDate",
+      "initialCapital must be a positive number",
+    ]);
+    expect(mockGetHistorical).not.toHaveBeenCalled();
+  });
+
+  it("rejects the null capital the UI sends after parseInt('') is NaN", async () => {
+    const response = await post(
+      JSON.stringify({ ...base, initialCapital: Number.NaN, strategyIds: ["macd"] }),
+    );
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toBe("initialCapital must be a positive number");
+  });
+
+  it("still runs when optional fields are omitted", async () => {
+    const response = await post(JSON.stringify(base));
+    expect(response.status).toBe(200);
+    expect((await response.json()).initialCapital).toBe(100000);
+  });
+});

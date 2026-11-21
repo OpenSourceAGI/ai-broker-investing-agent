@@ -322,6 +322,10 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
       setBacktestError('Please select at least one strategy')
       return
     }
+    if (!Number.isFinite(backtestParams.initialCapital) || backtestParams.initialCapital <= 0) {
+      setBacktestError('Initial capital must be a positive number')
+      return
+    }
 
     setIsBacktesting(true)
     setBacktestError(null)
