@@ -53,7 +53,19 @@
     "crons": ["0 0 * * *", "15 0 * * *"]
   },
   "observability": {
-    "enabled": true
+    "enabled": true,
+    // Export Worker traces and logs to Sentry through Cloudflare Observability
+    // destinations. Both destinations (with the x-sentry-auth header) are
+    // created in the Cloudflare dashboard: Workers & Pages > Observability >
+    // Destinations. The names here must match the dashboard exactly.
+    "traces": {
+      "enabled": true,
+      "destinations": ["sentry-traces"]
+    },
+    "logs": {
+      "enabled": true,
+      "destinations": ["sentry-logs"]
+    }
   },
   // @cloudflare/vite-plugin turns source-map uploads on whenever the build emits
   // maps, and ours exceed Cloudflare's 15MB gzipped limit (deploy error 10021).
