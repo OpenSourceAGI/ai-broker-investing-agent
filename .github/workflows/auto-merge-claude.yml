@@ -31,14 +31,21 @@ jobs:
 
   delete-branch:
     runs-on: ubuntu-latest
+    # Only branches of this repository can be deleted from here; a fork's
+    # branch belongs to its owner.
     if: >
       github.event.action == 'closed' &&
-      github.event.pull_request.merged == true
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Delete head branch
-        run: |
-          BRANCH="${{ github.event.pull_request.head.ref }}"
-          echo "Deleting branch $BRANCH"
-          git push origin --delete "$BRANCH"
+        # There is no checkout in this job, so use the API instead of
+        # `git push`. The branch name comes in through `env` so it is never
+        # interpolated into the script.
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          echo "Deleting branch $BRANCH"
+          gh api -X DELETE "repos/$REPOSITORY/git/refs/heads/$BRANCH"             || echo "Branch $BRANCH was already deleted."
