@@ -2,7 +2,10 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    # The default branch is `master`; `main` is kept for pushes that still
+    # go there. Filtering on `main` alone meant merges to `master` were
+    # never tested.
+    branches: [main, master]
   pull_request:
   workflow_dispatch:
 
