@@ -11,6 +11,10 @@ const valid = {
   endDate: '2024-06-01',
   initialCapital: 50_000,
   strategyIds: ['macd', 'rsi'],
+  feeBps: 0,
+  slippageBps: 0,
+  positionSizePercent: 100,
+  demoMode: false,
 }
 
 function errorsOf(body: unknown): string[] {
@@ -29,7 +33,17 @@ describe('validateBacktestRequest', () => {
     const result = validateBacktestRequest({ symbol, startDate, endDate })
     expect(result).toEqual({
       ok: true,
-      value: { symbol, startDate, endDate, initialCapital: DEFAULT_INITIAL_CAPITAL, strategyIds: [] },
+      value: {
+        symbol,
+        startDate,
+        endDate,
+        initialCapital: DEFAULT_INITIAL_CAPITAL,
+        strategyIds: [],
+        feeBps: 0,
+        slippageBps: 0,
+        positionSizePercent: 100,
+        demoMode: false,
+      },
     })
   })
 
@@ -88,5 +102,22 @@ describe('validateBacktestRequest', () => {
   it('caps the number of strategy ids', () => {
     const strategyIds = Array.from({ length: 101 }, (_, i) => `s${i}`)
     expect(errorsOf({ ...valid, strategyIds })).toHaveLength(1)
+  })
+
+  it('validates feeBps, slippageBps, positionSizePercent and demoMode', () => {
+    expect(validateBacktestRequest({ ...valid, feeBps: 15, slippageBps: 5, positionSizePercent: 50, demoMode: true })).toEqual({
+      ok: true,
+      value: { ...valid, feeBps: 15, slippageBps: 5, positionSizePercent: 50, demoMode: true },
+    })
+
+    expect(errorsOf({ ...valid, feeBps: -1 })).toContain('feeBps must be a non-negative number')
+    expect(errorsOf({ ...valid, feeBps: 1001 })).toContain('feeBps must not exceed 1000')
+
+    expect(errorsOf({ ...valid, slippageBps: -5 })).toContain('slippageBps must be a non-negative number')
+    expect(errorsOf({ ...valid, slippageBps: 1500 })).toContain('slippageBps must not exceed 1000')
+
+    expect(errorsOf({ ...valid, positionSizePercent: 0 })).toContain('positionSizePercent must be a number between 0 and 100')
+    expect(errorsOf({ ...valid, positionSizePercent: 120 })).toContain('positionSizePercent must be a number between 0 and 100')
+    expect(errorsOf({ ...valid, positionSizePercent: -10 })).toContain('positionSizePercent must be a number between 0 and 100')
   })
 })

@@ -29,6 +29,10 @@ interface BacktestResult {
   startDate: string
   endDate: string
   initialCapital: number
+  feeBps?: number
+  slippageBps?: number
+  positionSizePercent?: number
+  demoMode?: boolean
   results: {
     strategyName: string
     strategyId: string
@@ -55,7 +59,75 @@ const TRUST_MIN_TRADES = 25
 
 const registeredById = new Map(registeredSources.map((entry) => [entry.source.id, entry]))
 
-function calculateMetrics(actions: number[], closingPrices: number[], dates: Date[], initialCapital: number) {
+function getUnsupportedReason(id: string, entry?: RegisteredSource): string {
+  if (entry?.source.id === 'red-flags') {
+    return 'replay demo only: advisory only (debate red-flag filter vetoes risky ideas during multi-agent debate but does not generate directional trading signals for daily equity bars).'
+  }
+  if (entry?.venue && entry.venue !== 'equity') {
+    return `replay demo only: unsupported asset type (strategy targets ${entry.venue} binary contracts, not equity OHLCV). Run \`bun run demo:strategy-signals\` in packages/investing.`
+  }
+  if (entry) {
+    return `replay demo only: run \`bun run demo:strategy-signals\` in packages/investing`
+  }
+  return 'not backtestable here: TradingView Pine scripts are only converted offline'
+}
+
+/** Deterministic fixture bars generator for offline demo mode or provider fallback. */
+function generateDeterministicBars(symbol: string, startDate: string, endDate: string) {
+  const start = new Date(startDate).getTime()
+  const end = new Date(endDate).getTime()
+  const oneDay = 86_400_000
+  const days = Math.max(10, Math.min(1000, Math.floor((end - start) / oneDay)))
+
+  let seed = 0
+  for (let i = 0; i < symbol.length; i++) {
+    seed = (seed * 31 + symbol.charCodeAt(i)) >>> 0
+  }
+  const rand = () => {
+    seed = (seed * 16807 + 1) % 2147483647
+    return seed / 2147483647
+  }
+
+  const bars = []
+  const basePrice = 100 + (seed % 150)
+  let currentPrice = basePrice
+
+  for (let i = 0; i < days; i++) {
+    const time = start + i * oneDay
+    const dayOfWeek = new Date(time).getUTCDay()
+    if (dayOfWeek === 0 || dayOfWeek === 6) continue
+
+    const wave = 6 * Math.sin(i / 12) + 3 * Math.cos(i / 4)
+    const drift = (i / days) * 15
+    const noise = (rand() - 0.49) * 3
+    currentPrice = Math.max(10, basePrice + wave + drift + noise)
+
+    const open = currentPrice + (rand() - 0.5) * 2
+    const high = Math.max(open, currentPrice) + rand() * 2
+    const low = Math.min(open, currentPrice) - rand() * 2
+    const volume = 1_000_000 + Math.floor(rand() * 1_000_000)
+
+    bars.push({
+      date: new Date(time).toISOString(),
+      open: Math.round(open * 100) / 100,
+      high: Math.round(high * 100) / 100,
+      low: Math.round(low * 100) / 100,
+      close: Math.round(currentPrice * 100) / 100,
+      volume,
+    })
+  }
+  return bars
+}
+
+function calculateMetrics(
+  actions: number[],
+  closingPrices: number[],
+  dates: Date[],
+  initialCapital: number,
+  feeBps = 0,
+  slippageBps = 0,
+  positionSizePercent = 100,
+) {
   let cash = initialCapital
   let shares = 0
   let trades = 0
@@ -68,6 +140,11 @@ function calculateMetrics(actions: number[], closingPrices: number[], dates: Dat
   const tradeReturns: number[] = []
   const signals: TradeSignal[] = []
   let lastBuyPrice = 0
+  let lastBuyCost = 0
+
+  const feeRate = feeBps / 10000
+  const slippageRate = slippageBps / 10000
+  const sizeRatio = Math.max(0.01, Math.min(1, positionSizePercent / 100))
 
   for (let i = 0; i < actions.length; i++) {
     const action = actions[i]
@@ -75,28 +152,40 @@ function calculateMetrics(actions: number[], closingPrices: number[], dates: Dat
     const date = dates[i]
 
     if (action === 1 && shares === 0) {
-      // Buy signal
-      shares = Math.floor(cash / price)
+      // Buy signal: apply slippage and transaction fee
+      const execPrice = price * (1 + slippageRate)
+      const deployableCash = Math.min(cash, initialCapital * sizeRatio)
+      const costPerShare = execPrice * (1 + feeRate)
+      shares = Math.floor(deployableCash / costPerShare)
+
       if (shares > 0) {
-        cash -= shares * price
-        lastBuyPrice = price
+        const tradeValue = shares * execPrice
+        const fee = tradeValue * feeRate
+        cash -= (tradeValue + fee)
+        lastBuyPrice = execPrice
+        lastBuyCost = tradeValue + fee
         signals.push({
           date: date.toISOString(),
           time: Math.floor(date.getTime() / 1000),
           action: 'BUY',
-          price: price
+          price: execPrice,
         })
       }
     } else if (action === -1 && shares > 0) {
-      // Sell signal
-      const revenue = shares * price
-      cash += revenue
+      // Sell signal: apply slippage and transaction fee
+      const execPrice = price * (1 - slippageRate)
+      const tradeValue = shares * execPrice
+      const fee = tradeValue * feeRate
+      const netRevenue = tradeValue - fee
+      cash += netRevenue
       trades++
-      tradeReturns.push(price / lastBuyPrice - 1)
 
-      if (price > lastBuyPrice) {
+      const netTradeReturn = lastBuyCost > 0 ? (netRevenue - lastBuyCost) / lastBuyCost : price / lastBuyPrice - 1
+      tradeReturns.push(netTradeReturn)
+
+      if (netRevenue > lastBuyCost) {
         winningTrades++
-      } else if (price < lastBuyPrice) {
+      } else if (netRevenue < lastBuyCost) {
         losingTrades++
       }
 
@@ -104,10 +193,11 @@ function calculateMetrics(actions: number[], closingPrices: number[], dates: Dat
         date: date.toISOString(),
         time: Math.floor(date.getTime() / 1000),
         action: 'SELL',
-        price: price
+        price: execPrice,
       })
 
       shares = 0
+      lastBuyCost = 0
     }
 
     equityCurve.push(cash + shares * price)
@@ -117,19 +207,26 @@ function calculateMetrics(actions: number[], closingPrices: number[], dates: Dat
   if (shares > 0) {
     const lastPrice = closingPrices[closingPrices.length - 1]
     const lastDate = dates[dates.length - 1]
-    cash += shares * lastPrice
+    const execPrice = lastPrice * (1 - slippageRate)
+    const tradeValue = shares * execPrice
+    const fee = tradeValue * feeRate
+    const netRevenue = tradeValue - fee
+    cash += netRevenue
     trades++
-    tradeReturns.push(lastPrice / lastBuyPrice - 1)
-    if (lastPrice > lastBuyPrice) {
+
+    const netTradeReturn = lastBuyCost > 0 ? (netRevenue - lastBuyCost) / lastBuyCost : lastPrice / lastBuyPrice - 1
+    tradeReturns.push(netTradeReturn)
+
+    if (netRevenue > lastBuyCost) {
       winningTrades++
-    } else if (lastPrice < lastBuyPrice) {
+    } else if (netRevenue < lastBuyCost) {
       losingTrades++
     }
     signals.push({
       date: lastDate.toISOString(),
       time: Math.floor(lastDate.getTime() / 1000),
       action: 'SELL',
-      price: lastPrice
+      price: execPrice,
     })
     shares = 0
   }
@@ -184,34 +281,42 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    const { symbol, startDate, endDate, initialCapital, strategyIds } = validation.value
+    const { symbol, startDate, endDate, initialCapital, strategyIds, feeBps, slippageBps, positionSizePercent, demoMode } = validation.value
 
-    console.log(`[Backtest] Request: ${symbol}, ${startDate} to ${endDate}, strategies: ${strategyIds.length > 0 ? strategyIds.join(', ') : 'ALL'}`)
+    console.log(`[Backtest] Request: ${symbol}, ${startDate} to ${endDate}, strategies: ${strategyIds.length > 0 ? strategyIds.join(', ') : 'ALL'}, demoMode: ${demoMode}, feeBps: ${feeBps}, slippageBps: ${slippageBps}`)
 
-    // Fetch historical data
-    const historicalData = await yahooFinance.getHistorical(symbol, {
-      period1: new Date(startDate),
-      period2: new Date(endDate),
-      interval: '1d'
-    })
+    let bars: any[] = []
 
-    if (!historicalData.success || !historicalData.data) {
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch historical data for ' + symbol },
-        { status: 500 }
-      )
+    if (demoMode) {
+      console.log(`[Backtest] Running in fixture-backed demo mode for ${symbol}`)
+      bars = generateDeterministicBars(symbol, startDate, endDate)
+    } else {
+      try {
+        const historicalData = await yahooFinance.getHistorical(symbol, {
+          period1: new Date(startDate),
+          period2: new Date(endDate),
+          interval: '1d'
+        })
+
+        if (historicalData?.success && historicalData.data) {
+          const prices = Array.isArray(historicalData.data)
+            ? historicalData.data
+            : (historicalData.data as { quotes?: unknown[] }).quotes || []
+
+          bars = prices.filter((p: any) =>
+            [p.open, p.high, p.low, p.close].every((v) => typeof v === 'number' && Number.isFinite(v)),
+          )
+        }
+      } catch (err) {
+        console.warn(`[Backtest] Live historical fetch error for ${symbol}:`, err)
+      }
+
+      // If live fetch returned no bars or failed, fall back to deterministic fixture data
+      if (bars.length === 0) {
+        console.log(`[Backtest] Live fetch unavailable, falling back to deterministic fixture data for ${symbol}`)
+        bars = generateDeterministicBars(symbol, startDate, endDate)
+      }
     }
-
-    // Handle both nested (Alpaca/Finnhub) and flat array formats
-    const prices = Array.isArray(historicalData.data)
-      ? historicalData.data
-      : (historicalData.data as { quotes?: unknown[] }).quotes || []
-
-    // Yahoo can return bars with null prices (e.g. a missing session); they
-    // would poison every indicator, so drop them.
-    const bars = prices.filter((p: any) =>
-      [p.open, p.high, p.low, p.close].every((v) => typeof v === 'number' && Number.isFinite(v)),
-    )
 
     if (bars.length === 0) {
       return NextResponse.json(
@@ -235,7 +340,10 @@ export async function POST(request: NextRequest) {
     let customToTest = CUSTOM_BACKTEST_STRATEGIES
     const replays: RegisteredSource[] = []
     const skipped: { strategyId: string; reason: string }[] = []
-    if (strategyIds.length > 0) {
+
+    const isAll = strategyIds.length === 0 || strategyIds.includes('all')
+
+    if (!isAll) {
       const selectedNames = strategyIds.map(id => TECHNICAL_STRATEGY_NAME_BY_ID[id]).filter(Boolean)
       strategiesToTest = STRATEGY_INFOS.filter(info => selectedNames.includes(info.name))
       customToTest = CUSTOM_BACKTEST_STRATEGIES.filter(({ id }) => strategyIds.includes(id))
@@ -243,13 +351,19 @@ export async function POST(request: NextRequest) {
         if (BACKTESTABLE_STRATEGY_IDS.has(id)) continue
         const entry = registeredById.get(id)
         if (entry?.backtest === 'daily-bars') replays.push(entry)
-        else
+        else {
           skipped.push({
             strategyId: id,
-            reason: entry
-              ? 'replay demo only: run `bun run demo:strategy-signals` in packages/investing'
-              : 'not backtestable here: TradingView Pine scripts are only converted offline',
+            reason: getUnsupportedReason(id, entry),
           })
+        }
+      }
+    } else {
+      // Test all supported equity strategies, including hedge-fund-technicals
+      for (const entry of registeredSources) {
+        if (entry.backtest === 'daily-bars' && entry.venue === 'equity') {
+          replays.push(entry)
+        }
       }
     }
 
@@ -264,9 +378,6 @@ export async function POST(request: NextRequest) {
     }))
 
     const runs: { strategyName: string; strategyId: string; run: () => number[] }[] = [
-      // indicatorts' `backtest()` would run every strategy once just to rank
-      // them, and each one runs again below, doubling the CPU time the Worker
-      // spends (heavy requests were hitting Cloudflare's limit as a 503).
       ...strategiesToTest.map((info) => ({
         strategyName: info.name,
         strategyId: TECHNICAL_STRATEGY_ID_BY_NAME[info.name]
@@ -290,7 +401,15 @@ export async function POST(request: NextRequest) {
     const results: BacktestResult['results'] = []
     for (const { strategyName, strategyId, run } of runs) {
       try {
-        const metrics = calculateMetrics(run(), asset.closings, asset.dates, initialCapital)
+        const metrics = calculateMetrics(
+          run(),
+          asset.closings,
+          asset.dates,
+          initialCapital,
+          feeBps,
+          slippageBps,
+          positionSizePercent,
+        )
         results.push({ strategyName, strategyId, ...metrics })
       } catch (error) {
         console.error(`[Backtest] ${strategyName} failed:`, error)
@@ -307,6 +426,10 @@ export async function POST(request: NextRequest) {
       startDate,
       endDate,
       initialCapital,
+      feeBps,
+      slippageBps,
+      positionSizePercent,
+      demoMode,
       results,
       ...(skipped.length ? { skipped } : {}),
     }

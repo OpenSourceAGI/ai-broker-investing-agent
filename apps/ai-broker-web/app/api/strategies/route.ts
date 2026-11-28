@@ -21,7 +21,16 @@ interface CatalogStrategy extends AlgoStrategy {
   provider: StrategyProvider;
   /** Whether /api/backtest-technical can run it; TradingView Pine is converted offline only. */
   backtestable: boolean;
+  unsupportedReason?: string;
   provenance?: { upstream: string; license: string; fidelity: string; venue: string; backtest: string };
+}
+
+function getThirdPartyUnsupportedReason(id: string, venue: string, backtest: string): string | undefined {
+  if (backtest === 'daily-bars') return undefined;
+  if (id === 'red-flags') {
+    return 'Advisory only: debate red-flag filter vetoes risky ideas during multi-agent debate but does not generate directional trading signals for daily equity bars.';
+  }
+  return `Unsupported asset type: strategy targets ${venue} binary contracts, not equity OHLCV. Replay demo available via packages/investing.`;
 }
 
 const builtinStrategies: CatalogStrategy[] = BACKTESTABLE_STRATEGIES.map(({ id, name, description }) => ({
@@ -38,18 +47,22 @@ const builtinStrategies: CatalogStrategy[] = BACKTESTABLE_STRATEGIES.map(({ id, 
 
 // Sources from third-party-trading-bots/, ported into packages/investing/src/strategy-signals.
 const thirdPartyStrategies: CatalogStrategy[] = registeredSources.map(
-  ({ source, name, upstreamRepo, license, fidelity, venue, backtest }) => ({
-    url: source.id,
-    name,
-    description: `Signal source derived from third-party-trading-bots/${source.upstream}.`,
-    source: '',
-    author: upstreamRepo,
-    likes: 0,
-    script_type: 'strategy',
-    provider: 'third-party',
-    backtestable: backtest === 'daily-bars',
-    provenance: { upstream: source.upstream, license, fidelity, venue, backtest },
-  }),
+  ({ source, name, upstreamRepo, license, fidelity, venue, backtest }) => {
+    const unsupportedReason = getThirdPartyUnsupportedReason(source.id, venue, backtest);
+    return {
+      url: source.id,
+      name,
+      description: `Signal source derived from third-party-trading-bots/${source.upstream}.`,
+      source: '',
+      author: upstreamRepo,
+      likes: 0,
+      script_type: 'strategy',
+      provider: 'third-party',
+      backtestable: backtest === 'daily-bars',
+      ...(unsupportedReason ? { unsupportedReason } : {}),
+      provenance: { upstream: source.upstream, license, fidelity, venue, backtest },
+    };
+  },
 );
 
 const scripts: CatalogStrategy[] = [
@@ -76,12 +89,12 @@ export async function GET(request: Request) {
         }
     }
 
-    // Return summary list (exclude description and source, map likes_count to likes)
+    // Return summary list (exclude description and source for TradingView items to keep payload compact)
     const summaryScripts = scripts.map(({ description, source, likes, ...rest }) => ({
       ...rest,
       likes,
-      // description: description.slice(0,500),
-      source:  '',
+      ...(rest.provider !== 'tradingview' && description !== undefined ? { description } : {}),
+      source: '',
     })).sort((a, b) => {
           return (b.likes || 0) - (a.likes || 0)
   })
