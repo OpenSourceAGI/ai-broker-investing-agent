@@ -9,6 +9,7 @@
  */
 import { evaluateBbRsiBreakout } from '@/packages/investing/src/stocks/strategies/bb-rsi-breakout'
 import { evaluateEmaCrossover } from '@/packages/investing/src/stocks/strategies/ema-crossover'
+import { evaluateAevciStrategy } from '@/packages/investing/src/stocks/strategies/adaptive-efficiency-conviction'
 import { CUSTOM_TECHNICAL_STRATEGIES } from '@/lib/technical-strategies'
 
 export interface BacktestAsset {
@@ -71,9 +72,17 @@ function bbRsiBreakoutActions(asset: BacktestAsset): number[] {
   })
 }
 
+/** Adaptive Efficiency & Volatility-Normalized Conviction Index (AEVCI). Long-only. */
+function aevciActions(asset: BacktestAsset): number[] {
+  return evaluateAevciStrategy(toBars(asset)).map((signal) =>
+    signal.action === 'BUY' ? 1 : signal.action === 'SELL' ? -1 : 0,
+  )
+}
+
 const ACTIONS_BY_ID: Record<string, (asset: BacktestAsset) => number[]> = {
   'ema-crossover': emaCrossoverActions,
   'bb-rsi-breakout': bbRsiBreakoutActions,
+  'adaptive-efficiency-conviction': aevciActions,
 }
 
 export const CUSTOM_BACKTEST_STRATEGIES: readonly CustomBacktestStrategy[] =

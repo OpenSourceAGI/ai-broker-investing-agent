@@ -168,6 +168,12 @@ export const CUSTOM_TECHNICAL_STRATEGIES = [
     description:
       "Buys when price closes below the lower 30-period Bollinger Band with RSI(13) under 30, and takes profit 3% above entry. The short leg of the original Pine strategy is skipped because this backtest is long-only.",
   },
+  {
+    id: "adaptive-efficiency-conviction",
+    name: "Adaptive Efficiency Conviction (AEVCI)",
+    description:
+      "Novel causal indicator that weights volatility-normalized price drift by directional path efficiency, adapts smoothing speed to market chop, and exits via conviction reversal or 2.5x ATR trailing stop.",
+  },
 ] as const satisfies readonly TechnicalStrategyDefinition[];
 
 /** Every strategy the Algo Strategies tab can backtest. */

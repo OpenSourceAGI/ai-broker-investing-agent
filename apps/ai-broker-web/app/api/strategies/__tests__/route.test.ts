@@ -28,7 +28,7 @@ describe("GET /api/strategies", () => {
       strategies.filter(
         (strategy: { provider: string }) => strategy.provider === "builtin",
       ),
-    ).toHaveLength(26);
+    ).toHaveLength(BACKTESTABLE_STRATEGIES.length);
     expect(
       strategies.filter(
         (strategy: { provider: string }) => strategy.provider === "tradingview",

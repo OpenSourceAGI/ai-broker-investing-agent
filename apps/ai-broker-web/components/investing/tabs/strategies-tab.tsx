@@ -161,6 +161,10 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
     startDate: '2022-01-01',
     endDate: '2024-12-01',
     initialCapital: 100000,
+    feeBps: 0,
+    slippageBps: 0,
+    positionSizePercent: 100,
+    demoMode: false,
   })
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>([])
   const [backtestResults, setBacktestResults] = useState<BacktestResult[]>([])
@@ -204,8 +208,9 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
             name: script.name || 'Unnamed Strategy',
             provider: script.provider,
             backtestable: script.backtestable,
+            unsupportedReason: script.unsupportedReason,
             provenance: script.provenance,
-            description: '', // Description is not loaded initially
+            description: script.description || '',
             todayPnL: 0,
             last7DaysPnL: 0,
             last30DaysPnL: 0,
@@ -279,6 +284,19 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
 
   const backtestableStrategies = strategies.filter(isBacktestable)
   const thirdPartyStrategies = strategies.filter((s) => s.provider === 'third-party')
+  const nonBacktestableThirdParty = thirdPartyStrategies.filter((s) => !isBacktestable(s))
+  const unifiedStrategies = [...backtestableStrategies, ...nonBacktestableThirdParty]
+
+  const getUnsupportedLabel = (strategy: Strategy) =>
+    strategy.id === 'red-flags' || strategy.provenance?.venue === 'equity'
+      ? 'Advisory Only'
+      : `Unsupported (${strategy.provenance?.venue || 'Event'})`
+
+  const getUnsupportedReason = (strategy: Strategy) =>
+    strategy.unsupportedReason ||
+    (strategy.id === 'red-flags'
+      ? 'Advisory only: debate red-flag filter vetoes risky ideas during multi-agent debate but does not generate directional trading signals for daily equity bars.'
+      : `Unsupported asset type: strategy targets ${strategy.provenance?.venue || 'event'} binary contracts, not equity OHLCV.`)
 
   const sortedStrategies = strategies.filter((s) =>
     catalogFilter === 'backtestable'
@@ -299,9 +317,10 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
 
 
   const handleStrategyToggle = (strategyId: string) => {
-    // Only strategies the backtest route can run are selectable.
+    // Allow toggling both equity-backtestable and third-party strategies in the unified selector
+    // so users can inspect backend skip explanations for unsupported bots.
     const strategy = strategies.find((s) => s.id === strategyId)
-    if (!strategy || !isBacktestable(strategy)) return
+    if (!strategy || (!isBacktestable(strategy) && strategy.provider !== 'third-party')) return
     setSelectedStrategies(prev =>
       prev.includes(strategyId)
         ? prev.filter(id => id !== strategyId)
@@ -309,21 +328,43 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
     )
   }
 
+  const allAvailableSelected =
+    backtestableStrategies.length > 0 &&
+    backtestableStrategies.every((s) => selectedStrategies.includes(s.id))
+
   const handleSelectAll = () => {
-    if (selectedStrategies.length === backtestableStrategies.length) {
+    if (allAvailableSelected) {
       setSelectedStrategies([])
     } else {
       setSelectedStrategies(backtestableStrategies.map(s => s.id))
     }
   }
 
-  const runBacktest = async () => {
-    if (selectedStrategies.length === 0) {
+  const executeBacktest = async (strategyIdsToRun: string[]) => {
+    if (strategyIdsToRun.length === 0) {
       setBacktestError('Please select at least one strategy')
+      return
+    }
+    const startTs = Date.parse(backtestParams.startDate)
+    const endTs = Date.parse(backtestParams.endDate)
+    if (!backtestParams.startDate || !backtestParams.endDate || !Number.isFinite(startTs) || !Number.isFinite(endTs) || startTs >= endTs) {
+      setBacktestError('Start date must be before end date')
       return
     }
     if (!Number.isFinite(backtestParams.initialCapital) || backtestParams.initialCapital <= 0) {
       setBacktestError('Initial capital must be a positive number')
+      return
+    }
+    if (!Number.isFinite(backtestParams.feeBps) || backtestParams.feeBps < 0 || backtestParams.feeBps > 1000) {
+      setBacktestError('Fee (bps) must be between 0 and 1000')
+      return
+    }
+    if (!Number.isFinite(backtestParams.slippageBps) || backtestParams.slippageBps < 0 || backtestParams.slippageBps > 1000) {
+      setBacktestError('Slippage (bps) must be between 0 and 1000')
+      return
+    }
+    if (!Number.isFinite(backtestParams.positionSizePercent) || backtestParams.positionSizePercent < 1 || backtestParams.positionSizePercent > 100) {
+      setBacktestError('Position Size (%) must be between 1 and 100')
       return
     }
 
@@ -343,7 +384,11 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
           startDate: backtestParams.startDate,
           endDate: backtestParams.endDate,
           initialCapital: backtestParams.initialCapital,
-          strategyIds: selectedStrategies,
+          strategyIds: strategyIdsToRun,
+          feeBps: backtestParams.feeBps,
+          slippageBps: backtestParams.slippageBps,
+          positionSizePercent: backtestParams.positionSizePercent,
+          demoMode: backtestParams.demoMode,
         }),
       })
 
@@ -360,6 +405,14 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
     } finally {
       setIsBacktesting(false)
     }
+  }
+
+  const runBacktest = () => executeBacktest(selectedStrategies)
+
+  const runAllBacktest = () => {
+    const allIds = unifiedStrategies.map((s) => s.id)
+    setSelectedStrategies(allIds)
+    void executeBacktest(allIds)
   }
 
   const analyzeWithNewsResearcher = async () => {
@@ -722,7 +775,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
           <Card className="p-6">
             {/* Backtest Controls */}
             <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-4">
+              <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
                 {/* Note: Symbol is global now, but kept display consistent with previous design if needed, 
                             though simpler to just use the global selectedStock for backtest params too. */}
                 <div>
@@ -748,52 +801,169 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                   <Input
                     id="capital"
                     type="number"
-                    value={backtestParams.initialCapital}
-                    onChange={(e) => setBacktestParams({ ...backtestParams, initialCapital: parseInt(e.target.value) })}
+                    min={1}
+                    value={Number.isFinite(backtestParams.initialCapital) ? backtestParams.initialCapital : ''}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? NaN : Number(e.target.value)
+                      setBacktestParams({ ...backtestParams, initialCapital: val })
+                    }}
                   />
                 </div>
+                <div>
+                  <Label htmlFor="feeBps">Fee (bps)</Label>
+                  <Input
+                    id="feeBps"
+                    type="number"
+                    min={0}
+                    max={1000}
+                    value={Number.isFinite(backtestParams.feeBps) ? backtestParams.feeBps : ''}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? 0 : Number(e.target.value)
+                      setBacktestParams({ ...backtestParams, feeBps: val })
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="slippageBps">Slippage (bps)</Label>
+                  <Input
+                    id="slippageBps"
+                    type="number"
+                    min={0}
+                    max={1000}
+                    value={Number.isFinite(backtestParams.slippageBps) ? backtestParams.slippageBps : ''}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? 0 : Number(e.target.value)
+                      setBacktestParams({ ...backtestParams, slippageBps: val })
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="positionSizePercent">Position Size (%)</Label>
+                  <Input
+                    id="positionSizePercent"
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={Number.isFinite(backtestParams.positionSizePercent) ? backtestParams.positionSizePercent : ''}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? 100 : Number(e.target.value)
+                      setBacktestParams({ ...backtestParams, positionSizePercent: val })
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="demoMode"
+                  checked={backtestParams.demoMode}
+                  onCheckedChange={(checked) =>
+                    setBacktestParams({ ...backtestParams, demoMode: checked === true })
+                  }
+                />
+                <label
+                  htmlFor="demoMode"
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  Demo Mode (Offline Fixtures)
+                </label>
+                <span className="text-xs text-muted-foreground">
+                  Use deterministic offline OHLCV fixture bars instead of live market data
+                </span>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <Label>Select Strategies to Backtest for {selectedStock}</Label>
                   <Button variant="outline" size="sm" onClick={handleSelectAll}>
-                    {selectedStrategies.length === backtestableStrategies.length ? 'Deselect All' : 'Select All'}
+                    {allAvailableSelected ? 'Deselect All' : 'Select All'}
                   </Button>
                 </div>
-                <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4 max-h-60 overflow-y-auto border rounded-lg p-4">
-                  {backtestableStrategies
-                    .map((strategy) => (
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 max-h-80 overflow-y-auto border rounded-lg p-4">
+                  {unifiedStrategies.map((strategy) => {
+                    const available = isBacktestable(strategy)
+                    const reason = available
+                      ? 'Runs on daily equity OHLCV bars'
+                      : getUnsupportedReason(strategy)
+                    return (
                       <div
                         key={strategy.id}
-                        className="flex items-center space-x-2"
+                        title={reason}
+                        className={`flex items-start space-x-2 rounded-md p-2 border ${
+                          available
+                            ? 'border-transparent hover:bg-muted/50'
+                            : 'border-amber-500/30 bg-amber-50/40 dark:bg-amber-950/20'
+                        }`}
                       >
                         <Checkbox
                           id={`strategy-${strategy.id}`}
                           checked={selectedStrategies.includes(strategy.id)}
                           onCheckedChange={() => handleStrategyToggle(strategy.id)}
+                          className="mt-0.5"
                         />
                         <label
                           htmlFor={`strategy-${strategy.id}`}
-                          className="flex flex-col space-y-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          className="flex flex-col space-y-1 text-sm font-medium leading-tight cursor-pointer flex-1 min-w-0"
                         >
-                          <span>{strategy.name}</span>
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="truncate">{strategy.name}</span>
+                            {available ? (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0 border-green-500 text-green-600 dark:text-green-400 shrink-0"
+                              >
+                                Available
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0 border-amber-500 text-amber-600 dark:text-amber-400 shrink-0"
+                              >
+                                {getUnsupportedLabel(strategy)}
+                              </Badge>
+                            )}
+                          </div>
+                          {!available && (
+                            <span className="text-xs font-normal text-muted-foreground line-clamp-2">
+                              {reason}
+                            </span>
+                          )}
                         </label>
                       </div>
-                    ))}
+                    )
+                  })}
                 </div>
                 <div className="text-sm text-muted-foreground mt-2">
-                  {selectedStrategies.length} strateg{selectedStrategies.length === 1 ? 'y' : 'ies'} selected
+                  {selectedStrategies.length} strateg{selectedStrategies.length === 1 ? 'y' : 'ies'} selected ({backtestableStrategies.length} equity-backtestable, {nonBacktestableThirdParty.length} third-party unsupported/advisory)
                 </div>
               </div>
 
               {backtestError && (
-                <div className="p-4 border border-red-500 bg-red-50 dark:bg-red-950 rounded-lg text-red-600 dark:text-red-400">
-                  {backtestError}
+                <div className="p-4 border border-red-500 bg-red-50 dark:bg-red-950 rounded-lg text-red-600 dark:text-red-400 flex items-start gap-2" role="alert">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>{backtestError}</span>
                 </div>
               )}
 
-              <div className="flex justify-end">
+              <div className="flex flex-wrap justify-end gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={runAllBacktest}
+                  disabled={isBacktesting || unifiedStrategies.length === 0}
+                  size="lg"
+                >
+                  {isBacktesting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Running...
+                    </>
+                  ) : (
+                    <>
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Backtest All Strategies
+                    </>
+                  )}
+                </Button>
                 <Button onClick={runBacktest} disabled={isBacktesting} size="lg">
                   {isBacktesting ? (
                     <>
@@ -809,18 +979,50 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                 </Button>
               </div>
 
+              {isBacktesting && (
+                <div className="border rounded-lg p-4 space-y-2" role="status" aria-live="polite">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Running backtest for {selectedStock} across {selectedStrategies.length} strateg{selectedStrategies.length === 1 ? 'y' : 'ies'}...
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {backtestParams.demoMode ? 'Offline fixtures' : 'Historical daily bars'}
+                    </span>
+                  </div>
+                  <Progress value={65} className="h-2 animate-pulse" />
+                </div>
+              )}
+
+              {!isBacktesting && backtestResults.length === 0 && backtestSkipped.length === 0 && !backtestError && (
+                <div className="border border-dashed rounded-lg p-6 text-center text-sm text-muted-foreground">
+                  Select strategies above and click <strong>Run Backtest</strong>, or click <strong>Backtest All Strategies</strong> to run all equity strategies and inspect unsupported third-party bot explanations for {selectedStock}.
+                </div>
+              )}
+
               {backtestSkipped.length > 0 && (
-                <div className="border rounded-lg p-4 text-sm" role="status">
-                  <h3 className="font-semibold mb-2">Not run ({backtestSkipped.length})</h3>
-                  <ul className="space-y-1 text-muted-foreground">
-                    {backtestSkipped.map(({ strategyId, reason }) => (
-                      <li key={strategyId}>
-                        <span className="font-medium text-foreground">
-                          {strategies.find(s => s.id === strategyId)?.name ?? strategyId}
-                        </span>
-                        : {reason}
-                      </li>
-                    ))}
+                <div className="border border-amber-500/40 bg-amber-50/30 dark:bg-amber-950/20 rounded-lg p-4 text-sm" role="status">
+                  <h3 className="font-semibold mb-2 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    Not run / Unsupported ({backtestSkipped.length})
+                  </h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    {backtestSkipped.map(({ strategyId, reason }) => {
+                      const matched = strategies.find(s => s.id === strategyId)
+                      return (
+                        <li key={strategyId} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                          <span className="font-medium text-foreground">
+                            {matched?.name ?? strategyId}
+                          </span>
+                          {matched && !isBacktestable(matched) && (
+                            <Badge variant="outline" className="text-[10px] w-fit border-amber-500 text-amber-600 dark:text-amber-400">
+                              {getUnsupportedLabel(matched)}
+                            </Badge>
+                          )}
+                          <span>{reason}</span>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               )}
@@ -829,7 +1031,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
                 <div className="border rounded-lg p-4">
                   <h3 className="font-semibold mb-4">Backtest Results - {selectedStock}</h3>
                   <div className="text-sm text-muted-foreground mb-4">
-                    Period: {backtestParams.startDate} to {backtestParams.endDate} | Initial Capital: ${backtestParams.initialCapital.toLocaleString()}
+                    Period: {backtestParams.startDate} to {backtestParams.endDate} | Initial Capital: ${backtestParams.initialCapital.toLocaleString()} | Fee: {backtestParams.feeBps} bps | Slippage: {backtestParams.slippageBps} bps | Position Size: {backtestParams.positionSizePercent}%{backtestParams.demoMode ? ' | Demo Mode' : ''}
                     <br />
                     <span className="italic">Click on a strategy below to display buy/sell indicators on the chart above</span>
                     {selectedBacktestSignals.length > 0 && (
@@ -910,7 +1112,7 @@ export function StrategiesTab({ symbol: symbolProp }: StrategiesTabProps = {}) {
               </Select>
 
               <Button variant="outline" size="sm" onClick={handleSelectAll}>
-                {selectedStrategies.length === backtestableStrategies.length ? 'Deselect All' : 'Select All'}
+                {allAvailableSelected ? 'Deselect All' : 'Select All'}
               </Button>
             </div>
 

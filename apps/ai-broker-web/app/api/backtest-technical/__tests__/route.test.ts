@@ -201,3 +201,120 @@ describe("POST /api/backtest-technical request validation", () => {
     expect((await response.json()).initialCapital).toBe(100000);
   });
 });
+
+describe("POST /api/backtest-technical enhanced capabilities", () => {
+  const postJson = (payload: Record<string, unknown>) =>
+    POST(
+      new Request("http://localhost/api/backtest-technical", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          symbol: "AAPL",
+          startDate: "2024-01-01",
+          endDate: "2024-01-05",
+          ...payload,
+        }),
+      }) as never,
+    );
+
+  it("reduces finalValue and totalReturn when feeBps and slippageBps are non-zero", async () => {
+    const zeroCostRes = await postJson({ strategyIds: ["buy-hold"], feeBps: 0, slippageBps: 0 });
+    const withCostsRes = await postJson({ strategyIds: ["buy-hold"], feeBps: 50, slippageBps: 50 });
+
+    expect(zeroCostRes.status).toBe(200);
+    expect(withCostsRes.status).toBe(200);
+
+    const zeroCost = await zeroCostRes.json();
+    const withCosts = await withCostsRes.json();
+
+    expect(withCosts.feeBps).toBe(50);
+    expect(withCosts.slippageBps).toBe(50);
+    expect(withCosts.results[0].finalValue).toBeLessThan(zeroCost.results[0].finalValue);
+    expect(withCosts.results[0].totalReturn).toBeLessThan(zeroCost.results[0].totalReturn);
+  });
+
+  it("limits capital deployed per trade when positionSizePercent is below 100", async () => {
+    const fullRes = await postJson({ strategyIds: ["buy-hold"], positionSizePercent: 100 });
+    const halfRes = await postJson({ strategyIds: ["buy-hold"], positionSizePercent: 50 });
+
+    expect(fullRes.status).toBe(200);
+    expect(halfRes.status).toBe(200);
+
+    const full = await fullRes.json();
+    const half = await halfRes.json();
+
+    expect(half.positionSizePercent).toBe(50);
+    expect(full.results[0].finalValue).toBe(120000);
+    expect(half.results[0].finalValue).toBe(110000);
+    expect(half.results[0].totalReturn).toBeLessThan(full.results[0].totalReturn);
+  });
+
+  it("returns deterministic results in demoMode without calling yahooFinance.getHistorical", async () => {
+    const payload = {
+      symbol: "NVDA",
+      startDate: "2024-01-01",
+      endDate: "2024-03-01",
+      strategyIds: ["macd"],
+      demoMode: true,
+    };
+
+    const res1 = await postJson(payload);
+    const res2 = await postJson(payload);
+
+    expect(res1.status).toBe(200);
+    expect(res2.status).toBe(200);
+    expect(mockGetHistorical).not.toHaveBeenCalled();
+
+    const body1 = await res1.json();
+    const body2 = await res2.json();
+
+    expect(body1.demoMode).toBe(true);
+    expect(body1.results).toHaveLength(1);
+    expect(body1.results).toEqual(body2.results);
+  });
+
+  it("falls back to deterministic fixture bars when yahooFinance.getHistorical rejects or fails", async () => {
+    mockGetHistorical.mockRejectedValueOnce(new Error("network down"));
+    const rejectedRes = await postJson({ strategyIds: ["macd"] });
+    expect(rejectedRes.status).toBe(200);
+    const rejectedBody = await rejectedRes.json();
+    expect(rejectedBody.success).toBe(true);
+    expect(rejectedBody.results).toHaveLength(1);
+
+    mockGetHistorical.mockResolvedValueOnce({ success: false });
+    const failedRes = await postJson({ strategyIds: ["macd"] });
+    expect(failedRes.status).toBe(200);
+    const failedBody = await failedRes.json();
+    expect(failedBody.success).toBe(true);
+    expect(failedBody.results).toHaveLength(1);
+    expect(failedBody.results).toEqual(rejectedBody.results);
+  });
+
+  it("reports explicit unsupported/advisory reasons for non-equity bots while completing valid equity strategies", async () => {
+    const res = await postJson({
+      strategyIds: ["macd", "kalshi-vibe", "gabagool", "btc15m-fusion", "red-flags"],
+    });
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.results.map((r: { strategyId: string }) => r.strategyId)).toEqual(["macd"]);
+    expect(body.skipped).toEqual([
+      {
+        strategyId: "kalshi-vibe",
+        reason: expect.stringContaining("unsupported asset type"),
+      },
+      {
+        strategyId: "gabagool",
+        reason: expect.stringContaining("unsupported asset type"),
+      },
+      {
+        strategyId: "btc15m-fusion",
+        reason: expect.stringContaining("unsupported asset type"),
+      },
+      {
+        strategyId: "red-flags",
+        reason: expect.stringContaining("advisory only"),
+      },
+    ]);
+  });
+});

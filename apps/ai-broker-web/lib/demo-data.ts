@@ -14,6 +14,7 @@ export interface Strategy {
   provider?: 'builtin' | 'tradingview' | 'third-party'
   /** False when /api/backtest-technical cannot run it; undefined means runnable. */
   backtestable?: boolean
+  unsupportedReason?: string
   provenance?: { upstream: string; license: string; fidelity: string; venue: string; backtest: string }
   description?: string
   source?: string

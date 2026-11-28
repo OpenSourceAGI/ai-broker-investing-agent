@@ -10,6 +10,8 @@
 export const DEFAULT_INITIAL_CAPITAL = 100_000
 export const MAX_INITIAL_CAPITAL = 1_000_000_000_000
 export const MAX_STRATEGY_IDS = 100
+export const MAX_FEE_BPS = 1000 // 10%
+export const MAX_SLIPPAGE_BPS = 1000 // 10%
 
 export interface ValidBacktestRequest {
   symbol: string
@@ -17,6 +19,10 @@ export interface ValidBacktestRequest {
   endDate: string
   initialCapital: number
   strategyIds: string[]
+  feeBps: number
+  slippageBps: number
+  positionSizePercent: number
+  demoMode: boolean
 }
 
 export type BacktestRequestValidation =
@@ -77,6 +83,36 @@ export function validateBacktestRequest(body: unknown): BacktestRequestValidatio
     else strategyIds = [...new Set(ids as string[])]
   }
 
+  let feeBps = 0
+  if (input.feeBps !== undefined) {
+    const fee = input.feeBps
+    if (typeof fee !== 'number' || !Number.isFinite(fee) || fee < 0)
+      errors.push('feeBps must be a non-negative number')
+    else if (fee > MAX_FEE_BPS)
+      errors.push(`feeBps must not exceed ${MAX_FEE_BPS}`)
+    else feeBps = fee
+  }
+
+  let slippageBps = 0
+  if (input.slippageBps !== undefined) {
+    const slippage = input.slippageBps
+    if (typeof slippage !== 'number' || !Number.isFinite(slippage) || slippage < 0)
+      errors.push('slippageBps must be a non-negative number')
+    else if (slippage > MAX_SLIPPAGE_BPS)
+      errors.push(`slippageBps must not exceed ${MAX_SLIPPAGE_BPS}`)
+    else slippageBps = slippage
+  }
+
+  let positionSizePercent = 100
+  if (input.positionSizePercent !== undefined) {
+    const size = input.positionSizePercent
+    if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0 || size > 100)
+      errors.push('positionSizePercent must be a number between 0 and 100')
+    else positionSizePercent = size
+  }
+
+  const demoMode = Boolean(input.demoMode)
+
   if (errors.length > 0) return { ok: false, errors }
   return {
     ok: true,
@@ -86,6 +122,10 @@ export function validateBacktestRequest(body: unknown): BacktestRequestValidatio
       endDate: input.endDate as string,
       initialCapital,
       strategyIds,
+      feeBps,
+      slippageBps,
+      positionSizePercent,
+      demoMode,
     },
   }
 }
